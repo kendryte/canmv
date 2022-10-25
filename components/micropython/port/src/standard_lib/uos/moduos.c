@@ -158,10 +158,10 @@ STATIC mp_obj_t mod_os_flash_format(void) {
         }
     }
     SPIFFS_unmount(&spiffs->fs);
-    mp_printf(&mp_plat_print, "[MAIXPY]:Spiffs Unmount.\n");
-    mp_printf(&mp_plat_print, "[MAIXPY]:Spiffs Formating...\n");
+    mp_printf(&mp_plat_print, "[CANMV]:Spiffs Unmount.\n");
+    mp_printf(&mp_plat_print, "[CANMV]:Spiffs Formating...\n");
     uint32_t format_res=SPIFFS_format(&spiffs->fs);
-    mp_printf(&mp_plat_print, "[MAIXPY]:Spiffs Format %s \n",format_res?"failed":"successful");
+    mp_printf(&mp_plat_print, "[CANMV]:Spiffs Format %s \n",format_res?"failed":"successful");
     if(0 != format_res)
     {
         return mp_const_false;
@@ -176,7 +176,7 @@ STATIC mp_obj_t mod_os_flash_format(void) {
         spiffs_cache_buf,
         sizeof(spiffs_cache_buf),
         0);
-    mp_printf(&mp_plat_print, "[MAIXPY]:Spiffs Mount %s \n", res?"failed":"successful");
+    mp_printf(&mp_plat_print, "[CANMV]:Spiffs Mount %s \n", res?"failed":"successful");
     if(!res)
     {
         return mp_const_true;

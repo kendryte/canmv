@@ -20,7 +20,7 @@ static void py_video_avi_print(const mp_print_t *print, mp_obj_t self_in, mp_pri
     py_video_avi_obj_t *self = (py_video_avi_obj_t*)self_in;
     avi_t* avi = &self->obj;
 
-    mp_printf(print, "[MaixPy] avi:\n[video] w:%d, h:%d, t:%dus, fps:%.2f, total_frame:%d, status:%d\n"
+    mp_printf(print, "[CanMV] avi:\n[video] w:%d, h:%d, t:%dus, fps:%.2f, total_frame:%d, status:%d\n"
                 "[audio] format:%d, channel:%d, sample_rate:%d",
                 avi->width, avi->height, avi->usec_per_frame, 1000.0/(avi->usec_per_frame/1000.0), 
                 avi->total_frame, -avi->status,
@@ -216,7 +216,7 @@ mp_obj_t py_video_open(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args)
     }
     else
     {
-        mp_raise_NotImplementedError("[MaixPy] video: format not support");
+        mp_raise_NotImplementedError("[CanMV] video: format not support");
     }
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(py_video_open_obj, 1, py_video_open);

@@ -163,7 +163,7 @@ void mp_thread_create_ex(void *(*entry)(void*), void *arg, size_t *stack_size, i
                            arg, //function arg
                            priority, //task priority,please don't change this parameter,because it will impack function running
                            &thread_id);//task handle
-    //mp_printf(&mp_plat_print, "[MAIXPY]: thread_id %p created \n",thread_id);
+    //mp_printf(&mp_plat_print, "[CANMV]: thread_id %p created \n",thread_id);
     if (thread_id == NULL) {
         m_del_obj(thread_t,th);
         mp_thread_mutex_unlock((mp_thread_mutex_t*)&thread_mutex);

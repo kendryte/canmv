@@ -68,6 +68,7 @@
 #if MICROPY_PY_THREAD
 #include "FreeRTOS.h"
 #include "task.h"
+#include "timers.h"
 #endif
 /*******storage********/
 #include "vfs_spiffs.h"
@@ -106,6 +107,8 @@ uint8_t *_jpeg_buf;
 #define MP_TASK_STACK_SIZE (32 * 1024)
 #define MP_TASK_STACK_LEN (MP_TASK_STACK_SIZE / sizeof(StackType_t))
 TaskHandle_t mp_main_task_handle;
+static StaticTimer_t xTimerBuffer;
+TimerHandle_t timer_hander_deinit_kpu;
 #endif
 
 #define FORMAT_FS_FORCE 0
@@ -236,10 +239,10 @@ MP_NOINLINE STATIC spiffs_user_mount_t *init_flash_spiffs()
   if (FORMAT_FS_FORCE || res != SPIFFS_OK || res == SPIFFS_ERR_NOT_A_FS)
   {
     SPIFFS_unmount(&vfs_spiffs->fs);
-    printk("[MAIXPY]:Spiffs Unmount.\n");
-    printk("[MAIXPY]:Spiffs Formating...\n");
+    printk("[CANMV]:Spiffs Unmount.\n");
+    printk("[CANMV]:Spiffs Formating...\n");
     s32_t format_res = SPIFFS_format(&vfs_spiffs->fs);
-    printk("[MAIXPY]:Spiffs Format %s \n", format_res ? "failed" : "successful");
+    printk("[CANMV]:Spiffs Format %s \n", format_res ? "failed" : "successful");
     if (0 != format_res)
     {
       return false;
@@ -252,7 +255,7 @@ MP_NOINLINE STATIC spiffs_user_mount_t *init_flash_spiffs()
                        spiffs_cache_buf,
                        sizeof(spiffs_cache_buf),
                        0);
-    printk("[MAIXPY]:Spiffs Mount %s \n", res ? "failed" : "successful");
+    printk("[CANMV]:Spiffs Mount %s \n", res ? "failed" : "successful");
     if (!res)
     {
     }
@@ -265,7 +268,7 @@ STATIC bool mpy_mount_spiffs(spiffs_user_mount_t *spiffs)
   mp_vfs_mount_t *vfs = m_new_obj(mp_vfs_mount_t);
   if (vfs == NULL)
   {
-    printk("[MaixPy]:can't mount flash\n");
+    printk("[CanMV]:can't mount flash\n");
     return false;
   }
   vfs->str = "/flash";
@@ -319,7 +322,7 @@ void load_config_from_spiffs(config_data_t *config)
     ret = SPIFFS_read(&spiffs_user_mount_handle.fs, fd, config, sizeof(config_data_t));
     if (ret <= 0)
     {
-      printk("maixpy can't load freq.conf\t\r\n");
+      printk("canmv can't load freq.conf\t\r\n");
       flash_error = false;
     }
     else
@@ -487,6 +490,28 @@ void mount_sdcard(void){
   dual_func = sd_preload;
 }
 
+static void deinit_kpu_timer_cb(TimerHandle_t xExpiredTimer)
+{
+    extern int kpu_model_buffer_free_all_ptr(void);
+
+    int n = kpu_model_buffer_free_all_ptr();
+    mp_printf(&mp_plat_print, "free %d kpu model buffer\n>>>", n);
+}
+
+void free_km_buf_timer_init(void)
+{
+  timer_hander_deinit_kpu = xTimerCreateStatic( "kpu_timer",             // Text name for the task.  Helps debugging only.  Not used by FreeRTOS.
+                              40,     // The period of the timer in ticks.//400 ms
+                              pdFALSE,           // This is not an auto-reload timer.
+                              ( void * ) 1,    // A variable incremented by the software timer's callback function
+                              deinit_kpu_timer_cb, // The function to execute when the timer expires.
+                              &xTimerBuffer );  // The buffer that will hold the software timer structure.
+  if(timer_hander_deinit_kpu == NULL)
+  {
+    mp_printf(&mp_plat_print, "The timer was not created\n");
+  }
+}
+
 void mp_task(void *pvParameter)
 {
   volatile void *tmp;
@@ -530,7 +555,7 @@ soft_reset:
 #endif
 #if MICROPY_ENABLE_GC
   gc_init(gc_heap, gc_heap + config->gc_heap_size);
-  printk("[MaixPy] gc heap=%p-%p(%d)\r\n", gc_heap, gc_heap + config->gc_heap_size, config->gc_heap_size);
+  printk("[CanMV] gc heap=%p-%p(%d)\r\n", gc_heap, gc_heap + config->gc_heap_size, config->gc_heap_size);
 #endif
   mp_init();
   mp_obj_list_init(mp_sys_path, 0);
@@ -561,10 +586,13 @@ soft_reset:
       args[1] = MP_OBJ_NEW_SMALL_INT(115200);
     }
 #ifdef MAIXPY_DEBUG_UARTHS_REPL_UART2
-    fpioa_set_function(9, FUNC_UARTHS_RX);
-    fpioa_set_function(10, FUNC_UARTHS_TX);
+    fpioa_set_function(6, FUNC_UARTHS_RX);
+    fpioa_set_function(1, FUNC_UARTHS_TX);
     fpioa_set_function(4, FUNC_UART2_RX);
     fpioa_set_function(5, FUNC_UART2_TX);
+
+    sys_register_getchar(uarths_getchar);
+    sys_register_putchar(uarths_putchar);
 #else
     fpioa_set_function(4, FUNC_UARTHS_RX);
     fpioa_set_function(5, FUNC_UARTHS_TX);
@@ -583,8 +611,9 @@ soft_reset:
   {
     maix_config_init();
   }
+  free_km_buf_timer_init();
   mount_sdcard();
-  // mp_printf(&mp_plat_print, "[MaixPy] init end\r\n"); // for maixpy ide
+  // mp_printf(&mp_plat_print, "[CanMV] init end\r\n"); // for maixpy ide
   // run boot-up scripts
   mp_hal_set_interrupt_char(CHAR_CTRL_C);
   int ret = pyexec_frozen_module("_boot.py");
@@ -599,7 +628,7 @@ soft_reset:
   do
   {
     ide_dbg_init();
-    while ((!ide_dbg_script_ready()) && (!ide_dbg_need_save_file()))
+    while ((!ide_dbg_script_ready()) /* && (!ide_dbg_need_save_file())*/ )
     {
       nlr_buf_t nlr;
       if (nlr_push(&nlr) == 0)
@@ -621,10 +650,14 @@ soft_reset:
       }
       nlr_pop();
     }
+
+#if 0
     if (ide_dbg_need_save_file())
     {
       ide_save_file();
     }
+#endif
+
     if (ide_dbg_script_ready())
     { pyexec_frozen_module("ide_debug.py");//just for maixpy ide,to fix amgio lcd bug
       nlr_buf_t nlr;
@@ -647,7 +680,7 @@ soft_reset:
 #if MICROPY_ENABLE_GC
   gc_sweep_all();
 #endif
-  mp_hal_stdout_tx_strn("[MaixPy]: soft reboot\r\n", 23);
+  mp_hal_stdout_tx_strn("[CanMV]: soft reboot\r\n", 23);
   mp_deinit();
   msleep(10);
   goto soft_reset;
@@ -683,11 +716,11 @@ int maixpy_main()
   uarths_init();
   uarths_config(115200, 1);
   printk("\r\n");
-  printk("[MAIXPY] Pll0:freq:%d\r\n", sysctl_clock_get_freq(SYSCTL_CLOCK_PLL0));
-  printk("[MAIXPY] Pll1:freq:%d\r\n", sysctl_clock_get_freq(SYSCTL_CLOCK_PLL1));
-  printk("[MAIXPY] Pll2:freq:%d\r\n", sysctl_clock_get_freq(SYSCTL_CLOCK_PLL2));
-  printk("[MAIXPY] cpu:freq:%d\r\n", sysctl_clock_get_freq(SYSCTL_CLOCK_CPU));
-  printk("[MAIXPY] kpu:freq:%d\r\n", sysctl_clock_get_freq(SYSCTL_CLOCK_AI));
+  printk("[CANMV] Pll0:freq:%d\r\n", sysctl_clock_get_freq(SYSCTL_CLOCK_PLL0));
+  printk("[CANMV] Pll1:freq:%d\r\n", sysctl_clock_get_freq(SYSCTL_CLOCK_PLL1));
+  printk("[CANMV] Pll2:freq:%d\r\n", sysctl_clock_get_freq(SYSCTL_CLOCK_PLL2));
+  printk("[CANMV] cpu:freq:%d\r\n", sysctl_clock_get_freq(SYSCTL_CLOCK_CPU));
+  printk("[CANMV] kpu:freq:%d\r\n", sysctl_clock_get_freq(SYSCTL_CLOCK_AI));
   sysctl_clock_enable(SYSCTL_CLOCK_AI);
   sysctl_set_power_mode(SYSCTL_POWER_BANK6, SYSCTL_POWER_V18);
   sysctl_set_power_mode(SYSCTL_POWER_BANK7, SYSCTL_POWER_V18);
@@ -695,7 +728,7 @@ int maixpy_main()
   rtc_init();
   rtc_timer_set(2000, 1, 1, 0, 0, 0);
   flash_init(&manuf_id, &device_id);
-  printk("[MAIXPY] Flash:0x%02x:0x%02x\r\n", manuf_id, device_id);
+  printk("[CANMV] Flash:0x%02x:0x%02x\r\n", manuf_id, device_id);
   /* Init SPI IO map and function settings */
   sysctl_set_spi0_dvp_data(1);
   /* open core 1 */

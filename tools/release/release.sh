@@ -18,7 +18,7 @@ fi
 echo $version_full
 echo $version
 
-release_dir=`pwd`/bin/maixpy_$version
+release_dir=`pwd`/bin/canmv_$version
 rm -rf $release_dir $release_dir/elf
 mkdir -p $release_dir
 mkdir -p $release_dir/elf
@@ -27,151 +27,87 @@ mkdir -p $release_dir/elf
 cd ../../projects
 
 #
-cd maixpy_k210
+cd canmv_k210
 echo "-------------------"
-echo "build project maixpy_k210"
+echo "build project canmv_k210"
 echo "-------------------"
 python project.py distclean
 python project.py build
-cp build/maixpy.bin $release_dir/maixpy_$version.bin
-cp build/maixpy.elf $release_dir/elf/maixpy_$version.elf
+cp build/canmv.bin $release_dir/canmv_$version.bin
+cp build/canmv.elf $release_dir/elf/canmv_$version.elf
 cd ..
 
-# maixpy_k210 with lvgl
-cd maixpy_k210
+# canmv_k210 with lvgl
+cd canmv_k210
 echo "-------------------"
-echo "build project maixpy_k210_with_lvgl"
+echo "build project canmv_k210_with_lvgl"
 echo "-------------------"
 python project.py distclean
 python project.py build --config_file "config_with_lvgl.mk"
-cp build/maixpy.bin $release_dir/maixpy_${version}_with_lvgl.bin
-cp build/maixpy.elf $release_dir/elf/maixpy_${version}_with_lvgl.elf
+cp build/canmv.bin $release_dir/canmv_${version}_with_lvgl.bin
+cp build/canmv.elf $release_dir/elf/canmv_${version}_with_lvgl.elf
 cd ..
 
 #
-cd maixpy_k210_minimum
+cd canmv_k210_minimum
 echo "-------------------"
-echo "build project maixpy_k210_minimum"
+echo "build project canmv_k210_minimum"
 echo "-------------------"
 python project.py distclean
 python project.py build
-cp build/maixpy.bin $release_dir/maixpy_${version}_minimum.bin
-cp build/maixpy.elf $release_dir/elf/maixpy_${version}_minimum.elf
+cp build/canmv.bin $release_dir/canmv_${version}_minimum.bin
+cp build/canmv.elf $release_dir/elf/canmv_${version}_minimum.elf
 cd ..
 
 # minimum with IDE support
-cd maixpy_k210_minimum
+cd canmv_k210_minimum
 echo "-------------------"
-echo "build project maixpy_k210_minimum"
+echo "build project canmv_k210_minimum"
 echo "-------------------"
 python project.py distclean
 python project.py build --config_file "config_with_ide_support.mk"
-cp build/maixpy.bin $release_dir/maixpy_${version}_minimum_with_ide_support.bin
-cp build/maixpy.elf $release_dir/elf/maixpy_${version}_minimum_with_ide_support.elf
+cp build/canmv.bin $release_dir/canmv_${version}_minimum_with_ide_support.bin
+cp build/canmv.elf $release_dir/elf/canmv_${version}_minimum_with_ide_support.elf
 cd ..
 
 # minimum with IDE support
-cd maixpy_k210_minimum
+cd canmv_k210_minimum
 echo "-------------------"
-echo "build project maixpy_k210_minimum_speech"
+echo "build project canmv_k210_minimum_speech"
 echo "-------------------"
 python project.py distclean
 python project.py build --config_file "config_defaults_speech_with_ide_support.mk"
-cp build/maixpy.bin $release_dir/maixpy_${version}_minimum_speech_with_ide_support.bin
-cp build/maixpy.elf $release_dir/elf/maixpy_${version}_minimum_speech_with_ide_support.elf
+cp build/canmv.bin $release_dir/canmv_${version}_minimum_speech_with_ide_support.bin
+cp build/canmv.elf $release_dir/elf/canmv_${version}_minimum_speech_with_ide_support.elf
 cd ..
 
 # minimum with V4 kmodel support
-cd maixpy_k210_minimum
+cd canmv_k210_minimum
 echo "-------------------"
-echo "build project maixpy_k210_minimum_v4_kmodel_support"
+echo "build project canmv_k210_minimum_v4_kmodel_support"
 echo "-------------------"
 python project.py distclean
 python project.py build --config_file "config_defaults_kmodel_v4_support.mk"
-cp build/maixpy.bin $release_dir/maixpy_${version}_minimum_with_kmodel_v4_support.bin
-cp build/maixpy.elf $release_dir/elf/maixpy_${version}_minimum_with_kmodel_v4_support.elf
+cp build/canmv.bin $release_dir/canmv_${version}_minimum_with_kmodel_v4_support.bin
+cp build/canmv.elf $release_dir/elf/canmv_${version}_minimum_with_kmodel_v4_support.elf
 cd ..
 
 # openmv with V4 kmodel & IDE support
-cd maixpy_k210_minimum
+cd canmv_k210_minimum
 echo "-------------------"
-echo "build project maixpy_k210_openmv_kmodel_v4_with_ide_support"
+echo "build project canmv_k210_openmv_kmodel_v4_with_ide_support"
 echo "-------------------"
 python project.py distclean
 python project.py build --config_file "config_defaults_openmv_kmodel_v4_with_ide_support.mk"
-cp build/maixpy.bin $release_dir/maixpy_${version}_openmv_kmodel_v4_with_ide_support.bin
-cp build/maixpy.elf $release_dir/elf/maixpy_${version}_openmv_kmodel_v4_with_ide_support.elf
-cd ..
-
-# board M5StickV
-cd maixpy_m5stickv
-echo "-------------------"
-echo "build project maixpy_m5stickv"
-echo "-------------------"
-python project.py distclean
-python project.py build
-cp build/maixpy.bin $release_dir/maixpy_${version}_m5stickv.bin
-cp build/maixpy.elf $release_dir/elf/maixpy_${version}_m5stickv.elf
-cd ..
-
-# board M5StickV
-cd maixpy_twatch
-echo "-------------------"
-echo "build project maixpy_twatch"
-echo "-------------------"
-python project.py distclean
-python project.py build
-cp build/maixpy.bin $release_dir/maixpy_${version}_twatch.bin
-cp build/maixpy.elf $release_dir/elf/maixpy_${version}_twatch.elf
-cd ..
-
-# board Maix Amigo
-cd maixpy_amigo_ips
-echo "-------------------"
-echo "build project maixpy_amigo_ips config_defaults"
-echo "-------------------"
-python project.py distclean
-python project.py build --config_file "config_defaults.mk"
-cp build/maixpy.bin $release_dir/maixpy_${version}_amigo_ips_defaults.bin
-cp build/maixpy.elf $release_dir/elf/maixpy_${version}_amigo_ips_defaults.elf
-cd ..
-
-cd maixpy_amigo_ips
-echo "-------------------"
-echo "build project maixpy_amigo_ips config_minimum"
-echo "-------------------"
-python project.py distclean
-python project.py build --config_file "config_minimum.mk"
-cp build/maixpy.bin $release_dir/maixpy_${version}_amigo_ips_minimum.bin
-cp build/maixpy.elf $release_dir/elf/maixpy_${version}_amigo_ips_minimum.elf
-cd ..
-
-# board Maix Amigo
-cd maixpy_amigo_tft
-echo "-------------------"
-echo "build project maixpy_amigo_tft config_defaults"
-echo "-------------------"
-python project.py distclean
-python project.py build --config_file "config_defaults.mk"
-cp build/maixpy.bin $release_dir/maixpy_${version}_amigo_tft_defaults.bin
-cp build/maixpy.elf $release_dir/elf/maixpy_${version}_amigo_tft_defaults.elf
-cd ..
-
-cd maixpy_amigo_tft
-echo "-------------------"
-echo "build project maixpy_amigo_tft config_minimum"
-echo "-------------------"
-python project.py distclean
-python project.py build --config_file "config_minimum.mk"
-cp build/maixpy.bin $release_dir/maixpy_${version}_amigo_tft_minimum.bin
-cp build/maixpy.elf $release_dir/elf/maixpy_${version}_amigo_tft_minimum.elf
+cp build/canmv.bin $release_dir/canmv_${version}_openmv_kmodel_v4_with_ide_support.bin
+cp build/canmv.elf $release_dir/elf/canmv_${version}_openmv_kmodel_v4_with_ide_support.elf
 cd ..
 
 # add readme.txt
 cp ../tools/release/readme.txt $release_dir/readme.txt
 
 cd $release_dir
-7z a elf_maixpy_${version}.7z elf/*
+7z a elf_canmv_${version}.7z elf/*
 rm -rf elf
 
 ls -al

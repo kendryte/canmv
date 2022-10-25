@@ -3,11 +3,12 @@
 #include "py/runtime.h"
 #include "py/binary.h"
 #include <stdio.h>
+#include <string.h>
 #include "modmachine.h"
 #include "sysctl.h"
 #include "sipeed_sys.h"
-#include "sipeed_uid.h"
 #include "py/mperrno.h"
+#include "manufacture_data.h"
 
 #if MICROPY_PY_MACHINE
 
@@ -30,10 +31,13 @@ MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_cause_obj, machine_reset_cause);
 
 STATIC mp_obj_t machine_unique_id()
 {
-    bool ret;
+    //bool ret;
+    uint64_t chip_id;
     byte* uid_bytes = m_new(byte, 32);
-    ret = sipeed_uid_get(uid_bytes);
-    if(!ret)
+    chip_id = get_chip_number();
+    memcpy(uid_bytes, &chip_id, 8);
+    //ret = sipeed_uid_get(uid_bytes);
+    if(!chip_id)
         mp_raise_OSError(MP_EINTR);
     mp_obj_t uid = mp_obj_new_bytes(uid_bytes, 32);
     return uid;

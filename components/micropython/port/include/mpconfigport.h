@@ -56,7 +56,7 @@
 #define MICROPY_ENABLE_COMPILER     (1)
 
 #define MICROPY_QSTR_BYTES_IN_LEN           (1)
-#define MICROPY_QSTR_BYTES_IN_HASH          (1)
+#define MICROPY_QSTR_BYTES_IN_HASH          (2)
 #define MICROPY_ALLOC_PATH_MAX      (128)
 #define MICROPY_ALLOC_PARSE_CHUNK_INIT (16)
 #define MICROPY_EMIT_X64            (0)
@@ -292,7 +292,7 @@ extern const struct _mp_obj_module_t socket_module;
 extern const struct _mp_obj_module_t image_module;
 extern const struct _mp_obj_module_t sensor_module;
 extern const struct _mp_obj_module_t lcd_module;
-extern const struct _mp_obj_module_t kpu_module;
+//extern const struct _mp_obj_module_t kpu_module;
 extern const struct _mp_obj_module_t audio_module;
 extern const struct _mp_obj_module_t mp_module_uhashlib_maix;
 extern const struct _mp_obj_module_t mp_module_ucryptolib;
@@ -387,7 +387,7 @@ extern const struct _mp_obj_module_t mp_module_touchscreen;
     { MP_OBJ_NEW_QSTR(MP_QSTR_uos), (mp_obj_t)&uos_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&utime_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_utime), (mp_obj_t)&utime_module }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_Maix), (mp_obj_t)&maix_module },\
+    { MP_OBJ_NEW_QSTR(MP_QSTR_maix), (mp_obj_t)&maix_module },\
     { MP_OBJ_NEW_QSTR(MP_QSTR_machine), (mp_obj_t)&machine_module },\
     { MP_OBJ_NEW_QSTR(MP_QSTR_network), (mp_obj_t)&network_module },\
     { MP_OBJ_NEW_QSTR(MP_QSTR_usocket), (mp_obj_t)&socket_module }, \
@@ -395,11 +395,9 @@ extern const struct _mp_obj_module_t mp_module_touchscreen;
     { MP_OBJ_NEW_QSTR(MP_QSTR_image), (mp_obj_t)&image_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_sensor), (mp_obj_t)&sensor_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_lcd), (mp_obj_t)&lcd_module }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_KPU), (mp_obj_t)&kpu_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_audio), (mp_obj_t)&audio_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_uhashlib), (mp_obj_t)&mp_module_uhashlib_maix }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_ucryptolib), (mp_obj_t)&mp_module_ucryptolib }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_modules), (mp_obj_t)&mp_module_modules }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_modules), (mp_obj_t)&mp_module_modules }, \
     MAIXPY_PY_SPEECH_RECOGNIZER_DEF \
     MAIXPY_PY_NES_DEF \
@@ -417,7 +415,6 @@ extern const struct _mp_obj_module_t mp_module_touchscreen;
     { MP_OBJ_NEW_QSTR(MP_QSTR_errno), (mp_obj_t)&mp_module_uerrno }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_heapq), (mp_obj_t)&mp_module_uheapq }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_json), (mp_obj_t)&mp_module_ujson }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_math), (mp_obj_t)&mp_module_math }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_os), (mp_obj_t)&uos_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_random), (mp_obj_t)&mp_module_urandom }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_re), (mp_obj_t)&mp_module_ure }, \
@@ -431,9 +428,9 @@ extern const struct _mp_obj_module_t mp_module_touchscreen;
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>
 
-#define MICROPY_HW_BOARD_NAME "Sipeed_M1"
+#define MICROPY_HW_BOARD_NAME "CanMV_Board"
 #define MICROPY_HW_MCU_NAME "kendryte-k210"
-#define MICROPY_PY_SYS_PLATFORM "MaixPy"
+#define MICROPY_PY_SYS_PLATFORM "CanMV"
 
 #ifdef __linux__
 #define MICROPY_MIN_USE_STDOUT (1)

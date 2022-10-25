@@ -448,12 +448,12 @@ STATIC void machine_hard_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp
 #endif
     )
     {
-        mp_printf(print, "[MAIXPY]I2C:(%p) I2C=%d, mode=%d, freq=%u, addr_size=%u, scl=%d, sda=%d",
+        mp_printf(print, "[CANMV]I2C:(%p) I2C=%d, mode=%d, freq=%u, addr_size=%u, scl=%d, sda=%d",
             self, self->i2c, self->mode, self->freq, self->addr_size, self->pin_scl, self->pin_sda);
     }
     else
     {
-        mp_printf(print, "[MAIXPY]I2C:(%p) I2C=%d, mode=%d, addr_size=%u, addr=%02x, scl=%d, sda=%d, on_receive=%p, on_transmit=%p, on_event=%p",
+        mp_printf(print, "[CANMV]I2C:(%p) I2C=%d, mode=%d, addr_size=%u, addr=%02x, scl=%d, sda=%d, on_receive=%p, on_transmit=%p, on_event=%p",
             self, self->i2c, self->mode, self->addr_size, self->addr, self->pin_scl, self->pin_sda, self->on_receive, self->on_transmit, self->on_event);
     }
 }
@@ -548,40 +548,40 @@ STATIC mp_obj_t machine_i2c_init_helper(machine_hard_i2c_obj_t* self, mp_uint_t 
     addr_size = args[ARG_addr_size].u_int;
     if(!check_i2c_device(i2c_id)) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-            "[MAIXPY]I2C: I2C(%d) doesn't exist", i2c_id));
+            "[CANMV]I2C: I2C(%d) doesn't exist", i2c_id));
     }
     if(!check_i2c_mode(mode))
     {
-        mp_raise_ValueError("[MAIXPY]I2C: mode error!");
+        mp_raise_ValueError("[CANMV]I2C: mode error!");
     }
     if(!check_i2c_freq(freq)){ // just check for master mode
-        mp_raise_ValueError("[MAIXPY]I2C: freq value error!");
+        mp_raise_ValueError("[CANMV]I2C: freq value error!");
     }
     if(!check_i2c_timeout(timeout))
     {
-        mp_raise_ValueError("[MAIXPY]I2C: timeout value error!");
+        mp_raise_ValueError("[CANMV]I2C: timeout value error!");
     }
     if(!check_addr_size(addr_size))
     {
-        mp_raise_ValueError("[MAIXPY]I2C: addr size error!");
+        mp_raise_ValueError("[CANMV]I2C: addr size error!");
     }
     if( mode == MACHINE_I2C_MODE_SLAVE)
     {
         if(!check_addr(addr, addr_size))
         {
-            mp_raise_ValueError("[MAIXPY]I2C: addr/addr size error!");
+            mp_raise_ValueError("[CANMV]I2C: addr/addr size error!");
         }
         if( !mp_obj_is_callable(args[ARG_on_receive].u_obj)||
             !mp_obj_is_callable(args[ARG_on_transmit].u_obj)||
             !mp_obj_is_callable(args[ARG_on_event].u_obj) )
         {
-            mp_raise_ValueError("[MAIXPY]I2C: callback error!"); 
+            mp_raise_ValueError("[CANMV]I2C: callback error!"); 
         }
     }
 
     if (args[ARG_scl].u_obj != MP_OBJ_NULL || args[ARG_sda].u_obj != MP_OBJ_NULL) {
         if( !check_pin( mp_obj_get_int(args[ARG_scl].u_obj), mp_obj_get_int(args[ARG_sda].u_obj) ) )
-            mp_raise_ValueError("[MAIXPY]I2C: pin(scl/sda) error!"); 
+            mp_raise_ValueError("[CANMV]I2C: pin(scl/sda) error!"); 
         self->pin_scl = mp_obj_get_int(args[ARG_scl].u_obj);
         self->pin_sda = mp_obj_get_int(args[ARG_sda].u_obj);
         self->gpio_scl = self->pin_scl;
@@ -591,7 +591,7 @@ STATIC mp_obj_t machine_i2c_init_helper(machine_hard_i2c_obj_t* self, mp_uint_t 
         int gscl = mp_obj_get_int(args[ARG_gscl].u_obj) - FUNC_GPIOHS0;
         int gsda = mp_obj_get_int(args[ARG_gsda].u_obj) - FUNC_GPIOHS0;
         if( !check_gpio(gscl, gsda) )
-            mp_raise_ValueError("[MAIXPY]I2C: gpio(scl/sda) error!"); 
+            mp_raise_ValueError("[CANMV]I2C: gpio(scl/sda) error!"); 
         self->gpio_scl = gscl;
         self->gpio_sda = gsda;
     }
@@ -697,12 +697,12 @@ STATIC mp_obj_t machine_i2c_writeto(size_t n_args, const mp_obj_t *args) {
     //TODO: support not send stop signal
     if(!stop)
     {
-        mp_raise_NotImplementedError("[MAIXPY]I2C: not support stop option yet");
+        mp_raise_NotImplementedError("[CANMV]I2C: not support stop option yet");
     }
     if(bufinfo.len == 0)
     {
         //TODO: support only send address and not send any bytes
-        mp_raise_NotImplementedError("[MAIXPY]I2C: not support send 0 byte data yet");
+        mp_raise_NotImplementedError("[CANMV]I2C: not support send 0 byte data yet");
     }
     int ret = i2c_p->writeto(self, addr,  bufinfo.buf, bufinfo.len, stop);
     if (ret < 0) {
@@ -720,7 +720,7 @@ STATIC mp_obj_t machine_i2c_readfrom(size_t n_args, const mp_obj_t *args) {
     mp_int_t len = mp_obj_get_int(args[2]);
     if(len == 0)
     {
-        mp_raise_ValueError("[MAIXPY]I2C: not support receive 0 byte data yet");
+        mp_raise_ValueError("[CANMV]I2C: not support receive 0 byte data yet");
     }
     vstr_t vstr;
     vstr_init_len(&vstr, len);
@@ -728,7 +728,7 @@ STATIC mp_obj_t machine_i2c_readfrom(size_t n_args, const mp_obj_t *args) {
     //TODO: support not send stop signal
     if(!stop)
     {
-        mp_raise_NotImplementedError("[MAIXPY]I2C: not support stop option yet");
+        mp_raise_NotImplementedError("[CANMV]I2C: not support stop option yet");
     }
     int ret = i2c_p->readfrom(self, addr, (uint8_t*)vstr.buf, vstr.len, stop);
     if (ret < 0) {
@@ -748,7 +748,7 @@ STATIC mp_obj_t machine_i2c_readfrom_into(size_t n_args, const mp_obj_t *args) {
     //TODO: support not send stop signal
     if(!stop)
     {
-        mp_raise_NotImplementedError("[MAIXPY]I2C: not support stop option yet");
+        mp_raise_NotImplementedError("[CANMV]I2C: not support stop option yet");
     }
     int ret = i2c_p->readfrom(self, addr, bufinfo.buf, bufinfo.len, stop);
     if (ret < 0) {
@@ -766,7 +766,7 @@ STATIC int read_mem(mp_obj_t self_in, uint16_t addr, uint32_t memaddr, uint8_t m
     // mp_machine_i2c_p_t *i2c_p = (mp_machine_i2c_p_t*)self->base.type->protocol;
     if(len == 0)
     {
-        mp_raise_ValueError("[MAIXPY]I2C: not support receive 0 byte data yet");
+        mp_raise_ValueError("[CANMV]I2C: not support receive 0 byte data yet");
     }
     mem_size = mem_size/8;
     if(mem_size > 4 || mem_size==0)

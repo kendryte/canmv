@@ -462,7 +462,7 @@ STATIC void wiznet5k_make_new_helper(size_t n_args, size_t n_kw,
                             allowed_args, args_parsed);
 
   if (!MP_OBJ_IS_TYPE(args_parsed[ARG_spi].u_obj, &machine_hw_spi_type)) {
-    mp_raise_TypeError("[MAIXPY]spi: object type error");
+    mp_raise_TypeError("[CANMV]spi: object type error");
     return mp_const_false;
   }
 

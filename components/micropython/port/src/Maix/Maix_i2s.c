@@ -37,11 +37,11 @@ const mp_obj_type_t Maix_i2s_type;
 STATIC void Maix_i2s_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     Maix_i2s_obj_t* self = MP_OBJ_TO_PTR(self_in);
     // i2s_channle_t*  channel_iter = &self->channel[0];
-    mp_printf(print, "[MAIXPY]i2s%d:(sampling rate=%u, sampling points=%u)\n",
+    mp_printf(print, "[CANMV]i2s%d:(sampling rate=%u, sampling points=%u)\n",
         self->i2s_num,self->sample_rate,self->points_num);
     for(int channel_iter = 0; channel_iter < 4; channel_iter++)
     {
-        mp_printf(print, "[MAIXPY]channle%d:(resolution=%u, cycles=%u, align_mode=%u, mode=%u)\n",
+        mp_printf(print, "[CANMV]channle%d:(resolution=%u, cycles=%u, align_mode=%u, mode=%u)\n",
                   channel_iter,
                   self->channel[channel_iter].resolution,
                   self->channel[channel_iter].cycles,
@@ -79,7 +79,7 @@ STATIC mp_obj_t Maix_i2s_init_helper(Maix_i2s_obj_t *self, size_t n_args, const 
     //set buffer len
     if(args[ARG_sample_points].u_int > MAX_SAMPLE_POINTS)
     {
-        mp_raise_ValueError("[MAIXPY]I2S:invalid buffer length");
+        mp_raise_ValueError("[CANMV]I2S:invalid buffer length");
     }
     self->points_num = args[ARG_sample_points].u_int;
     self->buf = m_new(uint32_t,self->points_num);
@@ -95,7 +95,7 @@ STATIC mp_obj_t Maix_i2s_make_new(const mp_obj_type_t *type, size_t n_args, size
     // get i2s num
     mp_int_t i2s_num = mp_obj_get_int(args[0]);
     if (i2s_num >= I2S_DEVICE_MAX) {
-    	nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "[MAIXPY]I2S%d:does not exist", i2s_num));
+    	nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "[CANMV]I2S%d:does not exist", i2s_num));
     }
 
     // create instance
@@ -143,7 +143,7 @@ STATIC mp_obj_t Maix_i2s_channel_config(size_t n_args, const mp_obj_t *pos_args,
     //set channel
     if(args[ARG_channel].u_int > I2S_CHANNEL_3)
     {
-        mp_raise_ValueError("[MAIXPY]I2S:invalid i2s channle");
+        mp_raise_ValueError("[CANMV]I2S:invalid i2s channle");
     }
     i2s_channel_num_t channel_num = args[ARG_channel].u_int;
     i2s_channle_t*    channle = &self->channel[channel_num];
@@ -151,12 +151,12 @@ STATIC mp_obj_t Maix_i2s_channel_config(size_t n_args, const mp_obj_t *pos_args,
     //set resolution
     if(args[ARG_resolution].u_int >  RESOLUTION_32_BIT )
     {
-        mp_raise_ValueError("[MAIXPY]I2S:invalid resolution");
+        mp_raise_ValueError("[CANMV]I2S:invalid resolution");
     }
     channle->resolution = args[ARG_resolution].u_int;
     if(args[ARG_cycles].u_int >   SCLK_CYCLES_32 )
     {
-        mp_raise_ValueError("[MAIXPY]I2S:invalid cycles");
+        mp_raise_ValueError("[CANMV]I2S:invalid cycles");
     }
     channle->cycles = args[ARG_cycles].u_int;
     self->cycles = args[ARG_cycles].u_int;
@@ -164,14 +164,14 @@ STATIC mp_obj_t Maix_i2s_channel_config(size_t n_args, const mp_obj_t *pos_args,
     //set align mode
     if(args[ARG_align_mode].u_int != STANDARD_MODE && args[ARG_align_mode].u_int != RIGHT_JUSTIFYING_MODE && args[ARG_align_mode].u_int != LEFT_JUSTIFYING_MODE)
     {
-        mp_raise_ValueError("[MAIXPY]I2S:invalid align mode");
+        mp_raise_ValueError("[CANMV]I2S:invalid align mode");
     }
     channle->align_mode = args[ARG_align_mode].u_int;
  
     //set mode
     if(args[ARG_mode].u_int >  I2S_RECEIVER )
     {
-        mp_raise_ValueError("[MAIXPY]I2S:invalid cycles");
+        mp_raise_ValueError("[CANMV]I2S:invalid cycles");
     }
     channle->mode = args[ARG_mode].u_int;
 
@@ -208,7 +208,7 @@ STATIC mp_obj_t Maix_i2s_set_sample_rate(void* self_, mp_obj_t sample_rate)
     uint32_t smp_rate = mp_obj_get_int(sample_rate);
     if(smp_rate > MAX_SAMPLE_RATE)
     {
-        mp_raise_ValueError("[MAIXPY]I2S:invalid sample rate");
+        mp_raise_ValueError("[CANMV]I2S:invalid sample rate");
     }
     int res = i2s_set_sample_rate(self->i2s_num,smp_rate);
 
@@ -253,12 +253,12 @@ STATIC mp_obj_t Maix_i2s_record(size_t n_args, const mp_obj_t *pos_args, mp_map_
     {
         if(audio_obj->audio.points > self->points_num)
         {
-            mp_raise_ValueError("[MAIXPY]I2S:Too many points");
+            mp_raise_ValueError("[CANMV]I2S:Too many points");
         }
         audio_obj->audio.points = args[ARG_points].u_int;
         char* audio_buf = m_new(uint32_t, audio_obj->audio.points);
         if (audio_buf == NULL) {
-            mp_raise_ValueError("[MAIXPY]I2S:create audio new buf error");
+            mp_raise_ValueError("[CANMV]I2S:create audio new buf error");
         }
         memcpy(audio_buf, self->buf, sizeof(uint32_t) * audio_obj->audio.points);
         audio_obj->audio.buf = audio_buf;
@@ -266,22 +266,22 @@ STATIC mp_obj_t Maix_i2s_record(size_t n_args, const mp_obj_t *pos_args, mp_map_
     else if(args[ARG_time].u_int > 0)
     {
         if(self->sample_rate <= 0)
-            mp_raise_ValueError("[MAIXPY]I2S:please set sample rate");
+            mp_raise_ValueError("[CANMV]I2S:please set sample rate");
         uint32_t record_sec = args[ARG_time].u_int;
         uint32_t smp_points = self->sample_rate * record_sec;
         if(smp_points > self->points_num)
-            mp_raise_ValueError("[MAIXPY]I2S:sampling size is out of bounds");
+            mp_raise_ValueError("[CANMV]I2S:sampling size is out of bounds");
         audio_obj->audio.points = smp_points;
         char* audio_buf = m_new(uint32_t, audio_obj->audio.points);
         if (audio_buf == NULL)
         {
-            mp_raise_ValueError("[MAIXPY]I2S:create audio new buf error");
+            mp_raise_ValueError("[CANMV]I2S:create audio new buf error");
         }
         memcpy(audio_buf, self->buf, sizeof(uint32_t) * smp_points);
         audio_obj->audio.buf = audio_buf;
     }else 
     {
-        mp_raise_ValueError("[MAIXPY]I2S:please input recording points or time");
+        mp_raise_ValueError("[CANMV]I2S:please input recording points or time");
     }
 
     //record 

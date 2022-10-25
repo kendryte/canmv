@@ -43,7 +43,7 @@
 
 // Architecture info
 #define OMV_ARCH_STR            "K210" // 33 chars max
-#define OMV_BOARD_TYPE          "Maix"
+#define OMV_BOARD_TYPE          "CanMV"
 
 // Flash sectors for the bootloader.
 // Flash FS sector, main FW sector, max sector.

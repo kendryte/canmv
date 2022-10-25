@@ -55,7 +55,7 @@ mp_obj_t modules_ultrasonic_make_new(const mp_obj_type_t *type, size_t n_args, s
 
 STATIC void modules_ultrasonic_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     modules_ultrasonic_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "[MAIXPY]ultrasonic:(%p) gpio=%d\r\n", self, self->gpio);
+    mp_printf(print, "[CANMV]ultrasonic:(%p) gpio=%d\r\n", self, self->gpio);
 }
 
 STATIC mp_obj_t modules_ultrasonic_measure(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {

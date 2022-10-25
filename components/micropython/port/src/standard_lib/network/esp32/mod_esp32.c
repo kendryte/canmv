@@ -347,7 +347,7 @@ STATIC mp_obj_t esp32_adc(size_t n_args, const mp_obj_t *pos_args) {
     }
     else
     {
-        mp_raise_ValueError("[MaixPy]: esp32 read adc failed!\r\n");
+        mp_raise_ValueError("[CanMV]: esp32 read adc failed!\r\n");
     }
 }
 

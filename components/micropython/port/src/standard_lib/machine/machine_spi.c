@@ -222,7 +222,7 @@ STATIC void machine_hw_spi_transfer(mp_obj_base_t *self_in, size_t len, const ui
     machine_hw_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     if (self->state == MACHINE_HW_SPI_STATE_DEINIT) {
-        mp_raise_msg(&mp_type_OSError, "[MAIXPY]SPI: transfer on deinitialized SPI");
+        mp_raise_msg(&mp_type_OSError, "[CANMV]SPI: transfer on deinitialized SPI");
         return;
     }
 #if MICROPY_PY_MACHINE_SW_SPI
@@ -248,7 +248,7 @@ STATIC void machine_hw_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_p
         mp_raise_OSError(ENOMEM);
     if(self->mode == MACHINE_SPI_MODE_MASTER)
     {
-        snprintf(temp,300,"[MAIXPY]SPI:(%p) id=%u, mode=%u, baudrate=%u, polarity=%u, phase=%u, bits=%u, firstbit=%u, sck=%d, mosi=%d, miso=%d",
+        snprintf(temp,300,"[CANMV]SPI:(%p) id=%u, mode=%u, baudrate=%u, polarity=%u, phase=%u, bits=%u, firstbit=%u, sck=%d, mosi=%d, miso=%d",
                 self, self->id, self->mode, self->baudrate, self->polarity,
                 self->phase, self->bits, self->firstbit,
                 self->pin_sck, self->pin_d[0], self->pin_d[1]);
@@ -327,27 +327,27 @@ STATIC void machine_hw_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_
                      allowed_args, args);
     //check args
     if(args[ARG_id].u_int == SPI_DEVICE_3 || args[ARG_id].u_int < 0)
-        mp_raise_ValueError("[MAIXPY]SPI: spi id error( > 0 & !=3 )");
+        mp_raise_ValueError("[CANMV]SPI: spi id error( > 0 & !=3 )");
     if(args[ARG_id].u_int == SPI_DEVICE_2) //TODO: slave mode support
-        mp_raise_NotImplementedError("[MAIXPY]SPI: SPI2 only for slave mode");
+        mp_raise_NotImplementedError("[CANMV]SPI: SPI2 only for slave mode");
     if(args[ARG_mode].u_int < MACHINE_SPI_MODE_MASTER || args[ARG_mode].u_int>=MACHINE_SPI_MODE_MAX)
-        mp_raise_ValueError("[MAIXPY]SPI: spi mode error");
+        mp_raise_ValueError("[CANMV]SPI: spi mode error");
     if( (args[ARG_mode].u_int==MACHINE_SPI_MODE_SLAVE)&& (args[ARG_id].u_int!=SPI_DEVICE_2) )
-        mp_raise_ValueError("[MAIXPY]SPI: slave mode only for SPI2");
+        mp_raise_ValueError("[CANMV]SPI: slave mode only for SPI2");
     if( args[ARG_mode].u_int != MACHINE_SPI_MODE_MASTER) //TODO: support 2/4/8(dual quad octal) lines mode
-        mp_raise_NotImplementedError("[MAIXPY]SPI: only standard mode supported yet");
+        mp_raise_NotImplementedError("[CANMV]SPI: only standard mode supported yet");
     if( args[ARG_baudrate].u_int<=0)
-        mp_raise_ValueError("[MAIXPY]SPI: baudrate(freq) value error");
+        mp_raise_ValueError("[CANMV]SPI: baudrate(freq) value error");
     if( args[ARG_polarity].u_int != 0 && args[ARG_polarity].u_int != 1)
-        mp_raise_ValueError("[MAIXPY]SPI: polarity should be 0 or 1");
+        mp_raise_ValueError("[CANMV]SPI: polarity should be 0 or 1");
     if( args[ARG_phase].u_int != 0 && args[ARG_phase].u_int != 1)
-        mp_raise_ValueError("[MAIXPY]SPI: ARG_phase should be 0 or 1");
+        mp_raise_ValueError("[CANMV]SPI: ARG_phase should be 0 or 1");
     if( args[ARG_bits].u_int <4 || args[ARG_bits].u_int > 32)
-        mp_raise_ValueError("[MAIXPY]SPI: bits should be 4~32");
+        mp_raise_ValueError("[CANMV]SPI: bits should be 4~32");
     if( args[ARG_firstbit].u_int != MACHINE_SPI_FIRSTBIT_LSB && args[ARG_firstbit].u_int != MACHINE_SPI_FIRSTBIT_MSB)
-        mp_raise_ValueError("[MAIXPY]SPI: firstbit should be SPI.LSB or SPI.MSB");
+        mp_raise_ValueError("[CANMV]SPI: firstbit should be SPI.LSB or SPI.MSB");
     if( args[ARG_firstbit].u_int == MACHINE_SPI_FIRSTBIT_LSB)//TODO: support LSB mode
-        mp_raise_NotImplementedError("[MAIXPY]SPI: only support MSB mode now");
+        mp_raise_NotImplementedError("[CANMV]SPI: only support MSB mode now");
     
     //check sck cs pin
     int sck=-1;
@@ -368,7 +368,7 @@ STATIC void machine_hw_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_
     // if( sck < 0 && cs[0]<0 && cs[1]<0 && cs[2]<0 && cs[3]<0 ) // not set
     //     valid = true; 
     // if(!valid)
-    //     mp_raise_ValueError("[MAIXPY]SPI: sck and cs(n) pin should be set or all not set");
+    //     mp_raise_ValueError("[CANMV]SPI: sck and cs(n) pin should be set or all not set");
     //check data pins
     if( args[ARG_mode].u_int == MACHINE_SPI_MODE_MASTER)// standard spi mode
     {
@@ -548,7 +548,7 @@ STATIC mp_obj_t mp_machine_spi_read(size_t n_args, const mp_obj_t *pos_args, mp_
     // else
     //     cs_valid = false;
     // if(!cs_valid)
-    //     mp_raise_ValueError("[MAIXPY]SPI: cs value error");
+    //     mp_raise_ValueError("[CANMV]SPI: cs value error");
 
     vstr_t vstr;
     vstr_init_len(&vstr, mp_obj_get_int(pos_args[1]));
@@ -583,7 +583,7 @@ STATIC mp_obj_t mp_machine_spi_readinto(size_t n_args, const mp_obj_t *pos_args,
     // else
     //     cs_valid = false;
     // if(!cs_valid)
-    //     mp_raise_ValueError("[MAIXPY]SPI: cs value error");
+    //     mp_raise_ValueError("[CANMV]SPI: cs value error");
 
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(pos_args[1], &bufinfo, MP_BUFFER_WRITE);
@@ -616,7 +616,7 @@ STATIC mp_obj_t mp_machine_spi_write(size_t n_args, const mp_obj_t *pos_args, mp
     // else
     //     cs_valid = false;
     // if(!cs_valid)
-    //     mp_raise_ValueError("[MAIXPY]SPI: cs value error");
+    //     mp_raise_ValueError("[CANMV]SPI: cs value error");
 
     mp_buffer_info_t src;
     if(mp_obj_get_type(pos_args[1]) == &mp_type_int)
@@ -658,14 +658,14 @@ STATIC mp_obj_t mp_machine_spi_write_readinto(size_t n_args, const mp_obj_t *pos
     // else
     //     cs_valid = false;
     // if(!cs_valid)
-    //     mp_raise_ValueError("[MAIXPY]SPI: cs value error");
+    //     mp_raise_ValueError("[CANMV]SPI: cs value error");
 
     mp_buffer_info_t src;
     mp_get_buffer_raise(pos_args[1], &src, MP_BUFFER_READ);
     mp_buffer_info_t dest;
     mp_get_buffer_raise(pos_args[2], &dest, MP_BUFFER_WRITE);
     if (src.len != dest.len) {
-        mp_raise_ValueError("[MAIXPY]SPI: buffers must be the same length");
+        mp_raise_ValueError("[CANMV]SPI: buffers must be the same length");
     }
     mp_machine_spi_transfer(self, src.len, src.buf, dest.buf, cs);
     return mp_const_none;

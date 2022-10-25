@@ -1,39 +1,17 @@
-<img height=230 src="assets/image/maixpy.png">
+<img height=230 src="assets/image/CanMV_logo_800x260.png">
 
 <br />
 
 <div class="title_pic">
-    <img src="assets/image/sipeed_logo.svg"  style="margin-right: 10px;" height=45> <img src="assets/image/micropython.png" height=50>
+    <img src="assets/image/CanMV_logo_800x260.svg"  style="margin-right: 10px;" height=45> <img src="assets/image/micropython.png" height=50>
 </div>
 
 <br />
 <br />
 
-<a href="https://github.com/sipeed/MaixPy/actions">
-    <img src="https://img.shields.io/github/workflow/status/Sipeed/MaixPy/compile%20test%20and%20publish?style=for-the-badge" alt="Master branch build status" />
-</a>
-<a href="http://dl.sipeed.com/MAIX/MaixPy/release/master/">
-    <img src="https://img.shields.io/badge/download-master-ff69b4.svg?style=for-the-badge" alt="master build firmware" />
-</a>
-<a href="https://github.com/sipeed/MaixPy/releases">
-    <img src="https://img.shields.io/github/release/sipeed/maixpy.svg?style=for-the-badge" alt="Latest release version" />
-</a>
-<a href="https://github.com/sipeed/MaixPy/blob/master/LICENSE.md">
+<a href="LICENSE.md">
     <img src="https://img.shields.io/badge/license-Apache%20v2.0-orange.svg?style=for-the-badge" alt="License" />
 </a>
-
-<br />
-
-<a href="https://github.com/sipeed/MaixPy/issues?utf8=%E2%9C%93&q=is%3Aissue+label%3A%22good+first+issue%22">
-    <img src="https://img.shields.io/github/issues/sipeed/maixpy/good%20first%20issue.svg?style=for-the-badge" alt="Good first issues" />
-</a>
-<a href="https://github.com/sipeed/MaixPy/issues?q=is%3Aopen+is%3Aissue+label%3Abug">
-    <img src="https://img.shields.io/github/issues/sipeed/maixpy/bug.svg?style=for-the-badge" alt="Bug issues" />
-</a>
-<a href="https://github.com/sipeed/MaixPy/issues?q=is%3Aissue+is%3Aopen+label%3Aenhancement">
-    <img src="https://img.shields.io/github/issues/sipeed/maixpy/enhancement.svg?style=for-the-badge" alt="Enhancement issues" />
-</a>
-
 
 
 <br/>
@@ -44,13 +22,12 @@
 <br />
 <br />
 
-**Let's Sipeed up, Maximize AI's power!**
+**CanMV, makes AIOT easier!**
 
-**MaixPy, makes AIOT easier!**
+This implementation was based on Sipeed MaixPy, but it diverged from it and is now a completely independent project.
 
-Maixpy is designed to make AIOT programming easier, based on the [Micropython](http://www.micropython.org) syntax, running on a very powerful embedded AIOT chip [K210](https://kendryte.com).
+CanMV is designed to make AIOT programming easier, based on the [Micropython](http://www.micropython.org) syntax, running on a very powerful embedded AIOT chip [K210](https://kendryte.com).
 
-There are many things you can do with MaixPy, please refer to [here](https://maixpy.sipeed.com/en/others/what_maix_do.html)
 
 > K210 brief: 
 > * Image Recognition with hardware AI acceleration
@@ -63,7 +40,6 @@ There are many things you can do with MaixPy, please refer to [here](https://mai
 > * FPIOA (Periphrals can map to any pins)
 > * Peripherals: I2C, SPI, I2S, WDT, TIMER, RTC, UART, GPIO etc.
 
-<img src="assets/image/maix_bit.png" height=500 alt="maix bit"/>
 
 
 ## Simple code
@@ -95,55 +71,58 @@ while True:
     lcd.display(img)
 ```
 
-Use AI model to recognize object:
+Use AI model to detect face:
 ```python
-import KPU as kpu
-import sensor
+import sensor, image, time, lcd
+from maix import KPU
+import gc
 
-sensor.reset()
-sensor.set_pixformat(sensor.RGB565)
-sensor.set_framesize(sensor.QVGA)
-sensor.set_windowing((224, 224))
+lcd.init()
+sensor.reset()                      # Reset and initialize the sensor. It will
+                                    # run automatically, call sensor.run(0) to stop
+sensor.set_pixformat(sensor.RGB565) # Set pixel format to RGB565 (or GRAYSCALE)
+sensor.set_framesize(sensor.QVGA)   # Set frame size to QVGA (320x240)
+sensor.skip_frames(time = 1000)     # Wait for settings take effect.
+clock = time.clock()                # Create a clock object to track the FPS.
 
-model = kpu.load("/sd/mobilenet.kmodel")  # load model
-while(True):
-    img = sensor.snapshot()               # take picture by camera
-    out = kpu.forward(task, img)[:]       # inference, get one-hot output
-    print(max(out))                       # print max probability object ID
+anchor = (0.1075, 0.126875, 0.126875, 0.175, 0.1465625, 0.2246875, 0.1953125, 0.25375, 0.2440625, 0.351875, 0.341875, 0.4721875, 0.5078125, 0.6696875, 0.8984375, 1.099687, 2.129062, 2.425937)
+kpu = KPU()
+kpu.load_kmodel("/sd/face_detect_320x240.kmodel")
+kpu.init_yolo2(anchor, anchor_num=9, img_w=320, img_h=240, net_w=320 , net_h=240 ,layer_w=10 ,layer_h=8, threshold=0.5, nms_value=0.2, classes=1)
+
+while True:
+    clock.tick()                    # Update the FPS clock.
+    img = sensor.snapshot()
+    kpu.run_with_output(img)
+    dect = kpu.regionlayer_yolo2()
+    fps = clock.fps()
+    if len(dect) > 0:
+        for l in dect :
+            a = img.draw_rectangle(l[0],l[1],l[2],l[3], color=(0, 255, 0)) # draw face box
+
+    a = img.draw_string(0, 0, "%2.1ffps" %(fps), color=(0, 60, 128), scale=2.0)
+    lcd.display(img)
+    gc.collect()
+
+kpu.deinit()
 ```
 > please read doc before run it
 
 ## Release
 
-See [Releases page](https://github.com/sipeed/MaixPy/releases)
 
-Get latest commit firmware: [master firmware](http://dl.sipeed.com/MAIX/MaixPy/release/master/)
-
-Custom your firmware, see [build](#build-from-source) or use [online custom tool](#use-online-compilation-tools-to-customize-firmware)
 
 ## Documentation
 
-Doc refer to [maixpy.sipeed.com](https://maixpy.sipeed.com)
+Doc refer to [canmv document](https://developer.canaan-creative.com/index.html?channel=developer#/word)
 
 ## Examples
 
-[MaixPy_scripts](https://github.com/sipeed/MaixPy_scripts)
+[canmv_examples](https://github.com/kendryte/canmv_examples)
 
 ## Build From Source
 
 See [build doc](build.md)
-
-The historic version see [historic branch](https://github.com/sipeed/MaixPy/tree/historic) (No longer maintained, just keep commit history)
-
-## Use online compilation tools to customize firmware
-
-Go to [maixhub.com](https://www.maixhub.com/compile.html) to use online compilation to customize the functions you need
-
-
-## Model hub: Maixhub.com
-
-Find more models on [Maixhub.com](https://maixhub.com)
-
 
 ## License
 
@@ -153,17 +132,17 @@ See [LICENSE](LICENSE.md) file
 ## Other: As C SDK for C developers
 
 
-In addition to the source code of the `MaixPy` project, since `MaixPy` exists as a component, it can be configured to not participate in compilation, so this repository can also be developed as `C SDK`. For the usage details, see [Building Documentation](build.md), which can be started by compiling and downloading `projects/hello_world`.
+In `CanMV` project, since `micropython` exists as a component, it can be configured to not participate in compilation, so this repository can also be developed as `C SDK`. For the usage details, see [Building Documentation](build.md), which can be started by compiling and downloading `projects/hello_world`.
 
 The compilation process is briefly as follows:
 
 ```
-wget http://dl.cdn.sipeed.com/kendryte-toolchain-ubuntu-amd64-8.2.0-20190409.tar.xz
+wget https://github.com/kendryte/kendryte-gnu-toolchain/releases/download/v8.2.0-20190409/kendryte-toolchain-ubuntu-amd64-8.2.0-20190409.tar.xz
 sudo tar -Jxvf kendryte-toolchain-ubuntu-amd64-8.2.0-20190409.tar.xz -C /opt
 cd projects/hello_world
 python3 project.py menuconfig
 python3 project.py build
-python3 project.py flash -B dan -b 1500000 -p /dev/ttyUSB0 -t
+python3 project.py flash -B auto -b 1500000 -p /dev/ttyUSB0 -t
 ```
 
 

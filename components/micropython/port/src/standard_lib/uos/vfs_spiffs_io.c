@@ -146,7 +146,7 @@ int mp_module_spiffs_mount(spiffs* fs,spiffs_config* cfg)
 					       spiffs_cache_buf,
 						   (cfg->log_block_size/cfg->log_page_size)*4,
 						   0);
-	mp_printf(&mp_plat_print, "[MAIXPY]:Spiffs Mount %s \n", res?"failed":"successful");
+	mp_printf(&mp_plat_print, "[CANMV]:Spiffs Mount %s \n", res?"failed":"successful");
 	return res;
 }
 
@@ -154,10 +154,10 @@ int mp_module_spiffs_format(spiffs* fs)
 {
 	
 	SPIFFS_unmount(fs);
-	mp_printf(&mp_plat_print, "[MAIXPY]:Spiffs Unmount.\n");
-	mp_printf(&mp_plat_print, "[MAIXPY]:Spiffs Formating...\n");
+	mp_printf(&mp_plat_print, "[CANMV]:Spiffs Unmount.\n");
+	mp_printf(&mp_plat_print, "[CANMV]:Spiffs Formating...\n");
 	s32_t format_res=SPIFFS_format(fs);
-	mp_printf(&mp_plat_print, "[MAIXPY]:Spiffs Format %s \n",format_res?"failed":"successful");
+	mp_printf(&mp_plat_print, "[CANMV]:Spiffs Format %s \n",format_res?"failed":"successful");
 	return format_res;
 }
 

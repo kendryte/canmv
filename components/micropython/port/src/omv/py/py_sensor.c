@@ -150,6 +150,7 @@ static mp_obj_t py_sensor_skip_frames(size_t n_args, const mp_obj_t *args, mp_ma
     {
         while ((systick_current_millis() - millis) < time)
         {
+            mp_hal_delay_ms(1);
             // 32-bit math handles wrap arrounds...
             if (sensor.snapshot(&sensor, &image, NULL, true) == -1)
             {
@@ -161,6 +162,7 @@ static mp_obj_t py_sensor_skip_frames(size_t n_args, const mp_obj_t *args, mp_ma
     {
         for (int i = 0, j = mp_obj_get_int(args[0]); i < j; i++)
         {
+            mp_hal_delay_ms(1);
             if ((kw_arg != NULL) && ((systick_current_millis() - millis) >= time))
             {
                 break;

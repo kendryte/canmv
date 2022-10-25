@@ -40,7 +40,7 @@ const mp_obj_type_t Maix_audio_type;
 STATIC void Maix_audio_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     Maix_audio_obj_t *self = MP_OBJ_TO_PTR(self_in);
     audio_t* audio_obj = &self->audio;
-    mp_printf(print, "[MAIXPY]audio:(points=%u, buffer addr=%p)",
+    mp_printf(print, "[CANMV]audio:(points=%u, buffer addr=%p)",
         audio_obj->points,audio_obj->buf);
 }
 
@@ -107,7 +107,7 @@ STATIC mp_obj_t Maix_audio_init_helper(Maix_audio_obj_t *self, size_t n_args, co
             audio_obj->record_obj = m_new(wav_encode_t,1);//new format obj
             if(NULL == audio_obj->record_obj)
             {
-                mp_printf(&mp_plat_print, "[MAIXPY]: Can not create encode object\n");
+                mp_printf(&mp_plat_print, "[CANMV]: Can not create encode object\n");
                 m_del(wav_encode_t,audio_obj->record_obj,1);
                 vfs_internal_close(audio_obj->fp,&close_code);
             }
@@ -131,7 +131,7 @@ STATIC mp_obj_t Maix_audio_init_helper(Maix_audio_obj_t *self, size_t n_args, co
             // return mp_const_none;
             if(err_code != 0)
             {
-                mp_printf(&mp_plat_print, "[MAIXPY]: seek error  close file\n");
+                mp_printf(&mp_plat_print, "[CANMV]: seek error  close file\n");
                 m_del(wav_encode_t,audio_obj->record_obj,1);
                 vfs_internal_close(audio_obj->fp,&close_code);
                 mp_raise_OSError(err_code);
@@ -213,7 +213,7 @@ STATIC mp_obj_t Maix_audio_play_process(mp_obj_t self_in,mp_obj_t I2S_dev) {
     uint32_t file_size = vfs_internal_size(audio->fp);
     if(0 == file_size)
     {
-        mp_printf(&mp_plat_print, "[MAIXPY]: file length is 0\n");
+        mp_printf(&mp_plat_print, "[CANMV]: file length is 0\n");
         return mp_const_false;
     }
     switch(audio->format)
@@ -288,14 +288,14 @@ STATIC mp_obj_t Maix_audio_record_process(size_t n_args, const mp_obj_t * pos_ar
     uint32_t file_size = vfs_internal_size(audio->fp);
     if(0 != file_size)
     {
-        mp_printf(&mp_plat_print, "[MAIXPY]: file length isn't empty\n");
+        mp_printf(&mp_plat_print, "[CANMV]: file length isn't empty\n");
         return mp_const_false;
     }
     switch(audio->format)
     {
         case AUDIO_WAV_FMT:
             if(args[ARG_channels].u_int > 2){//get channel num
-                mp_printf(&mp_plat_print, "[MAIXPY]: The number of channels must be less than or equal to 2\n");
+                mp_printf(&mp_plat_print, "[CANMV]: The number of channels must be less than or equal to 2\n");
                 return mp_const_false;
             }
             return wav_record_process(audio,args[ARG_channels].u_int);

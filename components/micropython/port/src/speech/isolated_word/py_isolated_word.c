@@ -68,7 +68,7 @@ STATIC mp_obj_t speech_isolated_word_init_helper(isolated_word_obj_t *self_in, s
 
     self->mfcc_dats = m_new(v_ftr_tag, args[ARG_size].u_int);
     if (self->mfcc_dats == NULL) {
-        mp_raise_ValueError("[MAIXPY] mfcc_dats malloc fail (not enough memory)");
+        mp_raise_ValueError("[CANMV] mfcc_dats malloc fail (not enough memory)");
     }
     self->size = args[ARG_size].u_int;
     self->device_num = args[ARG_i2s].u_int;
@@ -131,7 +131,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(speech_isolated_word_state_obj, speech_isolated_word_s
 
 STATIC void speech_isolated_word_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     isolated_word_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "[MAIXPY] isolated_word:(%p)\r\n mfcc_dats=%p\r\n size=%d\r\n i2s_device_number_t=%d\r\n dmac_channel_number_t=%d\r\n", self, self->mfcc_dats, self->size, self->device_num, self->channel_num);
+    mp_printf(print, "[CANMV] isolated_word:(%p)\r\n mfcc_dats=%p\r\n size=%d\r\n i2s_device_number_t=%d\r\n dmac_channel_number_t=%d\r\n", self, self->mfcc_dats, self->size, self->device_num, self->channel_num);
 }
 
 STATIC mp_obj_t speech_isolated_word_set_threshold(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)

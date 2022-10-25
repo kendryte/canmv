@@ -506,7 +506,7 @@ STATIC const mp_pin_p_t pin_pin_p = {
 
 const mp_obj_type_t Maix_gpio_type = {
     { &mp_type_type },
-    .name = MP_QSTR_Pin,
+    .name = MP_QSTR_GPIO,
     .print = Maix_gpio_print,
     .make_new = mp_maixpy_pin_make_new,
     .call = Maix_gpio_call,

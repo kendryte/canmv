@@ -389,11 +389,11 @@ int sensro_ov_detect(sensor_t *sensor)
                 /*ov9650_init*/
                 break;
             case OV2640_ID:
-                mp_printf(&mp_plat_print, "[MAIXPY]: find ov2640\n");
+                mp_printf(&mp_plat_print, "[CANMV]: find ov2640\n");
                 init_ret = ov2640_init(sensor);
                 break;
             case OV5640_ID:
-                mp_printf(&mp_plat_print, "[MAIXPY]: find ov5640\n");
+                mp_printf(&mp_plat_print, "[CANMV]: find ov5640\n");
                 init_ret = ov5640_init(sensor);
                 break;
             // case OV7725_ID:
@@ -402,15 +402,15 @@ int sensro_ov_detect(sensor_t *sensor)
             //     init_ret = ov7725_init(sensor);
             //     break;
             case OV5642_ID:
-                mp_printf(&mp_plat_print, "[MAIXPY]: find ov5642\n");
+                mp_printf(&mp_plat_print, "[CANMV]: find ov5642\n");
                 init_ret = ov5642_init(sensor);
                 break;
             case OV7740_ID:
-                mp_printf(&mp_plat_print, "[MAIXPY]: find ov7740\n");
+                mp_printf(&mp_plat_print, "[CANMV]: find ov7740\n");
                 init_ret = ov7740_init(sensor);
                 break;
             case OV3660_ID:
-                mp_printf(&mp_plat_print, "[MAIXPY]: find ov3660\n");
+                mp_printf(&mp_plat_print, "[CANMV]: find ov3660\n");
                 init_ret = ov3660_init(sensor);
                 break;
             default:
@@ -445,7 +445,7 @@ uint16_t sensro_gc_scan()
 int sensro_gc_detect(sensor_t *sensor, bool pwnd)
 {
     uint16_t id = 0;
-    // mp_printf(&mp_plat_print, "[MAIXPY]: find gc sensor\n");
+    // mp_printf(&mp_plat_print, "[CANMV]: find gc sensor\n");
     if (pwnd)
         DCMI_PWDN_LOW(); //enable gc0328 要恢复 normal 工作模式，需将 PWDN pin 接入低电平即可，同时写入初始化寄存器即可
     DCMI_RESET_LOW();    //reset gc0328
@@ -519,7 +519,7 @@ int sensro_gc_detect(sensor_t *sensor, bool pwnd)
     }
     else
     {
-        mp_printf(&mp_plat_print, "[MAIXPY]: sensor id = %x\n", id);
+        mp_printf(&mp_plat_print, "[CANMV]: sensor id = %x\n", id);
         sensor->snapshot = sensor_snapshot;
         sensor->flush = sensor_flush;
         sensor->chip_id = id;
@@ -527,11 +527,11 @@ int sensro_gc_detect(sensor_t *sensor, bool pwnd)
         {
         case GC0328_ID:
             sensor->slv_addr = GC0328_ADDR;
-            mp_printf(&mp_plat_print, "[MAIXPY]: find gc0328\n");
+            mp_printf(&mp_plat_print, "[CANMV]: find gc0328\n");
             gc0328_init(sensor);
             break;
         case GC2145_ID:
-            mp_printf(&mp_plat_print, "[MAIXPY]: find gc2145\n");
+            mp_printf(&mp_plat_print, "[CANMV]: find gc2145\n");
             sensor->slv_addr = GC2145_ADDR;
             gc2145_init(sensor);
         default:
@@ -555,7 +555,7 @@ int sensro_mt_detect(sensor_t *sensor, bool pwnd)
     }
     else
     {
-        // mp_printf(&mp_plat_print, "[MAIXPY]: find mt9d111\n");
+        // mp_printf(&mp_plat_print, "[CANMV]: find mt9d111\n");
         sensor->slv_addr = MT9D111_CONFIG_I2C_ID;
         sensor->chip_id = id;
         sensor->snapshot = sensor_snapshot;
@@ -611,7 +611,7 @@ int sensor_init_dvp(mp_int_t freq, bool default_freq)
     if ((limit == false || sensor.choice_dev == 1) && 0 == sensro_ov_detect(&sensor))
     {
         // find ov sensor
-        mp_printf(&mp_plat_print, "[MAIXPY]: find ov sensor\n");
+        mp_printf(&mp_plat_print, "[CANMV]: find ov sensor\n");
         pwdn_lock = 1;
     }
     else if ((limit == false || sensor.choice_dev == 2) && 0 == sensro_gc_detect(&sensor, true))
@@ -622,15 +622,15 @@ int sensor_init_dvp(mp_int_t freq, bool default_freq)
     else if ( (limit == false || sensor.choice_dev == 3) && 0 == sensro_mt_detect(&sensor, true))
     {
         //find mt sensor
-        mp_printf(&mp_plat_print, "[MAIXPY]: find mt sensor\n");
+        mp_printf(&mp_plat_print, "[CANMV]: find mt sensor\n");
         cambus_set_writeb_delay(2);
     }
     else
     {
-        mp_printf(&mp_plat_print, "[MAIXPY]: no sensor\n");
+        mp_printf(&mp_plat_print, "[CANMV]: no sensor\n");
         init_ret = -1;
     }
-    // mp_printf(&mp_plat_print, "[MAIXPY]: limit = %x sensor.choice_dev = %x \n", limit, sensor.choice_dev);
+    // mp_printf(&mp_plat_print, "[CANMV]: limit = %x sensor.choice_dev = %x \n", limit, sensor.choice_dev);
     if (default_freq && sensor.chip_id == OV7740_ID)
     {
         dvp_set_xclk_rate(22000000);
@@ -695,7 +695,7 @@ int sensor_reset(mp_int_t freq, bool default_freq, bool set_regs, bool double_bu
     sensor.gainceiling = 0;
     if (sensor.reset == NULL)
     {
-        // mp_printf(&mp_plat_print, "[MAIXPY]: sensor reset function is null\n");
+        // mp_printf(&mp_plat_print, "[CANMV]: sensor reset function is null\n");
         return -1;
     }
     // Call sensor-specific reset function
@@ -714,7 +714,7 @@ int sensor_reset(mp_int_t freq, bool default_freq, bool set_regs, bool double_bu
     {
         sensor_run(1);
     }
-    // mp_printf(&mp_plat_print, "[MAIXPY]: exit sensor_reset\n");
+    // mp_printf(&mp_plat_print, "[CANMV]: exit sensor_reset\n");
     return 0;
 }
 
@@ -780,7 +780,7 @@ int binocular_sensor_scan()
     sensor.slv_addr = cambus_scan();
     if (sensor.slv_addr == 0)
     {
-        mp_printf(&mp_plat_print, "[MAIXPY]: Can not find sensor first\n");
+        mp_printf(&mp_plat_print, "[CANMV]: Can not find sensor first\n");
         /* Sensor has been held in reset,
            so the reset line is active low */
         sensor.reset_pol = ACTIVE_LOW;
@@ -791,7 +791,7 @@ int binocular_sensor_scan()
         sensor.slv_addr = cambus_scan();
         if (sensor.slv_addr == 0)
         {
-            mp_printf(&mp_plat_print, "[MAIXPY]: No sensor\n");
+            mp_printf(&mp_plat_print, "[CANMV]: No sensor\n");
             return -1;
         }
     }
@@ -801,7 +801,7 @@ int binocular_sensor_scan()
     mp_hal_delay_ms(10);
     if (sensor.slv_addr != cambus_scan())
     {
-        mp_printf(&mp_plat_print, "[MAIXPY]: sensors don't match\n");
+        mp_printf(&mp_plat_print, "[CANMV]: sensors don't match\n");
         return -2;
     }
     // Clear sensor chip ID.
@@ -852,21 +852,21 @@ int binocular_sensor_scan()
                 /*ov9650_init*/
                 break;
             case OV2640_ID:
-                mp_printf(&mp_plat_print, "[MAIXPY]: find ov2640\n");
+                mp_printf(&mp_plat_print, "[CANMV]: find ov2640\n");
                 init_ret = ov2640_init(&sensor);
                 break;
             case OV5640_ID:
-                mp_printf(&mp_plat_print, "[MAIXPY]: find ov5640\n");
+                mp_printf(&mp_plat_print, "[CANMV]: find ov5640\n");
                 init_ret = ov5640_init(&sensor);
                 break;
             case OV7740_ID:
-                mp_printf(&mp_plat_print, "[MAIXPY]: find ov7740\n");
+                mp_printf(&mp_plat_print, "[CANMV]: find ov7740\n");
                 init_ret = ov7740_init(&sensor);
                 break;
             case OV7725_ID:
                 /*ov7725_init*/
             default:
-                mp_printf(&mp_plat_print, "[MAIXPY]: Sensor is not supported.");
+                mp_printf(&mp_plat_print, "[CANMV]: Sensor is not supported.");
                 return -3;
             }
         }
@@ -920,24 +920,24 @@ int binocular_sensor_reset(mp_int_t freq)
         if (0 == sensro_gc_detect(&sensor, false))
         {
             //find gc0328 sensor
-            mp_printf(&mp_plat_print, "[MAIXPY]: sensor1 find gc0328\n");
+            mp_printf(&mp_plat_print, "[CANMV]: sensor1 find gc0328\n");
             cambus_set_writeb_delay(2);
         }
         else
         {
-            mp_printf(&mp_plat_print, "[MAIXPY]: scan sensor1 error\n");
+            mp_printf(&mp_plat_print, "[CANMV]: scan sensor1 error\n");
             return -1;
         }
         DCMI_PWDN_LOW();
         if (0 == sensro_gc_detect(&sensor, false))
         {
             //find gc0328 sensor
-            mp_printf(&mp_plat_print, "[MAIXPY]: sensor2 find gc0328\n");
+            mp_printf(&mp_plat_print, "[CANMV]: sensor2 find gc0328\n");
             cambus_set_writeb_delay(2);
         }
         else
         {
-            mp_printf(&mp_plat_print, "[MAIXPY]: scan sensor2 error\n");
+            mp_printf(&mp_plat_print, "[CANMV]: scan sensor2 error\n");
             return -1;
         }
     }
@@ -983,7 +983,7 @@ int binocular_sensor_reset(mp_int_t freq)
 
     if (sensor.reset(&sensor) != 0)
     { //rst reg, set default cfg.
-        mp_printf(&mp_plat_print, "[MAIXPY]: First sensor reset failed\n");
+        mp_printf(&mp_plat_print, "[CANMV]: First sensor reset failed\n");
         return -1;
     }
 
@@ -997,14 +997,14 @@ int binocular_sensor_reset(mp_int_t freq)
 
     if (sensor.reset(&sensor) != 0)
     { //rst reg, set default cfg.
-        mp_printf(&mp_plat_print, "[MAIXPY]: Second sensor reset failed\n");
+        mp_printf(&mp_plat_print, "[CANMV]: Second sensor reset failed\n");
         return -1;
     }
 
     // Disable dvp  IRQ before all cfg done
     sensor_init_irq();
     sensor.reset_set = true;
-    // mp_printf(&mp_plat_print, "[MAIXPY]: exit sensor_reset\n");
+    // mp_printf(&mp_plat_print, "[CANMV]: exit sensor_reset\n");
     return 0;
 }
 
@@ -1018,7 +1018,7 @@ int sensor_sleep(int enable)
     if (sensor.sleep == NULL || sensor.sleep(&sensor, enable) != 0)
     {
         //NOTE: Operation not supported
-        mp_printf(&mp_plat_print, "[MAIXPY]: Operation not supported.");
+        mp_printf(&mp_plat_print, "[CANMV]: Operation not supported.");
         return -1;
     }
     return 0;
@@ -1044,7 +1044,7 @@ int sensor_read_reg(uint8_t reg_addr)
     if (sensor.read_reg == NULL)
     {
         //NOTE: Operation not supported
-        mp_printf(&mp_plat_print, "[MAIXPY]: Operation not supported.");
+        mp_printf(&mp_plat_print, "[CANMV]: Operation not supported.");
         return -1;
     }
     return sensor.read_reg(&sensor, reg_addr);
@@ -1055,7 +1055,7 @@ int sensor_write_reg(uint8_t reg_addr, uint16_t reg_data)
     if (sensor.write_reg == NULL)
     {
         //NOTE: Operation not supported
-        mp_printf(&mp_plat_print, "[MAIXPY]: Operation not supported.");
+        mp_printf(&mp_plat_print, "[CANMV]: Operation not supported.");
         return -1;
     }
     return sensor.write_reg(&sensor, reg_addr, reg_data);
@@ -1644,7 +1644,7 @@ int sensor_snapshot(sensor_t *sensor, image_t *image, streaming_cb_t streaming_c
         //
         if (MAIN_FB()->bpp > 3)
         {
-            mp_printf(&mp_plat_print, "[MAIXPY]: %s | bpp error\n", __func__);
+            mp_printf(&mp_plat_print, "[CANMV]: %s | bpp error\n", __func__);
             return -1;
         }
 

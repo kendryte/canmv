@@ -49,7 +49,7 @@ typedef struct _machine_wdt_obj_t {
 STATIC void machine_wdt_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_wdt_obj_t *self = self_in;
     mp_printf(print, 
-        "[MAIXPY]WDT:(%p; id=%d, timeout=%d, callback=%p, context=%p)",
+        "[CANMV]WDT:(%p; id=%d, timeout=%d, callback=%p, context=%p)",
         self, self->id, self->timeout, self->callback, self->context);
 }
 

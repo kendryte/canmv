@@ -1,16 +1,15 @@
-Build Maixpy from source code
+Build CanMV from source code
 =========
 
 Only support Linux(recommend) and macOS
 
-And you can use online build tool here: https://www.maixhub.com/compile.html
 
 ## Get source code
 
 * Clone by https link
 
 ```
-git clone https://github.com/sipeed/MaixPy.git
+git clone https://github.com/kendryte/canmv.git
 ```
 
 * Then get submodules
@@ -62,14 +61,14 @@ The `cmake` version should be at least `v3.9`, if not, please install latest `cm
 
 ## Download toolchain
 
-Download the latest toolchain from [here](https://github.com/kendryte/kendryte-gnu-toolchain/releases) (macOS and linux), or [kendryte-toolchain-ubuntu-amd64-8.2.0-20190409.tar.xz(CDN)](http://dl.cdn.sipeed.com/kendryte-toolchain-ubuntu-amd64-8.2.0-20190409.tar.xz) (for linux)
+Download the latest toolchain from [here](https://github.com/kendryte/kendryte-gnu-toolchain/releases) (macOS and linux), or [kendryte-toolchain-ubuntu-amd64-8.2.0-20190409.tar.xz](https://github.com/kendryte/kendryte-gnu-toolchain/releases/download/v8.2.0-20190409/kendryte-toolchain-ubuntu-amd64-8.2.0-20190409.tar.xz) (for linux)
 
 And extract to `/opt/kendryte-toolchain/`
 
 For example:
 
 ```
-wget http://dl.cdn.sipeed.com/kendryte-toolchain-ubuntu-amd64-8.2.0-20190409.tar.xz
+wget https://github.com/kendryte/kendryte-gnu-toolchain/releases/download/v8.2.0-20190409/kendryte-toolchain-ubuntu-amd64-8.2.0-20190409.tar.xz
 sudo tar -Jxvf kendryte-toolchain-ubuntu-amd64-8.2.0-20190409.tar.xz -C /opt
 ls /opt/kendryte-toolchain/bin
 ```
@@ -79,15 +78,13 @@ ls /opt/kendryte-toolchain/bin
 * Switch path to `hello_world` project directory
 
 ```
-cd MaixPy
 cd projects/hello_world
 ```
 
-or maixpy project
+or canmv project
 
 ```
-cd MaixPy
-cd projects/maixpy_k210
+cd projects/canmv_k210
 ```
 
 * Configure toolchain path
@@ -150,10 +147,10 @@ to rebuild make system after you add/delete source files or edit kconfig files
 ## Flash (Burn) to board
 
 
-For example, you have one `Maix Go` board:
+For example, you have one `CanMV k210` board:
 
 ```
-python3 project.py -B goE -p /dev/ttyUSB1 -b 1500000 flash
+python3 project.py -B auto -p /dev/ttyACM0 -b 1500000 flash
 ```
 
 For `Maixduino` board:

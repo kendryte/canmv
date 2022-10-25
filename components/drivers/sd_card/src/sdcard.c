@@ -221,14 +221,14 @@ static uint8_t sd_get_csdregister(SD_CSD *SD_csd)
     sd_send_cmd(SD_CMD9, 0, 0);
     /*!< Wait for response in the R1 format (0x00 is no errors) */
     uint8_t resp = sd_get_response();
-    debug_print("[MaixPy] %s | resp = %x \r\n", __func__, resp);
+    debug_print("[CanMV] %s | resp = %x \r\n", __func__, resp);
     if (resp != 0x00)
     {
         sd_end_cmd();
         return 0xFF;
     }
     resp = sd_get_response();
-    debug_print("[MaixPy] %s | resp = %x \r\n", __func__, resp);
+    debug_print("[CanMV] %s | resp = %x \r\n", __func__, resp);
     if (resp != SD_START_DATA_SINGLE_BLOCK_READ)
     {
         sd_end_cmd();
@@ -388,12 +388,12 @@ static uint8_t sd_get_cardinfo(SD_CardInfo *cardinfo)
 {
     if (sd_get_csdregister(&(cardinfo->SD_csd)))
     {
-        debug_print("[MaixPy] %s | sd_get_csdregister failed\r\n",__func__);
+        debug_print("[CanMV] %s | sd_get_csdregister failed\r\n",__func__);
         return 0xFF;
     }
     if (sd_get_cidregister(&(cardinfo->SD_cid)))
     {
-        debug_print("[MaixPy] %s | sd_get_cidregister failed\r\n",__func__);
+        debug_print("[CanMV] %s | sd_get_cidregister failed\r\n",__func__);
         return 0xFF;
     }
     if (2 == sd_version)
@@ -446,7 +446,7 @@ uint8_t sd_init(void)
     sd_end_cmd();
     if (result != 0x01)
     {
-        debug_print("[MaixPy] %s | SD_CMD0 is %X\r\n",__func__,result);
+        debug_print("[CanMV] %s | SD_CMD0 is %X\r\n",__func__,result);
         return 0xFF;
     }
 
@@ -457,7 +457,7 @@ uint8_t sd_init(void)
     sd_end_cmd();
     if (result != 0x01)
     {
-        debug_print("[MaixPy] %s | SD_CMD8 is %X\r\n",__func__,result);
+        debug_print("[CanMV] %s | SD_CMD8 is %X\r\n",__func__,result);
         return 0xFF;
     }
     index = 0xFF;
@@ -489,12 +489,12 @@ uint8_t sd_init(void)
         result = sd_get_response();
         sd_read_data(frame, 4);
         sd_end_cmd();
-        debug_print("[MaixPy] %s |  frame[0] = %x \r\n", __func__, frame[0]);
-        debug_print("[MaixPy] %s |  frame[1] = %x \r\n", __func__, frame[1]);
-        debug_print("[MaixPy] %s |  frame[2] = %x \r\n", __func__, frame[2]);
-        debug_print("[MaixPy] %s |  frame[3] = %x \r\n", __func__, frame[3]);
-        debug_print("[MaixPy] %s |  result = %d \r\n", __func__, result);
-        debug_print("[MaixPy] %s |  index = %d \r\n", __func__, index);
+        debug_print("[CanMV] %s |  frame[0] = %x \r\n", __func__, frame[0]);
+        debug_print("[CanMV] %s |  frame[1] = %x \r\n", __func__, frame[1]);
+        debug_print("[CanMV] %s |  frame[2] = %x \r\n", __func__, frame[2]);
+        debug_print("[CanMV] %s |  frame[3] = %x \r\n", __func__, frame[3]);
+        debug_print("[CanMV] %s |  result = %d \r\n", __func__, result);
+        debug_print("[CanMV] %s |  index = %d \r\n", __func__, index);
         if (result == 0)
         {
             break;
@@ -502,7 +502,7 @@ uint8_t sd_init(void)
     }
     if (index == 0)
     {
-        debug_print("[MaixPy] %s | SD_CMD58 is %X\r\n",__func__,result);
+        debug_print("[CanMV] %s | SD_CMD58 is %X\r\n",__func__,result);
         return 0xFF;
     }
     if ((frame[0] & 0x40) == 0)

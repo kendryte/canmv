@@ -1,6 +1,6 @@
 
 /*
- * This file is part of the MaixPy project.
+ * This file is part of the CanMV project.
  * Copyright (c) 2019 Sipeed Ltd
  * This work is licensed under the Apache2.0 license, see the file LICENSE for details.
  *

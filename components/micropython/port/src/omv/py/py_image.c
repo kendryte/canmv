@@ -29,7 +29,8 @@
 
 #include "font.h"
 
-static const mp_obj_type_t py_image_type;
+//static 
+const mp_obj_type_t py_image_type;
 
 //extern const char *ffs_strerror(FRESULT res);
 extern uint32_t systick_current_millis(void);
@@ -6402,7 +6403,8 @@ static const mp_rom_map_elem_t locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(locals_dict, locals_dict_table);
 
-static const mp_obj_type_t py_image_type = {
+//static 
+const mp_obj_type_t py_image_type = {
     { &mp_type_type },
     .name  = MP_QSTR_Image,
     .print = py_image_print,
@@ -6780,7 +6782,7 @@ mp_obj_t py_image_font_load(size_t n_args, const mp_obj_t *args, mp_map_t *kw_ar
             mp_int_t font_addr = mp_obj_get_int(args[3]);
             if(font_addr <= 0)
             {
-                mp_raise_ValueError("[MAIXPY]image: font_addr must > 0 ");
+                mp_raise_ValueError("[CANMV]image: font_addr must > 0 ");
                 return mp_const_false;
             }
             else
@@ -6806,7 +6808,7 @@ mp_obj_t py_image_font_load(size_t n_args, const mp_obj_t *args, mp_map_t *kw_ar
             }
             else
             {
-                mp_raise_ValueError("[MAIXPY]image: font format don't match, only supply .Dzk ");
+                mp_raise_ValueError("[CANMV]image: font format don't match, only supply .Dzk ");
                 return mp_const_false;
             }
         }

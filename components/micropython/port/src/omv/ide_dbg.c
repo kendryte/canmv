@@ -28,9 +28,12 @@
 #include "string.h"
 #include "objstr.h"
 #include "sipeed_sys.h"
+#include "printf.h"
+#include "timers.h"
 
 #if CONFIG_MAIXPY_IDE_SUPPORT
 
+#define SCRIPT_BUF_LEN (10*1024)
 static volatile int xfer_bytes;   // bytes sent
 static volatile int xfer_length;  // bytes need to send
 static enum usbdbg_cmd cmd;
@@ -52,20 +55,29 @@ static size_t           temp_size;
 static volatile bool    is_busy_sending = false; // sending data
 static volatile bool    is_sending_jpeg = false; // sending jpeg (frame buf) data
 extern Buffer_t g_uart_send_buf_ide;
+
+#ifdef NEW_SAVE_FILE_IMPL
+static struct ide_dbg_svfil_t ide_dbg_sv_file;
+
+static void calc_vfs_file_sha256(uint8_t sha256[32]);
+#else
 static volatile uint32_t ide_file_save_status = 0; //0: ok, 1: busy recieve data, 2:eror memory, 3:open file err, 
                                                    //4: write file error, 5: busy saving, 6:parity check fail, others: unkown error
 static uint32_t ide_file_length = 0;
 static uint8_t* p_data_temp = NULL;
+#endif
 
 bool  ide_get_script_status()
 {
     if (is_ide_mode) {
         return script_running;
     }
+#ifndef NEW_SAVE_FILE_IMPL
     else if (ide_file_save_status != 0)
     {
         return false;
     }
+#endif
     return true;
 }
 
@@ -143,7 +155,7 @@ bool ide_debug_init0()
     ide_exception.args = ide_exception_str_tuple;
     memset(&script_buf, 0, sizeof(vstr_t));
     // vstr_init(&script_buf, 32);
-    vstr_init_00(&script_buf, 1024*5);
+    vstr_init_00(&script_buf, SCRIPT_BUF_LEN);
     return true;
 }
 
@@ -156,7 +168,7 @@ void ide_dbg_init()
     script_running=false;
     // vstr_clear(&script_buf);
     // vstr_init(&script_buf, 32);
-    vstr_init_11(&script_buf, 1024*5);
+    vstr_init_11(&script_buf, SCRIPT_BUF_LEN);
     // mp_const_ide_interrupt = mp_obj_new_exception_msg(&mp_type_Exception, "IDE interrupt");
 }
 
@@ -183,16 +195,18 @@ bool is_ide_dbg_mode()
 
 ide_dbg_status_t ide_dbg_ack_data(machine_uart_obj_t* uart)
 {
-    uint32_t length = 0;
+    int length = 0;
 ack_start:
     length = xfer_length - xfer_bytes;
     length = (length>IDE_DBG_MAX_PACKET) ? IDE_DBG_MAX_PACKET : length;
-    if(length == 0)
+    if(0 >= length)
     {
         if(cmd == USBDBG_NONE)
             is_busy_sending = false;
         return IDE_DBG_STATUS_OK;
     }
+
+    enum usbdbg_cmd last_cmd = cmd;
 
     switch (cmd)
     {
@@ -281,22 +295,86 @@ ack_start:
             cmd = USBDBG_NONE;
             break;
         }
+#ifndef NEW_SAVE_FILE_IMPL
         case USBDBG_FILE_SAVE_STATUS:
         {
             *((uint32_t*)ide_dbg_cmd_buf) = ide_file_save_status;
             cmd = USBDBG_NONE;
             break;
         }
+#endif
         case USBDBG_QUERY_STATUS:
         {
             *((uint32_t*)ide_dbg_cmd_buf) = 0xFFEEBBAA;
             cmd = USBDBG_NONE;
             break;
         }
+
+        //FIXME: update for get sensor id.
+        case USBDBG_SENSOR_ID:
+        {
+            int sensor_id = 0xFF;
+            // if (sensor_is_detected() == true) {
+            //     sensor_id = sensor_get_id();
+            // }
+            memcpy(ide_dbg_cmd_buf, &sensor_id, 4);
+            cmd = USBDBG_NONE;
+            break;
+        }
+
+#ifdef NEW_SAVE_FILE_IMPL
+        case USBDBG_QUERY_FILE_STAT:
+        {
+            uint32_t *buf = ide_dbg_cmd_buf;
+            buf[0] = ide_dbg_sv_file.errcode;
+            cmd = USBDBG_NONE;
+            break;
+        }
+
+        case USBDBG_VERIFYFILE:
+        {
+            uint32_t *buf = ide_dbg_cmd_buf;
+
+            // calc file sha256
+            uint8_t sha256[32];
+            // calc_posix_file_sha256(ide_dbg_sv_file.info.name, sha256);
+            calc_vfs_file_sha256(sha256);
+
+            if(0x00 != memcmp(sha256, ide_dbg_sv_file.info.sha256, 32)) {
+                // printk("sha256 want:");
+                // for(int i = 0; i < 32; i++) {
+                //     printk("%02X", ide_dbg_sv_file.info.sha256[i]);
+                // }
+                // printk("\nsha256 calc:");
+                // for(int i = 0; i < 32; i++) {
+                //     printk("%02X", sha256[i]);
+                // }
+                // printk("\n");
+
+                buf[0] = USBDBG_SVFILE_VERIFY_SHA2_ERR;
+                // if checksum is error, we delete the file.
+                vfs_internal_remove(ide_dbg_sv_file.info.name, &ide_dbg_sv_file.errcode);
+
+                buf[0] = USBDBG_SVFILE_VERIFY_SHA2_ERR;
+                ide_dbg_sv_file.errcode = USBDBG_SVFILE_VERIFY_SHA2_ERR;
+            } else {
+                buf[0] = USBDBG_SVFILE_VERIFY_ERR_NONE;
+                ide_dbg_sv_file.errcode = USBDBG_SVFILE_VERIFY_ERR_NONE;
+            }
+
+            cmd = USBDBG_NONE;
+            break;
+        }
+#endif
         default: /* error */
+            length = 0;
+            xfer_length = 0;
+            xfer_bytes = 0;
+            cmd = USBDBG_NONE;
+
             break;
     }
-    if(length && !is_sending_jpeg)
+    if(length && !is_sending_jpeg && (USBDBG_NONE != last_cmd))
     {
         if(MICROPY_UARTHS_DEVICE == uart->uart_num)
         {
@@ -350,6 +428,103 @@ ide_dbg_status_t ide_dbg_receive_data(machine_uart_obj_t* uart, uint8_t* data)
             }
             break;
 
+#ifdef NEW_SAVE_FILE_IMPL
+        case USBDBG_CREATEFILE:
+        {
+            // memcpy(((uint8_t *)&ide_dbg_sv_file.info) + xfer_bytes, buffer, length);
+            uint8_t *p = (uint8_t *)&ide_dbg_sv_file.info;
+            p[xfer_bytes] = *data;
+
+            // xfer_bytes += length;
+
+            if ((xfer_bytes + 1) == xfer_length) {
+                cmd = USBDBG_NONE;
+
+                ide_dbg_sv_file.info.name[USBDBG_SVFILE_NAME_LEN] = 0;
+
+                // printk("file name: \'%s\'\nfile sha256:", ide_dbg_sv_file.info.name);
+                // for(int i = 0; i < 32; i++) {
+                //     printk("%02X", ide_dbg_sv_file.info.sha256[i]);
+                // }
+                // printk("\n");
+
+                uint8_t *p = malloc(ide_dbg_sv_file.info.chunk_size);
+
+                ide_dbg_sv_file.is_open = 0;
+
+                if((1024 < ide_dbg_sv_file.info.chunk_size) || (NULL == p)) {
+                    if(p) free(p);
+
+                    ide_dbg_sv_file.errcode = USBDBG_SVFILE_ERR_CHUNK_ERR;
+                } else {
+                    ide_dbg_sv_file.chunk_buffer = p;
+
+                    ide_dbg_sv_file.fd = vfs_internal_open(ide_dbg_sv_file.info.name, "wb", &ide_dbg_sv_file.errcode);
+
+                    if(0x00 != ide_dbg_sv_file.errcode || MP_OBJ_NULL == ide_dbg_sv_file.fd) {
+                        free(ide_dbg_sv_file.chunk_buffer);
+                        ide_dbg_sv_file.chunk_buffer = NULL;
+
+                        ide_dbg_sv_file.errcode = USBDBG_SVFILE_ERR_OPEN_ERR;
+                    } else {
+                        ide_dbg_sv_file.is_open = 1;
+                        ide_dbg_sv_file.errcode = USBDBG_SVFILE_ERR_NONE;
+                    }
+                }
+            }
+            break;
+        }
+
+        case USBDBG_WRITEFILE:
+        {
+            // memcpy(ide_dbg_sv_file.chunk_buffer + xfer_bytes, buffer, length);
+
+            // xfer_bytes += length;
+
+            ide_dbg_sv_file.chunk_buffer[xfer_bytes] = *data;
+
+            if ((xfer_bytes + 1) == xfer_length) {
+                cmd = USBDBG_NONE;
+
+                if(0x00 == ide_dbg_sv_file.is_open) {
+                    ide_dbg_sv_file.errcode = USBDBG_SVFILE_ERR_WRITE_ERR;
+
+                    if(ide_dbg_sv_file.chunk_buffer) {
+                        free(ide_dbg_sv_file.chunk_buffer);
+                        ide_dbg_sv_file.chunk_buffer = NULL;
+                    }
+                } else {
+                    mp_uint_t len = vfs_internal_write(ide_dbg_sv_file.fd, ide_dbg_sv_file.chunk_buffer, xfer_length, &ide_dbg_sv_file.errcode);
+
+                    if(xfer_length != len || ide_dbg_sv_file.errcode != 0) {
+                        free(ide_dbg_sv_file.chunk_buffer);
+                        ide_dbg_sv_file.chunk_buffer = NULL;
+
+                        vfs_internal_close(ide_dbg_sv_file.fd, &ide_dbg_sv_file.errcode);
+
+                        ide_dbg_sv_file.is_open = 0;
+                        ide_dbg_sv_file.errcode = USBDBG_SVFILE_ERR_WRITE_ERR;
+                    } else {
+                        ide_dbg_sv_file.errcode = USBDBG_SVFILE_ERR_NONE;
+                    }
+
+                    if(xfer_length != ide_dbg_sv_file.info.chunk_size) {
+                        // close the file
+                        if(ide_dbg_sv_file.is_open) {
+                            ide_dbg_sv_file.is_open = 0;
+                            vfs_internal_close(ide_dbg_sv_file.fd, &ide_dbg_sv_file.errcode);
+                        }
+
+                        free(ide_dbg_sv_file.chunk_buffer);
+                        ide_dbg_sv_file.chunk_buffer = NULL;
+
+                        ide_dbg_sv_file.errcode = USBDBG_SVFILE_ERR_NONE;
+                    }
+                }
+            }
+            break;
+        }
+#else
         case USBDBG_FILE_SAVE:
         {
             p_data_temp[xfer_bytes] = *data;
@@ -366,6 +541,7 @@ ide_dbg_status_t ide_dbg_receive_data(machine_uart_obj_t* uart, uint8_t* data)
             }
             break;
         }
+#endif
         case USBDBG_TEMPLATE_SAVE: {
             //TODO: save image support
             // image_t image ={
@@ -408,6 +584,9 @@ ide_dbg_status_t ide_dbg_receive_data(machine_uart_obj_t* uart, uint8_t* data)
             break;
         }
         default: /* error */
+            xfer_length = 0;
+            xfer_bytes = 0;
+            cmd = USBDBG_NONE;
             break;
     }
     return IDE_DBG_STATUS_OK;
@@ -415,21 +594,23 @@ ide_dbg_status_t ide_dbg_receive_data(machine_uart_obj_t* uart, uint8_t* data)
 
 ide_dbg_status_t ide_dbg_dispatch_cmd(machine_uart_obj_t* uart, uint8_t* data)
 {
-    uint32_t length;
+    int length;
 
     if(ide_dbg_cmd_len_count==0)
     {
         if( is_busy_sending ) // throw out data //TODO: maybe need queue data?
             return IDE_DBG_DISPATCH_STATUS_BUSY;
         length = xfer_length - xfer_bytes;
-        if(length)//receive data from IDE
+        if(length > 0)//receive data from IDE
         {
             ide_dbg_receive_data(uart, data);
             ++xfer_bytes;
             return IDE_DBG_STATUS_OK;
         }
-        if(*data == IDE_DBG_CMD_START_FLAG)
+        if(*data == IDE_DBG_CMD_START_FLAG) {
+            ide_dbg_cmd_buf[0] = IDE_DBG_CMD_START_FLAG;
             ide_dbg_cmd_len_count = 1;
+        }
     }
     else
     {
@@ -488,11 +669,13 @@ ide_dbg_status_t ide_dbg_dispatch_cmd(machine_uart_obj_t* uart, uint8_t* data)
                     }
                     #endif
                     script_need_interrupt = true;
+                    extern TimerHandle_t timer_hander_deinit_kpu;
+                    xTimerStart(timer_hander_deinit_kpu, 10);
                 }
                 cmd = USBDBG_NONE;
             }
                 break;
-
+#ifndef NEW_SAVE_FILE_IMPL
             case USBDBG_FILE_SAVE:
                 xfer_bytes = 0;
                 xfer_length = length;
@@ -518,6 +701,7 @@ ide_dbg_status_t ide_dbg_dispatch_cmd(machine_uart_obj_t* uart, uint8_t* data)
                 xfer_bytes = 0;
                 xfer_length = length;
                 break;
+#endif
             case USBDBG_SCRIPT_RUNNING:
                 xfer_bytes = 0;
                 xfer_length =length;
@@ -586,7 +770,78 @@ ide_dbg_status_t ide_dbg_dispatch_cmd(machine_uart_obj_t* uart, uint8_t* data)
                 xfer_bytes = 0;
                 xfer_length = length;
                 break;
+
+            case USBDBG_SET_TIME:
+            {
+                xfer_bytes = 0;
+                xfer_length =length;
+                break;
+            }
+
+            case USBDBG_TX_INPUT:
+            {
+                xfer_bytes = 0;
+                xfer_length =length;
+                break;
+            }
+#ifdef NEW_SAVE_FILE_IMPL
+            case USBDBG_CREATEFILE:
+            {
+                xfer_bytes = 0;
+                xfer_length = length;
+
+                if(sizeof(struct ide_dbg_svfil_info_t) != xfer_length)
+                {
+                    ide_dbg_sv_file.errcode = USBDBG_SVFILE_ERR_PATH_ERR;
+
+                    xfer_length = 0;
+                    cmd = USBDBG_NONE;
+                } else {
+                    // if file is opened, we close it.
+                    if(ide_dbg_sv_file.is_open && (MP_OBJ_NULL != ide_dbg_sv_file.fd)) {
+                        ide_dbg_sv_file.is_open = 0;
+                        vfs_internal_close(ide_dbg_sv_file.fd, &ide_dbg_sv_file.errcode);
+                    }
+
+                    if(ide_dbg_sv_file.chunk_buffer) {
+                        free(ide_dbg_sv_file.chunk_buffer);
+                        ide_dbg_sv_file.chunk_buffer = NULL;
+                    }
+
+                    ide_dbg_sv_file.errcode = USBDBG_SVFILE_ERR_NONE;
+
+                    memset((uint8_t *)&ide_dbg_sv_file.info, 0, sizeof(struct ide_dbg_svfil_info_t));
+                }
+                break;
+            }
+
+            case USBDBG_WRITEFILE:
+            {
+                xfer_bytes = 0;
+                xfer_length = length;
+                break;
+            }
+
+            case USBDBG_VERIFYFILE:
+            {
+                xfer_bytes = 0;
+                xfer_length = length;
+                break;
+            }
+
+            case USBDBG_QUERY_FILE_STAT:
+            {
+                xfer_bytes = 0;
+                xfer_length = length;
+                break;
+            }
+#endif
+
             default: /* error */
+                length = 0;
+                xfer_bytes = 0;
+                xfer_length = 0;
+
                 cmd = USBDBG_NONE;
                 break;
         }
@@ -610,6 +865,76 @@ vstr_t* ide_dbg_get_script()
     return &script_buf;
 }
 
+#ifdef NEW_SAVE_FILE_IMPL
+static void calc_vfs_file_sha256(uint8_t sha256[32])
+{
+    sha256_context_t sha2_ctx;
+
+    mp_uint_t total, per_size = 0, curr_size = 0, read_size = 0;
+
+    uint8_t *buffer = malloc(16 * 1024);
+    if(NULL == buffer) {
+        goto fail;
+    }
+
+    ide_dbg_sv_file.fd = vfs_internal_open(ide_dbg_sv_file.info.name, "rb", &ide_dbg_sv_file.errcode);
+    if(0x00 != ide_dbg_sv_file.errcode || MP_OBJ_NULL == ide_dbg_sv_file.fd) {
+        goto fail;
+    }
+
+    ide_dbg_sv_file.is_open = 1;
+
+    vfs_internal_seek(ide_dbg_sv_file.fd, 0, MP_SEEK_SET, &ide_dbg_sv_file.errcode);
+    if(0x00 != ide_dbg_sv_file.errcode) {
+        goto fail;
+    }
+
+    total = vfs_internal_size(ide_dbg_sv_file.fd);
+    if(total == EIO) {
+        goto fail;
+    }
+
+    sha256_init(&sha2_ctx, total);
+
+    do {
+        per_size = ((total - curr_size) > (16 * 1024)) ? (16 * 1024) : (total - curr_size);
+
+        read_size = vfs_internal_read(ide_dbg_sv_file.fd, buffer, per_size, &ide_dbg_sv_file.errcode);
+
+        if((read_size != per_size) || (0x00 != ide_dbg_sv_file.errcode)) {
+            goto fail;
+        }
+
+        sha256_update(&sha2_ctx, buffer, read_size);
+
+        curr_size += read_size;
+    } while(curr_size < total);
+
+    sha256_final(&sha2_ctx, sha256);
+
+    if(ide_dbg_sv_file.is_open) {
+        ide_dbg_sv_file.is_open = 0;
+        vfs_internal_close(ide_dbg_sv_file.fd, &ide_dbg_sv_file.errcode);
+    }
+
+    if(buffer) free(buffer);
+
+    return;
+
+fail:
+    memset(sha256, 0xFF, 32);
+
+    if(ide_dbg_sv_file.is_open) {
+        ide_dbg_sv_file.is_open = 0;
+        vfs_internal_close(ide_dbg_sv_file.fd, &ide_dbg_sv_file.errcode);
+    }
+
+    if(buffer) free(buffer);
+
+    return;
+}
+
+#else
 bool      ide_dbg_need_save_file()
 {
     bool ret = (ide_file_save_status==5);
@@ -688,7 +1013,7 @@ void      ide_save_file()
     free(p_data_temp);
     p_data_temp = NULL;
 }
-
+#endif
 
 bool ide_dbg_interrupt_main()
 {

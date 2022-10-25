@@ -129,7 +129,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(speech_asr_del_obj, speech_asr_make_del);
 
 STATIC void speech_asr_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     asr_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "[MAIXPY] asr:(%p)\r\n address=%d\r\n i2s_device_number_t=%d\r\n dmac_channel_number_t=%d\r\n", self, self->address, self->device_num, self->channel_num);
+    mp_printf(print, "[CANMV] asr:(%p)\r\n address=%d\r\n i2s_device_number_t=%d\r\n dmac_channel_number_t=%d\r\n", self, self->address, self->device_num, self->channel_num);
 }
 
 STATIC mp_obj_t speech_asr_set(mp_obj_t self_in, mp_obj_t tuple_in)

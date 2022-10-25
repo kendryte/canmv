@@ -49,7 +49,7 @@ const mp_obj_type_t machine_timer_type;
 
 #define K210_DEBUG 0
 #if K210_DEBUG==1
-#define debug_print(x,arg...) mp_printf(&mp_plat_print, "[MAIXPY]"x,##arg)
+#define debug_print(x,arg...) mp_printf(&mp_plat_print, "[CANMV]"x,##arg)
 #else 
 #define debug_print(x,arg...) 
 #endif
@@ -140,7 +140,7 @@ STATIC void machine_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_pr
     else
         unit = "ns";
     mp_printf(print, 
-        "[MAIXPY]Timer:(%p) timer=%d, channel=%d, mode=%d, period=%d%s, priority=%d, div=%d, callback=%p, arg=%p",
+        "[CANMV]Timer:(%p) timer=%d, channel=%d, mode=%d, period=%d%s, priority=%d, div=%d, callback=%p, arg=%p",
         self, self->timer, self->channel, self->mode, self->period, unit, self->priority, self->div, self->callback, self->arg);
 }
 
@@ -159,11 +159,11 @@ STATIC int machine_timer_isr(void *self_in) {
     machine_timer_obj_t *self = self_in;
     if(self->mode == MACHINE_TIMER_MODE_ONE_SHOT)
         self->active = false;
-	debug_print("[MAIXPY]Timer:enter machine_timer_isr\n");
+	debug_print("[CANMV]Timer:enter machine_timer_isr\n");
 	// timer_channel_clear_interrupt(self->timer,self->channel); //don't need clean	
-	debug_print("[MAIXPY]Timer:self->callback = %p\n",self->callback);
+	debug_print("[CANMV]Timer:self->callback = %p\n",self->callback);
 	mp_obj_type_t *type = mp_obj_get_type(self->callback);
-	debug_print("[MAIXPY]Timer:type->call = %p\n",type->call);
+	debug_print("[CANMV]Timer:type->call = %p\n",type->call);
 	if(type != NULL)
 	{
             mp_sched_schedule(self->callback, self);
@@ -172,24 +172,24 @@ STATIC int machine_timer_isr(void *self_in) {
 	}
 	else
 	{
-		debug_print("[MAIXPY]Timer: callback type == NULL\n");
+		debug_print("[CANMV]Timer: callback type == NULL\n");
 	}
-	debug_print("[MAIXPY]Timer:quit machine_timer_isr\n");
+	debug_print("[CANMV]Timer:quit machine_timer_isr\n");
 	return 0;
 }
 
 // STATIC void machine_timer_enable(machine_timer_obj_t *self) {
-// 	debug_print("[MAIXPY]TIMER:self->timer=%d,self->channel=%d\n",self->timer,self->channel);
+// 	debug_print("[CANMV]TIMER:self->timer=%d,self->channel=%d\n",self->timer,self->channel);
 // 	if(self->channel == 0 || 1 == self->channel)
 // 	{
-// 		debug_print("[MAIXPY]TIMER:start init plic timer channel 0 and 1\n");
+// 		debug_print("[CANMV]TIMER:start init plic timer channel 0 and 1\n");
 // 		plic_set_priority(IRQN_TIMER0A_INTERRUPT + self->timer*2, 1);
 // 		plic_irq_enable(IRQN_TIMER0A_INTERRUPT + self->timer*2);
 // 		plic_irq_register(IRQN_TIMER0A_INTERRUPT + self->timer*2, machine_timer_isr, (void*)self);
 // 	}
 // 	else if(self->channel == 2 || 3 == self->channel)
 // 	{
-// 		debug_print("[MAIXPY]TIMER:start init plic timer channel 2 and 3\n");
+// 		debug_print("[CANMV]TIMER:start init plic timer channel 2 and 3\n");
 // 		plic_set_priority(IRQN_TIMER0B_INTERRUPT + self->timer*2, 1);
 // 		plic_irq_enable(IRQN_TIMER0B_INTERRUPT + self->timer*2);
 // 		plic_irq_register(IRQN_TIMER0B_INTERRUPT + self->timer*2, machine_timer_isr, (void*)self);
@@ -199,7 +199,7 @@ STATIC int machine_timer_isr(void *self_in) {
 // 	timer_enable_interrupt(self->timer, self->channel);
 // 	timer_set_enable(self->timer, self->channel,1);
 // 	self->active = 0;
-// 	debug_print("[MAIXPY]TIMER:quit %s\n",__FUNCTION__);
+// 	debug_print("[CANMV]TIMER:quit %s\n",__FUNCTION__);
 // }
 
 STATIC mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -241,18 +241,18 @@ STATIC mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, mp_uint_t n
     self->div = args[ARG_div].u_int;
     //check parameters
     if( !check_mode(self->mode) )
-        mp_raise_ValueError("[MAIXPY]Timer:Invalid mode");
+        mp_raise_ValueError("[CANMV]Timer:Invalid mode");
     if( self->mode != MACHINE_TIMER_MODE_PWM)
     {
         if( !mp_obj_is_callable(self->callback) )
-            mp_raise_ValueError("[MAIXPY]Timer:Invalid callback");
+            mp_raise_ValueError("[CANMV]Timer:Invalid callback");
         if( !check_priority(self->priority) )
-            mp_raise_ValueError("[MAIXPY]Timer:Invalid priority");
+            mp_raise_ValueError("[CANMV]Timer:Invalid priority");
     }
     if( !check_period_setting(self->period, self->unit, self->div))
     {
         // m_del_obj(machine_timer_obj_t, self);//TODO:
-		mp_raise_ValueError("[MAIXPY]Timer:Invalid period or div");
+		mp_raise_ValueError("[CANMV]Timer:Invalid period or div");
     }
 
 	/*timer prescale*/
@@ -287,7 +287,7 @@ STATIC mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args,
     if(!check_timer(self->timer) || !check_channel(self->channel))
     {
         // m_del_obj(machine_timer_obj_t, self);//TODO:
-        mp_raise_ValueError("[MAIXPY]Timer:Invalid timer");
+        mp_raise_ValueError("[CANMV]Timer:Invalid timer");
     }
 	mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
@@ -341,7 +341,7 @@ STATIC mp_obj_t machine_timer_period(size_t n_args, const mp_obj_t *args) {
     if( n_args == 3)
     {
         if(!check_unit(mp_obj_get_int(args[2])))
-            mp_raise_ValueError("[MAIXPY]Timer:unit error");
+            mp_raise_ValueError("[CANMV]Timer:unit error");
         self->unit = mp_obj_get_int(args[2]);
     }
     self->period = mp_obj_get_int(args[1]);
@@ -400,7 +400,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_timer_start_obj, machine_timer_start);
 // 		self->freq = MP_OBJ_SMALL_INT_VALUE(freq);
 // 	else
 // 	{
-// 		mp_printf(&mp_plat_print, "[MAIXPY]TIMER:type error\n");
+// 		mp_printf(&mp_plat_print, "[CANMV]TIMER:type error\n");
 // 		return mp_const_none;
 // 	}
 // 	timer_disable(self->timer, self->channel);

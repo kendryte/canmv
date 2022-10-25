@@ -118,7 +118,7 @@ STATIC mp_obj_t spiffs_vfs_del(mp_obj_t self_in) {
     int res = SPIFFS_unmount(&self->fs);
 	if(SPIFFS_OK != res)
 	{
-		mp_printf(&mp_plat_print, "[MaixPy]:SPIFFS Error Code %d\n",res);
+		mp_printf(&mp_plat_print, "[CanMV]:SPIFFS Error Code %d\n",res);
 		mp_raise_OSError(SPIFFS_errno_table[GET_ERR_CODE(res)]);
 	}
     return mp_const_none;
@@ -135,7 +135,7 @@ STATIC mp_obj_t spiffs_vfs_mkfs(mp_obj_t self_in) {
 	if(res == SPIFFS_ERR_NOT_A_FS)
     	res = mp_module_spiffs_format(&vfs->fs);
     if (res != SPIFFS_OK) {
-       	mp_printf(&mp_plat_print, "[MaixPy]:SPIFFS Error Code %d\n",res);
+       	mp_printf(&mp_plat_print, "[CanMV]:SPIFFS Error Code %d\n",res);
 		mp_raise_OSError(SPIFFS_errno_table[GET_ERR_CODE(res)]);
     }
     return mp_const_none;
@@ -268,7 +268,7 @@ STATIC mp_obj_t spiffs_vfs_remove(mp_obj_t vfs_in, mp_obj_t path_in) {
     }
 	int res = SPIFFS_remove(&vfs->fs, open_name); 
     if (res != SPIFFS_OK) {
-	   	mp_printf(&mp_plat_print, "[MaixPy]:SPIFFS Error Code %d\n",res);
+	   	mp_printf(&mp_plat_print, "[CanMV]:SPIFFS Error Code %d\n",res);
 		mp_raise_OSError(SPIFFS_errno_table[GET_ERR_CODE(res)]);
     }
     return mp_const_none;
@@ -276,7 +276,7 @@ STATIC mp_obj_t spiffs_vfs_remove(mp_obj_t vfs_in, mp_obj_t path_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(spiffs_vfs_remove_obj, spiffs_vfs_remove);
 
 STATIC mp_obj_t fat_vfs_rmdir(mp_obj_t vfs_in, mp_obj_t path_in) {
-//	mp_printf(&mp_plat_print, "[MaixPy]spiffs only support flat directory\n");
+//	mp_printf(&mp_plat_print, "[CanMV]spiffs only support flat directory\n");
 	mp_raise_OSError(MP_EIO);
 /*
     return fat_vfs_remove_internal(vfs_in, path_in, AM_DIR);
@@ -324,14 +324,14 @@ STATIC mp_obj_t spiffs_vfs_rename(mp_obj_t vfs_in, mp_obj_t path_in, mp_obj_t pa
     if (res == SPIFFS_OK) {
         return mp_const_none;
     } else {
-//	   	mp_printf(&mp_plat_print, "[MaixPy]:SPIFFS Error Code %d\n",res);
+//	   	mp_printf(&mp_plat_print, "[CanMV]:SPIFFS Error Code %d\n",res);
 		mp_raise_OSError(SPIFFS_errno_table[GET_ERR_CODE(res)]);
     }
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(spiffs_vfs_rename_obj, spiffs_vfs_rename);
 
 STATIC mp_obj_t spiffs_vfs_mkdir(mp_obj_t vfs_in, mp_obj_t path_o) {
-//	mp_printf(&mp_plat_print, "[MaixPy]spiffs only support flat directory\n");
+//	mp_printf(&mp_plat_print, "[CanMV]spiffs only support flat directory\n");
 	mp_raise_NotImplementedError("SPIFFS not support");
 /*
     mp_obj_fat_vfs_t *self = MP_OBJ_TO_PTR(vfs_in);
@@ -407,7 +407,7 @@ STATIC mp_obj_t spiffs_vfs_stat(mp_obj_t vfs_in, mp_obj_t path_in) {
         }
         res = SPIFFS_stat(&self->fs, open_name, &fno);
         if (res != SPIFFS_OK) {
-//			mp_printf(&mp_plat_print, "[MaixPy]:SPIFFS Error Code %d\n",res);
+//			mp_printf(&mp_plat_print, "[CanMV]:SPIFFS Error Code %d\n",res);
             mp_raise_OSError(SPIFFS_errno_table[GET_ERR_CODE(res)]);
         }
     }
@@ -447,7 +447,7 @@ STATIC mp_obj_t spiffs_vfs_statvfs(mp_obj_t vfs_in, mp_obj_t path_in) {
 	u32_t total, used;
     int res = SPIFFS_info(spif_fs, &total,&used);
     if (res != SPIFFS_OK) {
-//	   	mp_printf(&mp_plat_print, "[MaixPy]:SPIFFS Error Code %d\n",res);
+//	   	mp_printf(&mp_plat_print, "[CanMV]:SPIFFS Error Code %d\n",res);
 		mp_raise_OSError(SPIFFS_errno_table[GET_ERR_CODE(res)]);
     }
     mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(10, NULL));
@@ -481,7 +481,7 @@ STATIC mp_obj_t vfs_spiffs_mount(mp_obj_t self_in, mp_obj_t readonly, mp_obj_t m
 	// check if we need to make the filesystem
 	if(SPIFFS_ERR_NOT_A_FS == res || res != SPIFFS_OK)
     {
-//	   	mp_printf(&mp_plat_print, "[MaixPy]:SPIFFS Error Code %d\n",res);
+//	   	mp_printf(&mp_plat_print, "[CanMV]:SPIFFS Error Code %d\n",res);
 		mp_raise_OSError(SPIFFS_errno_table[GET_ERR_CODE(res)]);
     }
     return mp_const_none;

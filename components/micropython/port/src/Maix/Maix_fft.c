@@ -57,7 +57,7 @@ STATIC mp_obj_t Maix_fft_run(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     
     if(points != 64 && points != 128 && points != 256 && points != 512)
     {
-        mp_raise_ValueError("[MAIXPY]FFT:invalid points");
+        mp_raise_ValueError("[CANMV]FFT:invalid points");
     }
 
     uint32_t byte_len = 0;
@@ -73,16 +73,16 @@ STATIC mp_obj_t Maix_fft_run(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     }
     else
     {
-        mp_raise_ValueError("[MAIXPY]FFT:invalid byte");
+        mp_raise_ValueError("[CANMV]FFT:invalid byte");
     }
     if(byte_len % 4 != 0)
     {
-        mp_raise_ValueError("[MAIXPY]FFT:Buffer length must be a multiple of 4");
+        mp_raise_ValueError("[CANMV]FFT:Buffer length must be a multiple of 4");
     }
     // how to get the length of i2s buffer?
     if(byte_len < points * 4)
     {
-        mp_printf(&mp_plat_print, "[MAIXPY]FFT:Zero padding\n");
+        mp_printf(&mp_plat_print, "[CANMV]FFT:Zero padding\n");
         memset(byte_addr+byte_len, 0, points * 4 - byte_len );//Zero padding
     }
 
@@ -155,7 +155,7 @@ STATIC mp_obj_t Maix_fft_amplitude(const mp_obj_t list_obj)
 
     if(&mp_type_list != mp_obj_get_type(list_obj))
     {
-        mp_raise_ValueError("[MAIXPY]FFT:obj is not a list");
+        mp_raise_ValueError("[CANMV]FFT:obj is not a list");
     }
     mp_obj_list_t* ret_list = (mp_obj_list_t*)m_new(mp_obj_list_t,sizeof(mp_obj_list_t));//m_new
     mp_obj_list_init(ret_list, 0);

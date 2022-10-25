@@ -29,11 +29,11 @@
 #include "py/builtin.h"
 
 const char kendryte_k210_help_text[] =
-"Welcome to MicroPython on the Sipeed Maix!\n"
+"Welcome to MicroPython on the CanMV!\n"
 "\n"
-"For generic online docs please visit https://maixpy.sipeed.com\n"
-"\n"
-"Official website : http://www.sipeed.com\n"
+//"For generic online docs please visit https://maixpy.sipeed.com\n"
+//"\n"
+"Official website : https://canaan-creative.com/\n"
 "\n"
 "\n"
 "Control commands:\n"

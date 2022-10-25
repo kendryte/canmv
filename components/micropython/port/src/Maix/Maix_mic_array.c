@@ -281,6 +281,6 @@ STATIC MP_DEFINE_CONST_DICT(Maix_mic_array_dict, Maix_mic_array_locals_dict_tabl
 
 const mp_obj_type_t Maix_mic_array_type = {
     { &mp_type_type },
-    .name = MP_QSTR_MIC_ARRAY,
+    .name = MP_QSTR_mic_array,
     .locals_dict = (mp_obj_dict_t*)&Maix_mic_array_dict,
 };

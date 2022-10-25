@@ -13,7 +13,7 @@ else:
 sys.path.append('/flash')
 del devices
 
-print("[MaixPy] init end") # for IDE
+print("[CanMV] init end") # for IDE
 for i in range(200):
     time.sleep_ms(1) # wait for key interrupt(for maixpy ide)
 del i
@@ -42,7 +42,7 @@ del ide, ide_mode_conf
 main_py = '''
 try:
     import gc, lcd, image, sys, os
-    from Maix import GPIO
+    from maix import GPIO
     from fpioa_manager import fm
     test_pin=16
     fm.fpioa.set_function(test_pin,fm.fpioa.GPIO7)
@@ -70,10 +70,10 @@ try:
 
     loading = image.Image(size=(lcd.width(), lcd.height()))
     loading.draw_rectangle((0, 0, lcd.width(), lcd.height()), fill=True, color=(255, 0, 0))
-    info = "Welcome to MaixPy"
+    info = "Welcome to CanMV"
     loading.draw_string(int(lcd.width()//2 - len(info) * 5), (lcd.height())//4, info, color=(255, 255, 255), scale=2, mono_space=0)
     v = sys.implementation.version
-    vers = 'V{}.{}.{} : maixpy.sipeed.com'.format(v[0],v[1],v[2])
+    vers = 'V{}.{}.{} : canaan-creative.com'.format(v[0],v[1],v[2])
     loading.draw_string(int(lcd.width()//2 - len(info) * 6), (lcd.height())//3 + 20, vers, color=(255, 255, 255), scale=1, mono_space=1)
     lcd.display(loading)
     tf = None
@@ -140,15 +140,15 @@ except Exception:
     pass
 
 banner = '''
- __  __              _____  __   __  _____   __     __
-|  \/  |     /\     |_   _| \ \ / / |  __ \  \ \   / /
-| \  / |    /  \      | |    \ V /  | |__) |  \ \_/ /
-| |\/| |   / /\ \     | |     > <   |  ___/    \   /
-| |  | |  / ____ \   _| |_   / . \  | |         | |
-|_|  |_| /_/    \_\ |_____| /_/ \_\ |_|         |_|
+  _____            __  ____      __
+ / ____|          |  \/  \ \    / /
+| |     __ _ _ __ | \  / |\ \  / / 
+| |    / _` | '_ \| |\/| | \ \/ /  
+| |___| (_| | | | | |  | |  \  /   
+ \_____\__,_|_| |_|_|  |_|   \/    
 
-Official Site : https://www.sipeed.com
-Wiki          : https://maixpy.sipeed.com
+Official Site : https://canaan-creative.com
+
 '''
 print(banner)
 del banner

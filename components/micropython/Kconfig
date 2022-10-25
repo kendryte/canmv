@@ -89,10 +89,6 @@ menu "Micropython configurations"
 			bool "Enable ulab module(a numpy-like fast vector module)"
 			default y
 
-		config MICROPYTHON_KMODEL_V4_SUPPORT
-			bool "support v4 kmodel"
-			default n
-
 		config MAIXPY_SPEECH_RECOGNIZER_ENABLE
 			bool "Enable Speech Recognizer"
 			default n

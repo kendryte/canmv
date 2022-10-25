@@ -73,7 +73,7 @@ STATIC bool check_duty(double duty)
 
 STATIC void k210_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_pwm_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "[MAIXPY]PWM:(%p) timer=%d, channel=%d, freq=%.0f, duty=%.2f, enabled=%d",
+    mp_printf(print, "[CANMV]PWM:(%p) timer=%d, channel=%d, freq=%.0f, duty=%.2f, enabled=%d",
              self, self->timer.timer ,self->timer.channel, self->freq, self->duty, self->active);
 }
 
@@ -99,16 +99,16 @@ STATIC void machine_pwm_init_helper(machine_pwm_obj_t *self,
     if( self->pin != -1)//need to initilize fpioa
     {
         if( !check_pin(self->pin))
-            mp_raise_ValueError("[MAIXPY]PWM:Invalid pin number");
+            mp_raise_ValueError("[CANMV]PWM:Invalid pin number");
         fpioa_set_function(self->pin, FUNC_TIMER0_TOGGLE1 + self->timer.timer * 4 + self->timer.channel);
     }	
     //Maybe change PWM timer
     double freq = mp_obj_get_float( args[ARG_freq].u_obj);
 	double duty = mp_obj_get_float(args[ARG_duty].u_obj);
     if(!check_freq(freq))
-        mp_raise_ValueError("[MAIXPY]PWM:Invalid freq");
+        mp_raise_ValueError("[CANMV]PWM:Invalid freq");
     if(!check_duty(duty))
-        mp_raise_ValueError("[MAIXPY]PWM:Invalid duty");
+        mp_raise_ValueError("[CANMV]PWM:Invalid duty");
     self->freq = freq;
     self->duty = duty;
     self->active = args[ARG_enable].u_bool;
@@ -157,7 +157,7 @@ STATIC mp_obj_t k210_pwm_freq(size_t n_args, const mp_obj_t *args) {
     //set freq
     double freq =mp_obj_get_float(args[1]);
     if(!check_freq(freq)) 
-        mp_raise_ValueError("[MAIXPY]PWM:Invalid freq");
+        mp_raise_ValueError("[CANMV]PWM:Invalid freq");
     self->freq = freq;
     self->freq = pwm_set_frequency(self->timer.timer, self->timer.channel, self->freq, self->duty/100.0);
     return mp_obj_new_float(self->freq);
@@ -174,7 +174,7 @@ STATIC mp_obj_t k210_pwm_duty(size_t n_args, const mp_obj_t *args) {
     //set freq
     double duty =mp_obj_get_float(args[1]);
     if(!check_duty(duty)) 
-        mp_raise_ValueError("[MAIXPY]PWM:Invalid duty");
+        mp_raise_ValueError("[CANMV]PWM:Invalid duty");
     self->duty = duty;
     pwm_set_frequency(self->timer.timer, self->timer.channel, self->freq, self->duty/100.0);
     return mp_obj_new_float(self->duty);

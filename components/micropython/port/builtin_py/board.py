@@ -10,7 +10,7 @@ class board_info:
     for k, v in __map__.items():
       __class__.set(k, v)
 
-from Maix import config
+from maix import config
 tmp = config.get_value('board_info', None)
 if tmp != None:
     board_info.load(tmp)

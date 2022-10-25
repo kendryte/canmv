@@ -30,6 +30,7 @@ if(CONFIG_COMPONENT_MICROPYTHON_ENABLE)
                             "${mpy_port_dir}/src/audio/include"
                             "${mpy_port_dir}/src/audio/wav/include"
                             "${mpy_port_dir}/src/Maix/include"
+                            "${mpy_port_dir}/src/Maix/maix_kpu/include"
                             "${mpy_port_dir}/src/modules/include"
                             "${mpy_port_dir}/src/modules/ultrasonic/include"
                             "${mpy_port_dir}/src/speech/include"
@@ -52,6 +53,7 @@ if(CONFIG_COMPONENT_MICROPYTHON_ENABLE)
     append_srcs_dir(MPY_PORT_SRCS "port/src/audio")
     append_srcs_dir(MPY_PORT_SRCS "port/src/audio/wav")
     append_srcs_dir(MPY_PORT_SRCS "port/src/Maix")
+    append_srcs_dir(MPY_PORT_SRCS "port/src/Maix/maix_kpu")
     if(NOT CONFIG_MAIXPY_MIC_ARRAY_ENABLE)
         list(REMOVE_ITEM MPY_PORT_SRCS "port/src/Maix/Maix_mic_array.c")
     endif()

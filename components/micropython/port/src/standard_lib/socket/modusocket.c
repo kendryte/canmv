@@ -310,7 +310,7 @@ STATIC mp_obj_t socket_settimeout(mp_obj_t self_in, mp_obj_t timeout_in) {
 	mod_network_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
 	float timeout = mp_obj_get_float(timeout_in);
     if(timeout < 0)
-        mp_raise_ValueError("[MaixPy] timeout parameter error");
+        mp_raise_ValueError("[CanMV] timeout parameter error");
     self->timeout = timeout;
 	return mp_const_none;
 }
@@ -516,7 +516,7 @@ int parse_ipv4_addr(mp_obj_t addr_in, uint8_t *out_ip, netutils_endian_t endian)
         } else if (i > 0 && s < s_top && *s == '.') {
             s++;
         } else {
-			// mp_printf(&mp_plat_print, "[MaixPy] %s | It is not string IP format:%s\n",__func__, addr_str);
+			// mp_printf(&mp_plat_print, "[CanMV] %s | It is not string IP format:%s\n",__func__, addr_str);
 			return 0;
         }
     }

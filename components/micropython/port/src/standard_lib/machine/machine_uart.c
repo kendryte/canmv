@@ -54,19 +54,20 @@
 #include "buffer.h"
 #include "imlib_config.h"
 #include "mphalport.h"
+#include "timers.h"
 
 extern int uart_channel_getc(uart_device_number_t channel);
 
 #define Maix_DEBUG 0
 #if Maix_DEBUG==1
-#define debug_print(x,arg...) mp_printf(&mp_plat_print, "[MaixPy]"x,##arg)
+#define debug_print(x,arg...) mp_printf(&mp_plat_print, "[CanMV]"x,##arg)
 #else 
 #define debug_print(x,arg...) 
 #endif
 
 #define Maix_KDEBUG 0
 #if Maix_KDEBUG==1
-#define debug_printk(x,arg...) mp_printf(&mp_plat_print, "[MaixPy]"x,##arg)
+#define debug_printk(x,arg...) mp_printf(&mp_plat_print, "[CanMV]"x,##arg)
 #else 
 #define debug_printk(x,arg...) 
 #endif
@@ -167,6 +168,8 @@ int uart_rx_irq(void *ctx)
 						if (read_tmp == mp_interrupt_char) {
 							if (MP_STATE_VM(mp_pending_exception) == MP_OBJ_NULL) {
 								mp_keyboard_interrupt();
+								extern TimerHandle_t timer_hander_deinit_kpu;
+								xTimerStart(timer_hander_deinit_kpu, 10);
 							} else {
 								MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
 								//pendsv_object = &MP_STATE_VM(mp_kbd_exception);
@@ -393,7 +396,7 @@ void uart_attach_to_repl(machine_uart_obj_t *self, bool attached) {
 STATIC void machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     //uart_get_baudrate(self->uart_num, &baudrate);
-    mp_printf(print, "[MAIXPY]UART%d:( baudrate=%u, bits=%u, parity=%s, stop=%s)",
+    mp_printf(print, "[CANMV]UART%d:( baudrate=%u, bits=%u, parity=%s, stop=%s)",
         self->uart_num+1,self->baudrate, self->bitwidth, _parity_name[self->parity],
         _stop_name[self->stop]);
 }
@@ -423,7 +426,7 @@ STATIC void machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, co
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
     // set baudrate
     if (args[ARG_baudrate].u_int < 0 || args[ARG_baudrate].u_int > 0x500000 ) {
-        mp_raise_ValueError("[MAIXPY]UART:invalid baudrate");
+        mp_raise_ValueError("[CANMV]UART:invalid baudrate");
     }else{	
     	self->baudrate =args[ARG_baudrate].u_int;
     }
@@ -432,7 +435,7 @@ STATIC void machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, co
     if (args[ARG_bitwidth].u_int >=UART_BITWIDTH_5BIT && args[ARG_bitwidth].u_int <=UART_BITWIDTH_8BIT) {
             self->bitwidth=args[ARG_bitwidth].u_int;
     }else{
-            mp_raise_ValueError("[MAIXPY]UART:invalid data bits");
+            mp_raise_ValueError("[CANMV]UART:invalid data bits");
     }
 
     // set parity
@@ -444,7 +447,7 @@ STATIC void machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, co
 	{
 		self->parity = mp_obj_get_int(args[ARG_parity].u_obj);
 		if (UART_PARITY_NONE > self->parity || self->parity > UART_PARITY_EVEN)
-			mp_raise_ValueError("[MAIXPY]UART:invalid parity");
+			mp_raise_ValueError("[CANMV]UART:invalid parity");
 	}
 
     // set stop bits  
@@ -458,7 +461,7 @@ STATIC void machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, co
 			stop_bits = 1;
 	}
 	if(stop_bits!=1 && stop_bits!=1.5 && stop_bits!=2)
-		mp_raise_ValueError("[MAIXPY]UART:invalid stop bits");
+		mp_raise_ValueError("[CANMV]UART:invalid stop bits");
 	if(stop_bits == 1)
 		self->stop = UART_STOP_1;
 	else if(stop_bits == 1.5)
@@ -487,7 +490,7 @@ STATIC void machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, co
     self->read_buf_tail = 0;
 	if(MICROPY_UARTHS_DEVICE == self->uart_num){
 		if(self->bitwidth != 8 || self->parity != 0)
-			mp_raise_ValueError("[MAIXPY]UART:invalid param");
+			mp_raise_ValueError("[CANMV]UART:invalid param");
 		uarths_init();
 		uarths_config(self->baudrate,self->stop);
 		uarths_set_interrupt_cnt(UARTHS_RECEIVE,0);
@@ -528,9 +531,9 @@ STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, 
     // get uart id
     mp_int_t uart_num = mp_obj_get_int(args[0]);
     if (uart_num < 0 || UART_DEVICE_MAX == uart_num) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "[MAIXPY]UART%b:does not exist", uart_num));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "[CANMV]UART%b:does not exist", uart_num));
     }else if (uart_num > MICROPY_UARTHS_DEVICE) {
-    	nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "[MAIXPY]UART%b:does not exist", uart_num));
+    	nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "[CANMV]UART%b:does not exist", uart_num));
     }
     // create instance
     machine_uart_obj_t *self = m_new_obj(machine_uart_obj_t);
