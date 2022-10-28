@@ -54,7 +54,9 @@
 #include "buffer.h"
 #include "imlib_config.h"
 #include "mphalport.h"
+#if MICROPY_PY_THREAD
 #include "timers.h"
+#endif
 
 extern int uart_channel_getc(uart_device_number_t channel);
 
@@ -131,7 +133,7 @@ int uart_rx_irq(void *ctx)
 	if (ctx_self->read_buf_len != 0) {
 		if(ctx_self->attached_to_repl)
 		{
-#if  CONFIG_MAIXPY_IDE_SUPPORT
+#if  CONFIG_CANMV_IDE_SUPPORT
 			if(ctx_self->ide_debug_mode)
 			{
 				int read_ret = 0; 
@@ -147,7 +149,7 @@ int uart_rx_irq(void *ctx)
 				}while(1);
 			}
 			else
-#endif // #if  defined(OMV_MINIMUM)|| CONFIG_MAIXPY_IDE_SUPPORT
+#endif // #if  defined(OMV_MINIMUM)|| CONFIG_CANMV_IDE_SUPPORT
 			{
 				int read_ret = 0;
 				do{
@@ -168,8 +170,10 @@ int uart_rx_irq(void *ctx)
 						if (read_tmp == mp_interrupt_char) {
 							if (MP_STATE_VM(mp_pending_exception) == MP_OBJ_NULL) {
 								mp_keyboard_interrupt();
+								#if MICROPY_PY_THREAD
 								extern TimerHandle_t timer_hander_deinit_kpu;
 								xTimerStart(timer_hander_deinit_kpu, 10);
+								#endif
 							} else {
 								MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
 								//pendsv_object = &MP_STATE_VM(mp_kbd_exception);

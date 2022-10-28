@@ -29,9 +29,11 @@
 #include "objstr.h"
 #include "sipeed_sys.h"
 #include "printf.h"
+#if MICROPY_PY_THREAD
 #include "timers.h"
+#endif
 
-#if CONFIG_MAIXPY_IDE_SUPPORT
+#if CONFIG_CANMV_IDE_SUPPORT
 
 #define SCRIPT_BUF_LEN (10*1024)
 static volatile int xfer_bytes;   // bytes sent
@@ -669,8 +671,10 @@ ide_dbg_status_t ide_dbg_dispatch_cmd(machine_uart_obj_t* uart, uint8_t* data)
                     }
                     #endif
                     script_need_interrupt = true;
+                    #if MICROPY_PY_THREAD
                     extern TimerHandle_t timer_hander_deinit_kpu;
                     xTimerStart(timer_hander_deinit_kpu, 10);
+                    #endif
                 }
                 cmd = USBDBG_NONE;
             }
@@ -1037,7 +1041,7 @@ void ide_dbg_on_script_end()
 }
 
 
-#else // CONFIG_MAIXPY_IDE_SUPPORT /////////////////////////////////////
+#else // CONFIG_CANMV_IDE_SUPPORT /////////////////////////////////////
 
 bool ide_debug_init0()
 {

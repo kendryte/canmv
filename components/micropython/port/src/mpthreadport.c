@@ -114,7 +114,7 @@ STATIC void freertos_entry(void *arg) {
     if (ext_thread_entry) {
         ext_thread_entry(arg);
     }
-#if CONFIG_MAIXPY_IDE_SUPPORT
+#if CONFIG_CANMV_IDE_SUPPORT
     // interrupt main thread if child thread interrupt by IDE in IDE mode
     // child thread normally exit will not interrupt main thread
     extern bool ide_dbg_interrupt_main();

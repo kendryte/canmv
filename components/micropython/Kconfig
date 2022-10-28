@@ -15,8 +15,8 @@ menu "Micropython configurations"
 		default 0x80000
 	menu "Modules configurations"
 
-		config MAIXPY_IDE_SUPPORT
-			bool "Enable MaixPy IDE protocol support"
+		config CANMV_IDE_SUPPORT
+			bool "Enable CanMV IDE protocol support"
 			default y
 
 		config MAIXPY_THREAD_ENABLE
@@ -59,7 +59,7 @@ menu "Micropython configurations"
 		
 		config MAIXPY_MIC_ARRAY_ENABLE
 			select MIC_ARRAY_ENABLE
-			bool "Enable Maix.MIC_ARRAY module"
+			bool "Enable maix.mic_array module"
 			default y
 
 		config MAIXPY_LVGL_ENABLE

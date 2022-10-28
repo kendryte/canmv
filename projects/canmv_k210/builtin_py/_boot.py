@@ -41,33 +41,9 @@ del ide, ide_mode_conf
 # detect boot.py
 main_py = '''
 try:
-    import gc, lcd, image, sys, os
-    from maix import GPIO
-    from fpioa_manager import fm
-    test_pin=16
-    fm.fpioa.set_function(test_pin,fm.fpioa.GPIO7)
-    test_gpio=GPIO(GPIO.GPIO7,GPIO.IN,GPIO.PULL_UP)
-    fm.fpioa.set_function(17,fm.fpioa.GPIO0)
-    lcd_en = GPIO(GPIO.GPIO0,GPIO.OUT)
-    lcd_en.value(0)
+    import gc, lcd, image
+    gc.collect()
     lcd.init()
-    lcd.clear(color=(255,0,0))
-    lcd.draw_string(lcd.width()//2-68,lcd.height()//2-4, "Welcome to ", lcd.WHITE, lcd.RED)
-    if test_gpio.value() == 0:
-        print('PIN 16 pulled down, enter test mode')
-        lcd.clear(lcd.PINK)
-        lcd.draw_string(lcd.width()//2-68,lcd.height()//2-4, "Test Mode, wait ...", lcd.WHITE, lcd.PINK)
-        import sensor
-        import image
-        sensor.reset()
-        sensor.set_pixformat(sensor.RGB565)
-        sensor.set_framesize(sensor.QVGA)
-        sensor.run(1)
-        lcd.freq(16000000)
-        while True:
-            img=sensor.snapshot()
-            lcd.display(img)
-
     loading = image.Image(size=(lcd.width(), lcd.height()))
     loading.draw_rectangle((0, 0, lcd.width(), lcd.height()), fill=True, color=(0, 81, 137))
     info = "Welcome to CanMV"
@@ -75,16 +51,6 @@ try:
     v = sys.implementation.version
     vers = 'V{}.{}.{} : canaan-creative.com'.format(v[0],v[1],v[2])
     loading.draw_string(int(lcd.width()//2 - len(info) * 6), (lcd.height())//3 + 20, vers, color=(255, 255, 255), scale=1, mono_space=1)
-    lcd.display(loading)
-    tf = None
-    try:
-            os.listdir("/sd/.")
-    except Exception as e:
-        tf ="SDcard not mount,use flash!"
-        loading.draw_string(int(lcd.width()//2 - len(info) * 7), (lcd.height())//2 + 10, tf, color=(255, 255, 255), scale=1, mono_space=1)
-    if not tf:
-        tf ="SDcard is mount,use SD!"
-        loading.draw_string(int(lcd.width()//2 - len(info) * 6), (lcd.height())//2 + 10, tf, color=(255, 255, 255), scale=1, mono_space=1)
     lcd.display(loading)
     del loading, v, info, vers
     gc.collect()
@@ -148,8 +114,53 @@ banner = '''
  \_____\__,_|_| |_|_|  |_|   \/    
 
 Official Site : https://canaan-creative.com
-
 '''
 print(banner)
 del banner
 
+import json
+
+config = {
+"type": "01studio",
+"lcd": {
+    "rst" : 37,
+    "dcx" : 38,
+    "ss" : 36,
+    "clk" : 39,
+    "height": 240,
+    "width": 320,
+    "invert": 0,
+    "offset_x1": 0,
+    "offset_y1": 0,
+    "offset_x2": 0,
+    "offset_y2": 0,
+    "dir": 160
+},
+"freq_cpu": 416000000,
+"freq_pll1": 400000000,
+"kpu_div": 1,
+"sdcard":{
+    "sclk":27,
+    "mosi":28,
+    "miso":26,
+    "cs":29
+},
+"board_info": {
+	"BOOT_KEY":  16,
+}
+}
+
+cfg = json.dumps(config)
+print(cfg)
+
+try:
+    with open('/flash/config.json', 'rb') as f:
+        tmp = json.loads(f.read())
+    # print(tmp)
+    if tmp["type"] != config["type"]:
+        raise Exception('config.json no exist')
+except Exception as e:
+    with open('/flash/config.json', "w") as f:
+        f.write(cfg)
+    import machine
+    machine.reset()

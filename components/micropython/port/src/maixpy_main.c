@@ -1,4 +1,19 @@
 /*
+* Copyright (c) 2022, Canaan Bright Sight Co., Ltd 
+
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
+/*
  * Copyright 2019 Sipeed Co.,Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -490,6 +505,7 @@ void mount_sdcard(void){
   dual_func = sd_preload;
 }
 
+#if MICROPY_PY_THREAD
 static void deinit_kpu_timer_cb(TimerHandle_t xExpiredTimer)
 {
     extern int kpu_model_buffer_free_all_ptr(void);
@@ -511,6 +527,7 @@ void free_km_buf_timer_init(void)
     mp_printf(&mp_plat_print, "The timer was not created\n");
   }
 }
+#endif
 
 void mp_task(void *pvParameter)
 {
@@ -611,9 +628,11 @@ soft_reset:
   {
     maix_config_init();
   }
+  #if MICROPY_PY_THREAD
   free_km_buf_timer_init();
+  #endif
   mount_sdcard();
-  // mp_printf(&mp_plat_print, "[CanMV] init end\r\n"); // for maixpy ide
+  // mp_printf(&mp_plat_print, "[CanMV] init end\r\n"); // for canmv ide
   // run boot-up scripts
   mp_hal_set_interrupt_char(CHAR_CTRL_C);
   int ret = pyexec_frozen_module("_boot.py");
@@ -659,7 +678,7 @@ soft_reset:
 #endif
 
     if (ide_dbg_script_ready())
-    { pyexec_frozen_module("ide_debug.py");//just for maixpy ide,to fix amgio lcd bug
+    { pyexec_frozen_module("ide_debug.py");//just for canmv ide,to fix amgio lcd bug
       nlr_buf_t nlr;
       if (nlr_push(&nlr) == 0)
       {

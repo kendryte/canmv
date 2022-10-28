@@ -14,7 +14,7 @@
 #include "stdbool.h"
 #include "global_config.h"
 
-#if CONFIG_MAIXPY_IDE_SUPPORT
+#if CONFIG_CANMV_IDE_SUPPORT
 
 #include "machine_uart.h"
 #include "lcd.h"
@@ -116,7 +116,7 @@ bool     is_ide_dbg_mode();
 bool     ide_dbg_interrupt_main();
 void     ide_dbg_on_script_end();
 
-#else // CONFIG_MAIXPY_IDE_SUPPORT
+#else // CONFIG_CANMV_IDE_SUPPORT
 
 #include "py/mpconfig.h"
 #include "py/misc.h"

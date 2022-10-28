@@ -43,7 +43,7 @@ extern framebuffer_t *fb_framebuffer;
 // Use these macros to get a pointer to main or JPEG framebuffer.
 #define MAIN_FB()           (fb_framebuffer)
 
-#if  !defined(OMV_MINIMUM)|| CONFIG_MAIXPY_IDE_SUPPORT
+#if  !defined(OMV_MINIMUM)|| CONFIG_CANMV_IDE_SUPPORT
     extern jpegbuffer_t *jpeg_fb_framebuffer;
     #define JPEG_FB()           (jpeg_fb_framebuffer)
 #endif

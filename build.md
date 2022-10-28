@@ -114,6 +114,8 @@ python3 project.py menuconfig
 This command will display a configure panel with GUI,
 then change settings and save configuration.
 
+For more details, please refer to the [projects/README.md](projects/README.md)
+
 ## Build
 
 ```

@@ -1,18 +1,15 @@
 ## What is config.json
 
 differences in various hardware IO definitions, such as the difference in LCD / Sensor / SdCard resources in the system.
+Therefore,we use config.json to adapt to different hardware parameters. It can remap the IO resources used at the bottom,some config.json is stored in this directory for your reference and use.
 
-> MaixPy 发展的过程中出现了各类硬件 IO 定义差异较大的地方，例如系统中 LCD / Sensor / SdCard 资源的差异。
-
-Therefore, MaixPy has added config.json to adapt to different hardware parameters. It can remap the IO resources used at the bottom. For the versions provided by Sipeed, the corresponding config.json is stored in this directory for your reference and use.
-
-> 所以 MaixPy 加入了 config.json 来适配不同的硬件参数，它可以重映射底层使用的 IO 资源， 对于 Sipeed 提供的版型均在该目录下存放相应的 config.json 供你参考和使用。
+> 由于不同硬件 IO 定义存在差异，例如系统中 LCD / Sensor / SdCard 资源的差异，所以加入了 config.json 来适配不同的硬件参数，它可以重映射底层使用的 IO 资源，在该目录下存放的 config.json 对应一些版型供你参考和使用。
 
 ## How to use ?
 
-This requires you to upload the config.json file to the flash. You can use MaixPy IDE to send the file to the flash, or use [ampy](https://github.com/scientifichackers/ampy) / [mpfshell-lite](https://github.com/junhuanchen/mpfshell-lite) to upload the file.
+This requires you to upload the config.json file to the flash. You can use CanMV IDE to send the file to the flash, or use [ampy](https://github.com/scientifichackers/ampy) / [mpfshell-lite](https://github.com/junhuanchen/mpfshell-lite) to upload the file.
 
-> 这需要你上传 config.json 文件到 flash 当中，你可以使用 MaixPy IDE 发送文件到 flash 当中，也可以使用 [ampy](https://github.com/scientifichackers/ampy) / [mpfshell-lite](https://github.com/junhuanchen/mpfshell-lite) 进行文件的上传。
+> 这需要你上传 config.json 文件到 flash 当中，你可以使用 CanMV IDE 发送文件到 flash 当中，也可以使用 [ampy](https://github.com/scientifichackers/ampy) / [mpfshell-lite](https://github.com/junhuanchen/mpfshell-lite) 进行文件的上传。
 
 The configuration file config.json has the following templates:
 
@@ -64,15 +61,15 @@ You can decide whether to fill in the configuration items according to your own 
 
 > 可以根据自己的硬件 IO 情况来决定是否要填入配置项，这是截至目前系统内部支持的所有参数（2020年9月18日）。
 
-## How to access it in MaixPy
+## How to access it in CanMV
 
-This is actually a Maix.config module, get_value('value_name', default_value).
+This is actually a maix.config module, get_value('value_name', default_value).
 
 ```shell
->>> import Maix
->>> Maix.config.get_value('kpu_div', None)
+>>> import maix
+>>> maix.config.get_value('kpu_div', None)
 1
->>> Maix.config.get_value('sdcard', {})
+>>> maix.config.get_value('sdcard', {})
 {'cs': 26, 'mosi': 10, 'sclk': 11, 'miso': 6}
 >>> 
 ```
@@ -81,6 +78,6 @@ So did you learn?
 
 ## What use ?
 
-The purpose at the beginning of the design is to unify MaixPy's hardware IO resources. The firmware can solve the differences of different hardware through configuration items, and it can also unify the hardware resources of board_info used by the basic sample code.
+The purpose at the beginning of the design is to unify hardware IO resources. The firmware can solve the differences of different hardware through configuration items, and it can also unify the hardware resources of board_info used by the basic sample code.
 
-> 在设计之初的目的就是为了统一 MaixPy 的硬件 IO 资源，固件可以通过配置项来解决不同硬件的差异，还可以统一基础示例代码所使用 board_info 的硬件资源。
+> 在设计之初的目的就是为了统一硬件 IO 资源，固件可以通过配置项来解决不同硬件的差异，还可以统一基础示例代码所使用 board_info 的硬件资源。

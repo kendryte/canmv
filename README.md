@@ -1,10 +1,6 @@
 <img height=230 src="assets/image/CanMV_logo_800x260.png">
 
-<br />
 
-<div class="title_pic">
-    <img src="assets/image/CanMV_logo_800x260.svg"  style="margin-right: 10px;" height=45> <img src="assets/image/micropython.png" height=50>
-</div>
 
 <br />
 <br />
@@ -24,9 +20,9 @@
 
 **CanMV, makes AIOT easier!**
 
-This implementation was based on Sipeed MaixPy, but it diverged from it and is now a completely independent project.
+This implementation was based on Sipeed MaixPy, but it diverged from it and is now a completely independent project. Thanks for Sipeed's contribution on MaixPy!
 
-CanMV is designed to make AIOT programming easier, based on the [Micropython](http://www.micropython.org) syntax, running on a very powerful embedded AIOT chip [K210](https://kendryte.com).
+CanMV is designed to make AIOT programming easier, based on the [Micropython](http://www.micropython.org) syntax, running on the powerful embedded AI SOC series from [Canaan](https://kendryte.com). Currently it's running on K210. 
 
 
 > K210 brief: 
@@ -40,9 +36,12 @@ CanMV is designed to make AIOT programming easier, based on the [Micropython](ht
 > * FPIOA (Periphrals can map to any pins)
 > * Peripherals: I2C, SPI, I2S, WDT, TIMER, RTC, UART, GPIO etc.
 
+<div class="board_pic">
+    <img src="assets/image/k210_core_board.jpg" height=500 alt="K210"/>
+</div>
 
 
-## Simple code
+## Sample code
 
 Find I2C devices:
 
@@ -114,11 +113,11 @@ kpu.deinit()
 
 ## Documentation
 
-Doc refer to [canmv document](https://developer.canaan-creative.com/index.html?channel=developer#/word)
+Doc refer to [CanMV document](https://developer.canaan-creative.com/index.html?channel=developer#/word)
 
 ## Examples
 
-[canmv_examples](https://github.com/kendryte/canmv_examples)
+[CanMV_examples](https://github.com/kendryte/canmv_examples)
 
 ## Build From Source
 
@@ -129,10 +128,9 @@ See [build doc](build.md)
 See [LICENSE](LICENSE.md) file
 
 
-## Other: As C SDK for C developers
+## for C developers
 
-
-In `CanMV` project, since `micropython` exists as a component, it can be configured to not participate in compilation, so this repository can also be developed as `C SDK`. For the usage details, see [Building Documentation](build.md), which can be started by compiling and downloading `projects/hello_world`.
+As C language has higher performance than python,  sometimes you may use C to develop your product instead of python. In this case, you can still use this code repo to build your own C developing firmware by disable micropython component. For the usage details, see [Building Documentation](build.md), which can be started by compiling and downloading `projects/hello_world`.
 
 The compilation process is briefly as follows:
 

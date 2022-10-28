@@ -24,9 +24,9 @@
 
 **CanMV, 让 AIOT 更简单～**
 
-此实现基于Sipeed MaixPy，但它与之不同，现在是一个完全独立的项目。
+此实现基于Sipeed MaixPy，但它与之不同，现在是一个完全独立的项目。感谢Sipeed对MaixPy的贡献！
 
-CanMV 的目的是让 AIOT 编程更简单， 基于 [Micropython](http://www.micropython.org) 语法, 运行在一款有着便宜价格的高性能 AIOT 芯片 [K210](https://kendryte.com) 上.
+CanMV 的目的是让 AIOT 编程更简单， 基于 [Micropython](http://www.micropython.org) 语法, 运行在[Canan](https://kendryte.com)强大的嵌入式AI SOC系列上。目前它在K210上运行。
 
 
 > K210 简介 : 
@@ -40,6 +40,9 @@ CanMV 的目的是让 AIOT 编程更简单， 基于 [Micropython](http://www.mi
 > * FPIOA (每个外设可以映射到任意引脚)
 > * 外设: I2C, SPI, I2S, WDT, TIMER, RTC, UART, GPIO 等等
 
+<div class="board_pic">
+    <img src="assets/image/k210_core_board.jpg" height=500 alt="K210"/>
+</div>
 
 
 ## 简单易懂的代码
@@ -115,11 +118,11 @@ kpu.deinit()
 
 ## 文档
 
-查看 [canmv document](https://developer.canaan-creative.com/index.html?channel=developer#/word)
+查看 [CanMV document](https://developer.canaan-creative.com/index.html?channel=developer#/word)
 
 ## 例示代码
 
-[canmv_examples](https://github.com/kendryte/canmv_examples)
+[CanMV_examples](https://github.com/kendryte/canmv_examples)
 
 ## 从源码构建自己的固件
 
@@ -129,9 +132,9 @@ kpu.deinit()
 
 查看 [LICENSE](LICENSE.md) 文件
 
-## 其它： 使用本仓库作为 `SDK` 用 `C` 语言开发
+## 使用 `C` 语言开发项目
 
-在 `CanMV` 项目中， 由于`micropython`作为一个组件存在， 可以配置为不参与编译， 所以也可以作为 `C SDK` 来进行开发， 使用方法见 [构建文档](build.md), 可以从编译下载`projects/hello_world`开始
+由于C语言比python具有更高的性能，可以使用C来开发产品，而不是python。在这种情况下，您仍然可以使用此代码库通过禁用micropython组件来构建自己的C开发固件。有关用法的详细信息，请参阅[构建文档](build.md)，可以从编译下载`projects/hello_world`开始。
 
 大致上编译下载过程如下：
 

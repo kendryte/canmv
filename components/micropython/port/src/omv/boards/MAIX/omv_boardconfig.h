@@ -19,7 +19,7 @@
 #define IDE_DBG_MAX_PACKET  64
 #define IDE_DBG_CMD_START_FLAG 0x30
 
-#if !defined(OMV_MINIMUM) || CONFIG_MAIXPY_IDE_SUPPORT
+#if !defined(OMV_MINIMUM) || CONFIG_CANMV_IDE_SUPPORT
   #define OMV_JPEG_BUF_SIZE 23 * 1024 // IDE JPEG buffer (header + data).
 #endif
 

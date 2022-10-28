@@ -234,7 +234,7 @@ static int sensor_irq(void *ctx)
 
 void sensor_init_fb()
 {
-#if !defined(OMV_MINIMUM) || CONFIG_MAIXPY_IDE_SUPPORT
+#if !defined(OMV_MINIMUM) || CONFIG_CANMV_IDE_SUPPORT
     // Init FB mutex
     mutex_init(&JPEG_FB()->lock);
 
