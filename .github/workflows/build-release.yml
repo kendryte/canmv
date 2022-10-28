@@ -8,6 +8,10 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+
     steps:
 
       - uses: actions/checkout@v3
@@ -22,72 +26,27 @@ jobs:
           mkdir build/elf
           cp README.md build
 
-      - name: Build Project canmv_dock-Standard
+      - name: Build Projects
         run: |
-          cd projects/canmv_dock
-          echo "-------------------"
-          echo "build project canmv_dock_default"
-          echo "-------------------"
-          python project.py distclean
-          python project.py build --config_file "config_standard.mk"
-          mv build/canmv.bin ${{ github.workspace }}/projects/build/canmv_dock_standard.bin
-          mv build/canmv.elf ${{ github.workspace }}/projects/build/elf/canmv_dock_standard.elf
-
-      - name: Build Project canmv_dock-Lite
-        run: |
-          cd projects/canmv_dock
-          echo "-------------------"
-          echo "build project canmv_dock_lite"
-          echo "-------------------"
-          python project.py distclean
-          python project.py build --config_file "config_lite.mk"
-          mv build/canmv.bin ${{ github.workspace }}/projects/build/canmv_dock_lite.bin
-          mv build/canmv.elf ${{ github.workspace }}/projects/build/elf/canmv_dock_lite.elf
-
-      # - name: Build Project canmv_k1-Standard
-      #   run: |
-      #     cd projects/canmv_k1
-      #     echo "-------------------"
-      #     echo "build project canmv_k1_default"
-      #     echo "-------------------"
-      #     python project.py distclean
-      #     python project.py build --config_file "config_standard.mk"
-      #     mv build/canmv.bin ${{ github.workspace }}/projects/build/canmv_k1_standard.bin
-      #     mv build/canmv.elf ${{ github.workspace }}/projects/build/elf/canmv_k1_standard.elf
-
-      # - name: Build Project canmv_k1-Lite
-      #   run: |
-      #     cd projects/canmv_k1
-      #     echo "-------------------"
-      #     echo "build project canmv_k1_lite"
-      #     echo "-------------------"
-      #     python project.py distclean
-      #     python project.py build --config_file "config_lite.mk"
-      #     mv build/canmv.bin ${{ github.workspace }}/projects/build/canmv_k1_lite.bin
-      #     mv build/canmv.elf ${{ github.workspace }}/projects/build/elf/canmv_k1_lite.elf
-
-      - name: Build Project canmv_k210-Standard
-        run: |
-          cd projects/canmv_k210
-          echo "-------------------"
-          echo "build project canmv_k210_default"
-          echo "-------------------"
-          python project.py distclean
-          python project.py build --config_file "config_standard.mk"
-          mv build/canmv.bin ${{ github.workspace }}/projects/build/canmv_k210_standard.bin
-          mv build/canmv.elf ${{ github.workspace }}/projects/build/elf/canmv_k210_standard.elf
-
-      - name: Build Project canmv_k210-Lite
-        run: |
-          cd projects/canmv_k210
-          echo "-------------------"
-          echo "build project canmv_k210_lite"
-          echo "-------------------"
-          python project.py distclean
-          python project.py build --config_file "config_lite.mk"
-          mv build/canmv.bin ${{ github.workspace }}/projects/build/canmv_k210_lite.bin
-          mv build/canmv.elf ${{ github.workspace }}/projects/build/elf/canmv_k210_lite.elf
-
+          # projects=("canmv_k1" "canmv_dock" "canmv_k210")
+          projects=("canmv_dock" "canmv_k210")
+          for proj in ${projects[@]};do
+            cd projects/${proj}
+            echo "-------------------"
+            echo "build project ${proj}-standard"
+            echo "-------------------"
+            python project.py distclean
+            python project.py build --config_file "config_standard.mk"
+            mv build/canmv.bin ${{ github.workspace }}/projects/build/${proj}_standard.bin
+            mv build/canmv.elf ${{ github.workspace }}/projects/build/elf/${proj}_standard.elf
+            echo "-------------------"
+            echo "build project ${proj}-lite"
+            echo "-------------------"
+            python project.py distclean
+            python project.py build --config_file "config_lite.mk"
+            mv build/canmv.bin ${{ github.workspace }}/projects/build/${proj}_lite.bin
+            mv build/canmv.elf ${{ github.workspace }}/projects/build/elf/${proj}_lite.elf
+          done
       - uses: actions/upload-artifact@v3
         with:
           name: "canmv-${{ github.sha }}"
