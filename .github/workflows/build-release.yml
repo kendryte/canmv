@@ -68,5 +68,5 @@ jobs:
 
       - uses: ncipollo/release-action@v1
         with:
-          artifacts: "release/**"
+          artifacts: "release/**.bin"
           token: ${{ secrets.GITHUB_TOKEN  }}
