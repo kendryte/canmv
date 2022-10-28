@@ -1,0 +1,113 @@
+name: CanMV Build and Release
+
+on:
+  push:
+    tags: [ "v*" ]
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+
+      - uses: actions/checkout@v3
+
+      - name: Prepare Environment
+        run: |
+          wget https://github.com/kendryte/kendryte-gnu-toolchain/releases/download/v8.2.0-20190409/kendryte-toolchain-ubuntu-amd64-8.2.0-20190409.tar.xz
+          sudo tar -Jxf kendryte-toolchain-ubuntu-amd64-8.2.0-20190409.tar.xz -C /opt
+          rm -f kendryte-toolchain-ubuntu-amd64-8.2.0-20190409.tar.xz
+          git submodule update --init --recursive
+          cd projects && mkdir build
+          mkdir build/elf
+          cp README.md build
+
+      - name: Build Project canmv_dock-Standard
+        run: |
+          cd projects/canmv_dock
+          echo "-------------------"
+          echo "build project canmv_dock_default"
+          echo "-------------------"
+          python project.py distclean
+          python project.py build --config_file "config_standard.mk"
+          mv build/canmv.bin ${{ github.workspace }}/projects/build/canmv_dock_standard.bin
+          mv build/canmv.elf ${{ github.workspace }}/projects/build/elf/canmv_dock_standard.elf
+
+      - name: Build Project canmv_dock-Lite
+        run: |
+          cd projects/canmv_dock
+          echo "-------------------"
+          echo "build project canmv_dock_lite"
+          echo "-------------------"
+          python project.py distclean
+          python project.py build --config_file "config_lite.mk"
+          mv build/canmv.bin ${{ github.workspace }}/projects/build/canmv_dock_lite.bin
+          mv build/canmv.elf ${{ github.workspace }}/projects/build/elf/canmv_dock_lite.elf
+
+      - name: Build Project canmv_k1-Standard
+        run: |
+          cd projects/canmv_k1
+          echo "-------------------"
+          echo "build project canmv_k1_default"
+          echo "-------------------"
+          python project.py distclean
+          python project.py build --config_file "config_standard.mk"
+          mv build/canmv.bin ${{ github.workspace }}/projects/build/canmv_k1_standard.bin
+          mv build/canmv.elf ${{ github.workspace }}/projects/build/elf/canmv_k1_standard.elf
+
+      - name: Build Project canmv_k1-Lite
+        run: |
+          cd projects/canmv_k1
+          echo "-------------------"
+          echo "build project canmv_k1_lite"
+          echo "-------------------"
+          python project.py distclean
+          python project.py build --config_file "config_lite.mk"
+          mv build/canmv.bin ${{ github.workspace }}/projects/build/canmv_k1_lite.bin
+          mv build/canmv.elf ${{ github.workspace }}/projects/build/elf/canmv_k1_lite.elf
+
+      - name: Build Project canmv_k210-Standard
+        run: |
+          cd projects/canmv_k210
+          echo "-------------------"
+          echo "build project canmv_k210_default"
+          echo "-------------------"
+          python project.py distclean
+          python project.py build --config_file "config_standard.mk"
+          mv build/canmv.bin ${{ github.workspace }}/projects/build/canmv_k210_standard.bin
+          mv build/canmv.elf ${{ github.workspace }}/projects/build/elf/canmv_k210_standard.elf
+
+      - name: Build Project canmv_k210-Lite
+        run: |
+          cd projects/canmv_k210
+          echo "-------------------"
+          echo "build project canmv_k210_lite"
+          echo "-------------------"
+          python project.py distclean
+          python project.py build --config_file "config_lite.mk"
+          mv build/canmv.bin ${{ github.workspace }}/projects/build/canmv_k210_lite.bin
+          mv build/canmv.elf ${{ github.workspace }}/projects/build/elf/canmv_k210_lite.elf
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: "canmv-${{ github.sha }}"
+          path: ${{ github.workspace }}/projects/build/**
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/download-artifact@v3
+        with:
+          path: ./release
+          name: "canmv-${{ github.sha }}"
+
+      - uses: ncipollo/release-action@v1
+        with:
+          artifacts: "release/**"
+          token: ${{ secrets.GITHUB_TOKEN  }}

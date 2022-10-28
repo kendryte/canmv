@@ -29,5 +29,5 @@ If applicable, add screenshots to help explain your problem.
 **Please complete the following information**
  - IDE version: [e.g. 0.2.5]
  - Firmware version: [e.g. 0.6.2]
- - Board: [e.g. Maix Amigo]
- - OS: [e.g. Windows/Linux/ios]
+ - Board: [e.g. CanMV K1]
+ - OS: [e.g. Windows/Linux/Mac]
