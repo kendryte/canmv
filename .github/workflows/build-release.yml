@@ -44,27 +44,27 @@ jobs:
           mv build/canmv.bin ${{ github.workspace }}/projects/build/canmv_dock_lite.bin
           mv build/canmv.elf ${{ github.workspace }}/projects/build/elf/canmv_dock_lite.elf
 
-      - name: Build Project canmv_k1-Standard
-        run: |
-          cd projects/canmv_k1
-          echo "-------------------"
-          echo "build project canmv_k1_default"
-          echo "-------------------"
-          python project.py distclean
-          python project.py build --config_file "config_standard.mk"
-          mv build/canmv.bin ${{ github.workspace }}/projects/build/canmv_k1_standard.bin
-          mv build/canmv.elf ${{ github.workspace }}/projects/build/elf/canmv_k1_standard.elf
+      # - name: Build Project canmv_k1-Standard
+      #   run: |
+      #     cd projects/canmv_k1
+      #     echo "-------------------"
+      #     echo "build project canmv_k1_default"
+      #     echo "-------------------"
+      #     python project.py distclean
+      #     python project.py build --config_file "config_standard.mk"
+      #     mv build/canmv.bin ${{ github.workspace }}/projects/build/canmv_k1_standard.bin
+      #     mv build/canmv.elf ${{ github.workspace }}/projects/build/elf/canmv_k1_standard.elf
 
-      - name: Build Project canmv_k1-Lite
-        run: |
-          cd projects/canmv_k1
-          echo "-------------------"
-          echo "build project canmv_k1_lite"
-          echo "-------------------"
-          python project.py distclean
-          python project.py build --config_file "config_lite.mk"
-          mv build/canmv.bin ${{ github.workspace }}/projects/build/canmv_k1_lite.bin
-          mv build/canmv.elf ${{ github.workspace }}/projects/build/elf/canmv_k1_lite.elf
+      # - name: Build Project canmv_k1-Lite
+      #   run: |
+      #     cd projects/canmv_k1
+      #     echo "-------------------"
+      #     echo "build project canmv_k1_lite"
+      #     echo "-------------------"
+      #     python project.py distclean
+      #     python project.py build --config_file "config_lite.mk"
+      #     mv build/canmv.bin ${{ github.workspace }}/projects/build/canmv_k1_lite.bin
+      #     mv build/canmv.elf ${{ github.workspace }}/projects/build/elf/canmv_k1_lite.elf
 
       - name: Build Project canmv_k210-Standard
         run: |

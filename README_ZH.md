@@ -1,10 +1,6 @@
-<img height=200 src="assets/image/CanMV_logo_800x260.png">
+<img height=230 src="assets/image/CanMV_logo_800x260.png">
 
-<br />
 
-<div class="title_pic">
-    <img src="assets/image/CanMV_logo_800x260.svg"  style="margin-right: 10px;" height=45> <img src="assets/image/micropython.png" height=50>
-</div>
 
 <br />
 <br />
