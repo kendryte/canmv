@@ -46,6 +46,7 @@ jobs:
             python project.py build --config_file "config_lite.mk"
             mv build/canmv.bin ${{ github.workspace }}/projects/build/${proj}_lite.bin
             mv build/canmv.elf ${{ github.workspace }}/projects/build/elf/${proj}_lite.elf
+            cd -
           done
       - uses: actions/upload-artifact@v3
         with:
