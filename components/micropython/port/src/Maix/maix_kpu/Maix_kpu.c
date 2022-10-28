@@ -239,7 +239,6 @@ STATIC mp_obj_t py_kpu_load_kmodel(size_t n_args, const mp_obj_t *pos_args, mp_m
         km->model_buffer = NULL;
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "Failed to init model"));
     }
-    //kpu_prealloc_for_fully_conn_layer(km->kmodel_ctx);
 
     if(kpu_model_buffer_add_ptr(km) != 0){
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "Failed to add kpu_model_buffer"));
