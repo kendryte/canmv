@@ -35,7 +35,7 @@
 
 #if CONFIG_CANMV_IDE_SUPPORT
 
-#define SCRIPT_BUF_LEN (10*1024)
+#define SCRIPT_BUF_LEN (8*1024)
 static volatile int xfer_bytes;   // bytes sent
 static volatile int xfer_length;  // bytes need to send
 static enum usbdbg_cmd cmd;
