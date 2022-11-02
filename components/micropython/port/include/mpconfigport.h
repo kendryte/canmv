@@ -190,7 +190,8 @@ extern const struct _mp_print_t mp_debug_print;
 #endif //CONF_MAIXPY_THREAD_ENABLE
 #define MICROPY_PY_THREAD_GIL_VM_DIVISOR    (32)
 
-#define MICROPY_FATFS_ENABLE_LFN            (1)
+#define MICROPY_FATFS_EXFAT                 (1)
+#define MICROPY_FATFS_ENABLE_LFN            (2) //(1)
 #define MICROPY_FATFS_LFN_CODE_PAGE         437 /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
 #define mp_type_fileio                      mp_type_vfs_spiffs_fileio
 #define mp_type_textio                      mp_type_vfs_spiffs_textio
