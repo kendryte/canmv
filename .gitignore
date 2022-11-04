@@ -10,7 +10,7 @@
 # Linker output
 *.ilk
 *.map
-*.exp
+# *.exp
 
 # Precompiled Headers
 *.gch
@@ -67,3 +67,4 @@ lib_sipeed_kpu/
 components/nncase/
 
 !components/micropython/port/src/speech/maix_asr/libmaix_asr.a
+tools/tests/results

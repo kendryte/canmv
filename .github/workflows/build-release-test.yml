@@ -1,0 +1,112 @@
+name: CanMV Build and Release and Test
+
+on:
+  push:
+    tags: [ "v*" ]
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Prepare Environment
+        run: |
+          wget https://github.com/kendryte/kendryte-gnu-toolchain/releases/download/v8.2.0-20190409/kendryte-toolchain-ubuntu-amd64-8.2.0-20190409.tar.xz
+          sudo tar -Jxf kendryte-toolchain-ubuntu-amd64-8.2.0-20190409.tar.xz -C /opt
+          rm -f kendryte-toolchain-ubuntu-amd64-8.2.0-20190409.tar.xz
+          git submodule update --init --recursive
+          cd projects && mkdir build
+          mkdir build/elf
+          cp README.md build
+
+      - name: Build Projects
+        run: |
+          # projects=("canmv_k1" "canmv_dock" "canmv_k210")
+          projects=("canmv_dock" "canmv_k210")
+          for proj in ${projects[@]};do
+            cd projects/${proj}
+            echo "-------------------"
+            echo "build project ${proj}-standard"
+            echo "-------------------"
+            python project.py distclean
+            python project.py build --config_file "config_standard.mk"
+            mv build/canmv.bin ${{ github.workspace }}/projects/build/${proj}_standard.bin
+            mv build/canmv.elf ${{ github.workspace }}/projects/build/elf/${proj}_standard.elf
+            echo "-------------------"
+            echo "build project ${proj}-lite"
+            echo "-------------------"
+            python project.py distclean
+            python project.py build --config_file "config_lite.mk"
+            mv build/canmv.bin ${{ github.workspace }}/projects/build/${proj}_lite.bin
+            mv build/canmv.elf ${{ github.workspace }}/projects/build/elf/${proj}_lite.elf
+            cd -
+          done
+      - uses: actions/upload-artifact@v3
+        with:
+          name: "canmv-${{ github.sha }}"
+          path: ${{ github.workspace }}/projects/build/**
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/download-artifact@v3
+        with:
+          path: ./release
+          name: "canmv-${{ github.sha }}"
+
+      - uses: ncipollo/release-action@v1
+        with:
+          artifacts: "release/**.bin"
+          token: ${{ secrets.GITHUB_TOKEN  }}
+
+  test:
+    runs-on: self-hosted
+    needs: build
+    defaults:
+      run:
+        shell: bash
+    env:
+      SERIAL_DEV: /dev/ttyACM0
+
+    steps:
+      - name: Check Board
+        run: |
+          ls ${{ env.SERIAL_DEV }}
+          if [ $? -ne 0 ]; then
+            echo "Runner have no board connected."
+            exit -1
+          fi
+
+      - uses: actions/checkout@v3
+
+      - uses: actions/download-artifact@v3
+        with:
+          path: ./build
+          name: "canmv-${{ github.sha }}"
+
+      - name: Burn Test Firmware
+        run: |
+          python3 tools/flash/kflash_py/kflash.py -p ${{ env.SERIAL_DEV }} -b 1500000  build/canmv_k210_standard.bin
+
+      - name: Run Tests
+        run: |
+          cd tools/tests
+          python3 run-tests.py --target k210 --device ${{ env.SERIAL_DEV }} --baudrate 115200
+          cd -
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: "canmv-test-results-${{ github.sha }}"
+          path: tools/tests/results
