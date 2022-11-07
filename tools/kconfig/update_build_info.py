@@ -129,7 +129,7 @@ def append_time_info(time_info_filename, version_info_filename, file_type):
     #               git tag -a v0.1.1 -m "release v0.1.1 describe....."
     #               git push origin --tags 
     git_tag_name = ""
-    version_major = 0
+    version_major = 1
     version_minor = 0
     version_dev   = 0
     version_dev2  = 0
