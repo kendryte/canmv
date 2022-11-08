@@ -17,56 +17,48 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
+#define TASK_STACK_SIZE (32 * 1024)
+#define TASK_STACK_LEN (TASK_STACK_SIZE / sizeof(StackType_t))
 void * __dso_handle = 0 ;
+TaskHandle_t task_1_handle;
 
 int core1_function(void *ctx)
 {
     uint64_t core = current_coreid();
     printf("Core %ld Hello world\n", core);
-    vTaskStartScheduler();
-    while(1);
+    //vTaskStartScheduler();
+    //while(1);
+    return 0;
 }
 
-void test(void* arg)
+void task_1(void* arg)
 {
-    int count = 0;
+    vTaskDelay(pdMS_TO_TICKS(1000));
     while(1)
     {
         printf("---1---\r\n");
-        vTaskDelay(pdMS_TO_TICKS(1000));
-        if(count++ == 10)
-        {
-            printf("----3---\r\n");
-            vTaskDelete(NULL);
-            printf("----4---\r\n");
-        }
-    }
-    printf("----5---\r\n");
-}
-void test2(void* arg)
-{
-    while(1)
-    {
-        printf("---2---\r\n");
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }
 
 int main(void)
 {
-    sysctl_pll_set_freq(SYSCTL_PLL0, 800000000);
     uint64_t core = current_coreid();
     int data;
     printf("Core %ld Hello world\n", core);
     register_core1(core1_function, NULL);
 
-    xTaskCreateAtProcessor(0, test, "1", 256, NULL, tskIDLE_PRIORITY+1, NULL );
-    xTaskCreateAtProcessor(1, test2, "2", 256, NULL, tskIDLE_PRIORITY+1, NULL );
-    printf("start sheduler\r\n");
+    xTaskCreateAtProcessor(0,                     // processor
+                            task_1,               // function entry
+                            "task_1",             //task name
+                            TASK_STACK_LEN,     //stack_deepth
+                            NULL,               //function arg
+                            5,      //task priority
+                            &task_1_handle); //task handl
     vTaskStartScheduler();
-    printf("start sheduler end\r\n");
-    while(1)
-        continue;
+    for (;;)
+        ;
+
     return 0;
 }
 
