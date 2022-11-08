@@ -248,8 +248,8 @@ void ENABLE_HSRX_INT(machine_uart_obj_t *self)
 bool uart_rx_wait(machine_uart_obj_t *self, uint32_t timeout) 
 {
     uint32_t start = mp_hal_ticks_ms();
-	debug_print("uart_rx_wait | read_buf_head = %d\n",self->read_buf_head);
-	debug_print("uart_rx_wait | read_buf_tail = %d\n",self->read_buf_tail);
+	debug_print("uart_rx_wait | read_buf_head = %d\r\n",self->read_buf_head);
+	debug_print("uart_rx_wait | read_buf_tail = %d\r\n",self->read_buf_tail);
     for (;;) {
         if (self->read_buf_tail != self->read_buf_head) {
             return true; // have at least 1 char ready for reading
@@ -650,7 +650,7 @@ STATIC mp_uint_t machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t siz
 		        	*buf++ = (uint8_t)data;
 					data_num++;
 					size--;
-					debug_print("[machine_uart_read] data is valid,size = %d,data = %c\n",size,data);
+					debug_print("[machine_uart_read] data is valid,size = %d,data = %c\r\n",size,data);
 				}
 		        else if (-1 == data || !uart_rx_any(self)) 
 				{
@@ -681,7 +681,7 @@ STATIC mp_uint_t machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t siz
 	}
 	else
 	{
-		debug_print("[machine_uart_read] retrun error\n");
+		debug_print("[machine_uart_read] retrun error\r\n");
 		*errcode = MP_EAGAIN;
 		return MP_STREAM_ERROR;//don't return MP_STREAM_ERROR.It will lead error which can't get reading buf
 		//return 0;

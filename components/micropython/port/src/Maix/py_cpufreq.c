@@ -106,7 +106,7 @@ mp_obj_t py_cpufreq_set_frequency(size_t n_args, const mp_obj_t *pos_args, mp_ma
         return mp_const_none;
     }
     if(!save_config_to_spiffs(&config))
-        mp_printf(&mp_plat_print, "save config fail");
+        mp_printf(&mp_plat_print, "save config fail\r\n");
     mp_printf(&mp_plat_print, "\r\nreboot now\r\n");
     mp_hal_delay_ms(50);
     sipeed_sys_reset();

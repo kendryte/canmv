@@ -511,7 +511,7 @@ static void deinit_kpu_timer_cb(TimerHandle_t xExpiredTimer)
     extern int kpu_model_buffer_free_all_ptr(void);
 
     int n = kpu_model_buffer_free_all_ptr();
-    mp_printf(&mp_plat_print, "free %d kpu model buffer\n>>>", n);
+    mp_printf(&mp_plat_print, "free %d kpu model buffer\n>>>\r\n", n);
 }
 
 void free_km_buf_timer_init(void)
@@ -524,7 +524,7 @@ void free_km_buf_timer_init(void)
                               &xTimerBuffer );  // The buffer that will hold the software timer structure.
   if(timer_hander_deinit_kpu == NULL)
   {
-    mp_printf(&mp_plat_print, "The timer was not created\n");
+    mp_printf(&mp_plat_print, "The timer was not created\r\n");
   }
 }
 #endif

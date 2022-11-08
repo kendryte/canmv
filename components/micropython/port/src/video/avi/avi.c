@@ -127,9 +127,9 @@ void avi_debug_info(avi_t* avi)
 	mp_printf(&mp_plat_print, "avi->VideoFLAG:%s\r\n",avi->video_flag); 
 	mp_printf(&mp_plat_print, "avi->AudioFLAG:%s\r\n",avi->audio_flag); 
 
-    mp_printf(&mp_plat_print, "\nfps:%.2f\n", 1000.0/(avi->usec_per_frame/1000.0));
-    mp_printf(&mp_plat_print, "audio channels:%d\n", avi->audio_channels);
-    mp_printf(&mp_plat_print, "audio sample rate:%d\n", avi->audio_sample_rate*10);
+    mp_printf(&mp_plat_print, "\nfps:%.2f\r\n", 1000.0/(avi->usec_per_frame/1000.0));
+    mp_printf(&mp_plat_print, "audio channels:%d\r\n", avi->audio_channels);
+    mp_printf(&mp_plat_print, "audio sample rate:%d\r\n", avi->audio_sample_rate*10);
 }
 #endif
 

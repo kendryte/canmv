@@ -516,7 +516,7 @@ int parse_ipv4_addr(mp_obj_t addr_in, uint8_t *out_ip, netutils_endian_t endian)
         } else if (i > 0 && s < s_top && *s == '.') {
             s++;
         } else {
-			// mp_printf(&mp_plat_print, "[CanMV] %s | It is not string IP format:%s\n",__func__, addr_str);
+			// mp_printf(&mp_plat_print, "[CanMV] %s | It is not string IP format:%s\r\n",__func__, addr_str);
 			return 0;
         }
     }

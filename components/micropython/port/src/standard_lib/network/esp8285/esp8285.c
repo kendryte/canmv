@@ -264,7 +264,7 @@ bool get_host_byname(esp8285_obj* nic, const char* host,uint32_t len,char* out_i
 	int index = 0;
 	if(false == sATCIPDOMAIN(nic,host, timeout_ms))
 	{
-		mp_printf(&mp_plat_print, "[CanMV] %s | get_host_byname failed\n",__func__);
+		mp_printf(&mp_plat_print, "[CanMV] %s | get_host_byname failed\r\n",__func__);
 		return false;
 	}
 	char IP_buf[16]={0};
@@ -289,7 +289,7 @@ bool get_ipconfig(esp8285_obj* nic, ipconfig_obj* ipconfig)
 	cur = strstr((char*)nic->buffer.buffer, "ip");
 	if(cur == NULL)
 	{
-		mp_printf(&mp_plat_print, "[CanMV] %s | esp8285_ipconfig could'n get ip\n",__func__);
+		mp_printf(&mp_plat_print, "[CanMV] %s | esp8285_ipconfig could'n get ip\r\n",__func__);
 		return false;
 	}
 	char ip_buf[16] = {0};
@@ -298,7 +298,7 @@ bool get_ipconfig(esp8285_obj* nic, ipconfig_obj* ipconfig)
 	cur = strstr((char*)nic->buffer.buffer, "gateway");
 	if(cur == NULL)
 	{
-		mp_printf(&mp_plat_print, "[CanMV] %s | esp8285_ipconfig could'n get gateway\n",__func__);
+		mp_printf(&mp_plat_print, "[CanMV] %s | esp8285_ipconfig could'n get gateway\r\n",__func__);
 		return false;
 	}
 	char gateway_buf[16] = {0};
@@ -307,7 +307,7 @@ bool get_ipconfig(esp8285_obj* nic, ipconfig_obj* ipconfig)
 	cur = strstr((char*)nic->buffer.buffer, "netmask");
 	if(cur == NULL)
 	{
-		mp_printf(&mp_plat_print, "[CanMV] %s | esp8285_ipconfig could'n get netmask\n",__func__);
+		mp_printf(&mp_plat_print, "[CanMV] %s | esp8285_ipconfig could'n get netmask\r\n",__func__);
 		return false;
 	}
 	char netmask_buf[16] = {0};
