@@ -180,7 +180,9 @@ More parameters help by :
 python3 project.py --help
 ```
 
-
+## Build with Docker or Podman
+We provide Dockerfile and scripts to build the project in a container. This is useful if you don't want to install all the dependencies on your host system.
+Here's a guide how to build the project with Docker: [Docker Guide](tools/docker/README.md)
 ## Others
 
 * Code conventions: TODO

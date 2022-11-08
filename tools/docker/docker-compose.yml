@@ -1,0 +1,14 @@
+version: "3.7"
+
+services:
+        k210_build_server:
+                image: ghcr.io/kendryte/k210_build:latest
+                container_name: k210_build
+                #privileged: true
+                network_mode: host
+                restart: always
+                tty: true
+                volumes:
+                        - /etc/localtime:/etc/localtime:ro
+                        - /etc/timezone:/etc/timezone:ro
+                        - ../..:/workspace
