@@ -1,0 +1,4 @@
+init i2c:2 freq:100000
+[CANMV]: find ov2640
+[CANMV]: find ov sensor
+Done.

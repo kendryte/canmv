@@ -540,7 +540,6 @@ def run_tests(tests, args, result_dir, num_threads=1):
             skip_tests.add("extmod/uctypes_ptr_le.py")
             skip_tests.add("extmod/uctypes_sizeof_float.py")
             skip_tests.add("extmod/uctypes_union.py")
-            skip_tests.add("extmod/uhashlib_sha256.py")
             skip_tests.add("extmod/ujson_dumps.py")
             skip_tests.add("extmod/ujson_dumps_float.py")
             skip_tests.add("extmod/ujson_dumps_ordereddict.py")
@@ -563,6 +562,8 @@ def run_tests(tests, args, result_dir, num_threads=1):
             skip_tests.add("extmod/vfs_userfs.py")
             skip_tests.add("extmod/vfs_lfs_corrupt.py")
             skip_tests.add("extmod/vfs_lfs_error.py")
+            skip_tests.add("extmod/vfs_lfs_file.py")
+            skip_tests.add("extmod/vfs_lfs_mount.py")
 
             skip_tests.add("float/builtin_float_abs.py")
             skip_tests.add("float/builtin_float_pow.py")
@@ -753,6 +754,8 @@ def run_tests(tests, args, result_dir, num_threads=1):
 
         # run MicroPython
         output_mupy = run_micropython(pyb, args, test_file)
+        # canonical form for all host platforms is to use \n for end-of-line
+        output_mupy = output_mupy.replace(b"\r\n", b"\n")
 
         if output_mupy == b"SKIP\n":
             print("skip ", test_file)
@@ -1010,7 +1013,7 @@ the last matching regex is used:
             elif args.target in ("esp8266", "esp32", "minimal", "nrf"):
                 test_dirs += ("float")
             elif args.target == "k210":
-                test_dirs += ("float", "stress", "thread")
+                test_dirs += ("float", "stress", "thread", "canmv")
             elif args.target == "wipy":
                 # run WiPy tests
                 test_dirs += ("wipy",)
