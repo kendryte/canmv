@@ -55,7 +55,7 @@ STATIC mp_obj_t Maix_set_function(size_t n_args, const mp_obj_t *pos_args, mp_ma
 	
 	if(0 != fpioa_set_function(pin_num,func_num))
 	{
-		mp_printf(&mp_plat_print, "[Maix]:Opps!Can not set fpioa\n");
+		mp_printf(&mp_plat_print, "[Maix]:Opps!Can not set fpioa\r\n");
 		mp_raise_OSError(MP_EIO);
 	}
 	
@@ -117,12 +117,12 @@ STATIC mp_obj_t Maix_fpioa_help(size_t n_args, const mp_obj_t *pos_args, mp_map_
 	char* fun_space_str = NULL;
 	if(args[ARG_func].u_int > USABLE_FUNC_NUM)
 	{
-		mp_printf(&mp_plat_print, "No this funciton Description\n");
+		mp_printf(&mp_plat_print, "No this funciton Description\r\n");
 		return mp_const_false;
 	}
-	mp_printf(&mp_plat_print, "+-------------------+----------------------------------+\n") ;
-	mp_printf(&mp_plat_print, "|     Function      |            Description           |\n") ;
-	mp_printf(&mp_plat_print, "+-------------------+----------------------------------+\n") ;
+	mp_printf(&mp_plat_print, "+-------------------+----------------------------------+\r\n") ;
+	mp_printf(&mp_plat_print, "|     Function      |            Description           |\r\n") ;
+	mp_printf(&mp_plat_print, "+-------------------+----------------------------------+\r\n") ;
 	if(args[ARG_func].u_int == USABLE_FUNC_NUM)
 	{
 		
@@ -139,10 +139,10 @@ STATIC mp_obj_t Maix_fpioa_help(size_t n_args, const mp_obj_t *pos_args, mp_map_
 			fun_space_str[FUN_SPACE_NUM( func_name[i])] = '\0';
 			
 		
-			mp_printf(&mp_plat_print, "|  %s%s|  %s%s|\n", func_name[i],fun_space_str,func_description[i],des_space_str) ;
+			mp_printf(&mp_plat_print, "|  %s%s|  %s%s|\r\n", func_name[i],fun_space_str,func_description[i],des_space_str) ;
 			free(des_space_str);
 			free(fun_space_str);
-			mp_printf(&mp_plat_print, "+-------------------+----------------------------------+\n") ;
+			mp_printf(&mp_plat_print, "+-------------------+----------------------------------+\r\n") ;
 		}
 	}
 	else
@@ -156,10 +156,10 @@ STATIC mp_obj_t Maix_fpioa_help(size_t n_args, const mp_obj_t *pos_args, mp_map_
 		memset(fun_space_str,' ',FUN_SPACE_NUM(func_name[args[ARG_func].u_int]));
 		fun_space_str[FUN_SPACE_NUM(func_name[args[ARG_func].u_int])] = '\0';
 		
-		mp_printf(&mp_plat_print, "|  %s%s|  %s%s|\n", func_name[args[ARG_func].u_int],fun_space_str,func_description[args[ARG_func].u_int],des_space_str) ;
+		mp_printf(&mp_plat_print, "|  %s%s|  %s%s|\r\n", func_name[args[ARG_func].u_int],fun_space_str,func_description[args[ARG_func].u_int],des_space_str) ;
 		free(des_space_str);
 		free(fun_space_str);
-		mp_printf(&mp_plat_print, "+-------------------+----------------------------------+\n") ;
+		mp_printf(&mp_plat_print, "+-------------------+----------------------------------+\r\n") ;
 	}
     return mp_const_none;
 }

@@ -118,7 +118,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_wdt_context_obj, machine_wdt_context);
 
 STATIC mp_obj_t machine_wdt_feed(mp_obj_t self_in) {
     machine_wdt_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    // mp_printf(&mp_plat_print, "wdt id is %d\n", self->id);
+    // mp_printf(&mp_plat_print, "wdt id is %d\r\n", self->id);
     wdt_feed(self->id);
     self->is_interrupt = false;
     return mp_const_none;
@@ -134,7 +134,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_wdt_feed_obj, machine_wdt_feed);
 
 STATIC mp_obj_t machine_wdt_stop(mp_obj_t self_in) {
     machine_wdt_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    // mp_printf(&mp_plat_print, "wdt id is %d\n", self->id);
+    // mp_printf(&mp_plat_print, "wdt id is %d\r\n", self->id);
     patch_wdt_stop(self->id);
     return mp_const_none;
 }
@@ -154,11 +154,11 @@ static int wdt0_irq(void *ctx) {
 }
 
 static void unit_test() {
-    mp_printf(&mp_plat_print, "wdt start!\n");
+    mp_printf(&mp_plat_print, "wdt start!\r\n");
     int timeout = 0;
     plic_init();
     sysctl_enable_irq();
-    mp_printf(&mp_plat_print, "wdt time is %d ms\n", wdt_init((wdt_device_number_t)0, 4000, wdt0_irq,NULL));
+    mp_printf(&mp_plat_print, "wdt time is %d ms\r\n", wdt_init((wdt_device_number_t)0, 4000, wdt0_irq,NULL));
     while(1) {
         vTaskDelay(1000);
         if(timeout++ < 3) {

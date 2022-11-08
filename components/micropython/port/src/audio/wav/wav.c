@@ -136,7 +136,7 @@ mp_obj_t wav_play_process(audio_t* audio,uint32_t file_size)
 
 	if(NULL == audio->play_obj)
 	{
-		mp_printf(&mp_plat_print, "[CANMV]: Can not create decode object\n");
+		mp_printf(&mp_plat_print, "[CANMV]: Can not create decode object\r\n");
 		m_del(mp_obj_list_t,ret_list,1);
 		m_del(wav_decode_t,audio->play_obj,1);
 		vfs_internal_close(audio->fp,&close_code);
@@ -145,7 +145,7 @@ mp_obj_t wav_play_process(audio_t* audio,uint32_t file_size)
 	/* uint32_t read_num = */vfs_internal_read(audio->fp,audio->buf, head_max_len,&err_code);//read head
 	if(err_code != 0)
 	{
-		mp_printf(&mp_plat_print, "[CANMV]: read head error close file\n");
+		mp_printf(&mp_plat_print, "[CANMV]: read head error close file\r\n");
 		m_del(mp_obj_list_t,ret_list,1);
 		m_del(wav_decode_t,audio->play_obj,1);
 		vfs_internal_close(audio->fp,&close_code);
@@ -155,21 +155,21 @@ mp_obj_t wav_play_process(audio_t* audio,uint32_t file_size)
 	//debug
 	if(status != OK)
 	{
-		mp_printf(&mp_plat_print, "[CANMV]: wav error code : %d\n",status);
+		mp_printf(&mp_plat_print, "[CANMV]: wav error code : %d\r\n",status);
 		m_del(mp_obj_list_t,ret_list,1);
 		m_del(wav_decode_t,audio->play_obj,1);
 		vfs_internal_close(audio->fp,&close_code);
 		mp_raise_msg(&mp_type_OSError,"wav init error");
 	}
 	wav_decode_t* wav_fmt = audio->play_obj;
-	mp_printf(&mp_plat_print, "[CANMV]: result = %d\n", status);
-	mp_printf(&mp_plat_print, "[CANMV]: numchannels = %d\n", wav_fmt->numchannels);
-	mp_printf(&mp_plat_print, "[CANMV]: samplerate = %d\n", wav_fmt->samplerate);
-	mp_printf(&mp_plat_print, "[CANMV]: byterate = %d\n", wav_fmt->byterate);
-	mp_printf(&mp_plat_print, "[CANMV]: blockalign = %d\n", wav_fmt->blockalign);
-	mp_printf(&mp_plat_print, "[CANMV]: bitspersample = %d\n", wav_fmt->bitspersample);
-	mp_printf(&mp_plat_print, "[CANMV]: datasize = %d\n", wav_fmt->datasize);
-	// mp_printf(&mp_plat_print, "[CANMV]: head_len = %d\n", head_len);
+	mp_printf(&mp_plat_print, "[CANMV]: result = %d\r\n", status);
+	mp_printf(&mp_plat_print, "[CANMV]: numchannels = %d\r\n", wav_fmt->numchannels);
+	mp_printf(&mp_plat_print, "[CANMV]: samplerate = %d\r\n", wav_fmt->samplerate);
+	mp_printf(&mp_plat_print, "[CANMV]: byterate = %d\r\n", wav_fmt->byterate);
+	mp_printf(&mp_plat_print, "[CANMV]: blockalign = %d\r\n", wav_fmt->blockalign);
+	mp_printf(&mp_plat_print, "[CANMV]: bitspersample = %d\r\n", wav_fmt->bitspersample);
+	mp_printf(&mp_plat_print, "[CANMV]: datasize = %d\r\n", wav_fmt->datasize);
+	// mp_printf(&mp_plat_print, "[CANMV]: head_len = %d\r\n", head_len);
 	mp_obj_list_append(ret_list, mp_obj_new_int(wav_fmt->numchannels));
 	mp_obj_list_append(ret_list, mp_obj_new_int(wav_fmt->samplerate));
 	mp_obj_list_append(ret_list, mp_obj_new_int(wav_fmt->byterate));
@@ -179,7 +179,7 @@ mp_obj_t wav_play_process(audio_t* audio,uint32_t file_size)
 	vfs_internal_seek(audio->fp,head_len,VFS_SEEK_SET, &err_code);
 	if(err_code != 0)
 	{
-		mp_printf(&mp_plat_print, "[CANMV]: seek error  close file\n");
+		mp_printf(&mp_plat_print, "[CANMV]: seek error  close file\r\n");
 		m_del(mp_obj_list_t,ret_list,1);
 		m_del(wav_decode_t,audio->play_obj,1);
 		vfs_internal_close(audio->fp,&close_code);
@@ -219,7 +219,7 @@ mp_obj_t wav_play(audio_t* audio)
 		
 		play_obj->audio_buf[play_obj->read_order].empty = false;
 
-		// mp_printf(&mp_plat_print, "[CANMV]: read_order = %d\n",play_obj->read_order);
+		// mp_printf(&mp_plat_print, "[CANMV]: read_order = %d\r\n",play_obj->read_order);
 		if(play_obj->numchannels == 1)//TODO: optimize mono
 		{
 			read_num = vfs_internal_read(audio->fp, 
@@ -268,7 +268,7 @@ mp_obj_t wav_play(audio_t* audio)
 	}
 	if(!wav_play_obj->audio_buf[wav_play_obj->play_order].empty)//not empty ,already to play
 	{
-		// mp_printf(&mp_plat_print, "[CANMV]: play_order = %d\n",wav_play_obj->play_order);
+		// mp_printf(&mp_plat_print, "[CANMV]: play_order = %d\r\n",wav_play_obj->play_order);
 		i2s_play(i2s_dev->i2s_num,
 					WAV_PLAY_DMA_CHANNEL,
 					wav_play_obj->audio_buf[wav_play_obj->play_order].buf,
@@ -297,7 +297,7 @@ mp_obj_t wav_record_process(audio_t* audio,uint32_t channels)//channels = Number
 	audio->record_obj = m_new(wav_encode_t,1);//new format obj
 	if(NULL == audio->record_obj)
 	{
-		mp_printf(&mp_plat_print, "[CANMV]: Can not create encode object\n");
+		mp_printf(&mp_plat_print, "[CANMV]: Can not create encode object\r\n");
 		m_del(wav_encode_t,audio->record_obj,1);
 		vfs_internal_close(audio->fp,&close_code);
 	}
@@ -320,7 +320,7 @@ mp_obj_t wav_record_process(audio_t* audio,uint32_t channels)//channels = Number
 	vfs_internal_seek(audio->fp,44,VFS_SEEK_SET,&err_code);//head length 44
 	if(err_code != 0)
 	{
-		mp_printf(&mp_plat_print, "[CANMV]: seek error  close file\n");
+		mp_printf(&mp_plat_print, "[CANMV]: seek error  close file\r\n");
 		m_del(wav_encode_t,audio->record_obj,1);
 		vfs_internal_close(audio->fp,&close_code);
 		mp_raise_OSError(err_code);
@@ -367,7 +367,7 @@ int wav_process_data(audio_t* audio)//GO righit channel record, right chnanel pl
 	int err_code = 0;
 
 	// for(int i = 0; i < audio->points; i++){
-	// 	mp_printf(&mp_plat_print, "data[%d] : LSB = %x | MSB = %x\n",i, audio->buf[i] & 0xffff, (audio->buf[i] >> 16) & 0xffff);
+	// 	mp_printf(&mp_plat_print, "data[%d] : LSB = %x | MSB = %x\r\n",i, audio->buf[i] & 0xffff, (audio->buf[i] >> 16) & 0xffff);
 	// }
 	if(1 == wav_encode->format.numchannels){//mono audio record | Go mic right 
 
@@ -433,7 +433,7 @@ void wav_finish(audio_t* audio)
 		vfs_internal_write(audio->fp, &wav_encode->file, 12, &err_code);//write file chunk
 		if(err_code != 0)
 		{
-			mp_printf(&mp_plat_print, "[CANMV]: write file chunk error  close file\n");
+			mp_printf(&mp_plat_print, "[CANMV]: write file chunk error  close file\r\n");
 			wav_record_buf_free(wav_encode);
 			m_del(wav_encode_t,audio->record_obj,1);
 			vfs_internal_close(audio->fp,&close_code);
@@ -443,15 +443,15 @@ void wav_finish(audio_t* audio)
 		wav_fmt->numchannels = 2;//always is 2,because i2s_play only play 2-channels audoi
 		wav_fmt->blockalign = wav_fmt->numchannels * (wav_fmt->bitspersample/8);// channel * (bit_per_second / 8)
 		wav_fmt->byterate = wav_fmt->samplerate * wav_fmt->blockalign; // samplerate * blockalign
-		mp_printf(&mp_plat_print, "[CANMV]: numchannels = %d\n", wav_fmt->numchannels);
-		mp_printf(&mp_plat_print, "[CANMV]: samplerate = %d\n", wav_fmt->samplerate);
-		mp_printf(&mp_plat_print, "[CANMV]: byterate = %d\n", wav_fmt->byterate);
-		mp_printf(&mp_plat_print, "[CANMV]: blockalign = %d\n", wav_fmt->blockalign);
-		mp_printf(&mp_plat_print, "[CANMV]: bitspersample = %d\n", wav_fmt->bitspersample);
+		mp_printf(&mp_plat_print, "[CANMV]: numchannels = %d\r\n", wav_fmt->numchannels);
+		mp_printf(&mp_plat_print, "[CANMV]: samplerate = %d\r\n", wav_fmt->samplerate);
+		mp_printf(&mp_plat_print, "[CANMV]: byterate = %d\r\n", wav_fmt->byterate);
+		mp_printf(&mp_plat_print, "[CANMV]: blockalign = %d\r\n", wav_fmt->blockalign);
+		mp_printf(&mp_plat_print, "[CANMV]: bitspersample = %d\r\n", wav_fmt->bitspersample);
 		vfs_internal_write(audio->fp, &wav_encode->format, 24, &err_code);//write fromate chunk
 		if(err_code != 0)
 		{
-			mp_printf(&mp_plat_print, "[CANMV]: write formate chunk error close file\n");
+			mp_printf(&mp_plat_print, "[CANMV]: write formate chunk error close file\r\n");
 			wav_record_buf_free(wav_encode);
 			m_del(wav_encode_t,audio->record_obj,1);
 			vfs_internal_close(audio->fp,&close_code);
@@ -460,7 +460,7 @@ void wav_finish(audio_t* audio)
 		vfs_internal_write(audio->fp, &wav_encode->data, 8 ,&err_code);//write data chunk
 		if(err_code != 0)
 		{
-			mp_printf(&mp_plat_print, "[CANMV]: write data chunk error  close file\n");
+			mp_printf(&mp_plat_print, "[CANMV]: write data chunk error  close file\r\n");
 			wav_record_buf_free(wav_encode);
 			m_del(wav_encode_t,audio->record_obj,1);
 			vfs_internal_close(audio->fp,&close_code);

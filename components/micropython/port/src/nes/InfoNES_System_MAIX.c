@@ -39,7 +39,7 @@ bool is_exit_to_menu = true;
 BYTE* g_rom_file_content = NULL;
 int g_samples_per_sync = 0;
 
-#define _D //mp_printf(&mp_plat_print, "%d\n",__LINE__)
+#define _D //mp_printf(&mp_plat_print, "%d\r\n",__LINE__)
 
 
 WORD NesPalette[64]={
@@ -394,7 +394,7 @@ int InfoNES_SoundOpen( int samples_per_sync, int sample_rate )
         mp_printf(&mp_plat_print, "key: WASD, JK, -=, \\, Enter, ESC\r\n");
     if(samples_per_sync > MAX_SAMPLES_PER_SYNC)
     {
-        mp_printf(&mp_plat_print, "samples per sync too big, max:%d\n",MAX_SAMPLES_PER_SYNC);
+        mp_printf(&mp_plat_print, "samples per sync too big, max:%d\r\n",MAX_SAMPLES_PER_SYNC);
         return 0;
     }
     g_samples_per_sync = samples_per_sync;

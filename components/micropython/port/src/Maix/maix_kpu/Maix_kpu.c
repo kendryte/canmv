@@ -113,7 +113,7 @@ static int kpu_model_buffer_add_ptr(void *ptr)
     }
     if(g_km_ptr_t.km_ptr[g_km_ptr_t.index] == NULL){
         g_km_ptr_t.km_ptr[g_km_ptr_t.index] = ptr;
-        //mp_printf(&mp_plat_print, "km ptr %x\n", g_km_ptr_t.km_ptr[g_km_ptr_t.index]);
+        //mp_printf(&mp_plat_print, "km ptr %x\r\n", g_km_ptr_t.km_ptr[g_km_ptr_t.index]);
         g_km_ptr_t.index += 1;
         return 0;
     }
@@ -192,7 +192,7 @@ STATIC mp_obj_t py_kpu_load_kmodel(size_t n_args, const mp_obj_t *pos_args, mp_m
         km->model_path = mp_obj_new_str(path,strlen(path));     
         km->model_size = get_file_size(path);
 
-        mp_printf(&mp_plat_print, "model size %d \n", km->model_size);
+        mp_printf(&mp_plat_print, "model size %d \r\n", km->model_size);
         km->model_buffer = malloc(km->model_size);
         if (!km->model_buffer) {
             mp_raise_msg(&mp_type_MemoryError, "model buffer memory allocation failed");
@@ -243,7 +243,7 @@ STATIC mp_obj_t py_kpu_load_kmodel(size_t n_args, const mp_obj_t *pos_args, mp_m
     if(kpu_model_buffer_add_ptr(km) != 0){
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "Failed to add kpu_model_buffer"));
     }
-    mp_printf(&mp_plat_print, "model load succeed\n");  //debug
+    mp_printf(&mp_plat_print, "model load succeed\r\n");  //debug
     if(km->kmodel_ctx->is_nncase){
         km->inputs = ((struct model_header*)km->model_buffer)->inputs;
         km->outputs = ((struct model_header*)km->model_buffer)->outputs;
@@ -320,7 +320,7 @@ STATIC mp_obj_t py_kpu_run_with_output(size_t n_args, const mp_obj_t *pos_args, 
     mp_obj_list_t *ret_list = NULL;
     kpu_get_output(km->kmodel_ctx, 0, (uint8_t **)&(km->output[0]), &(km->output_size[0]));
     int output_count = (km->output_size[0])/sizeof(float);
-    //mp_printf(&mp_plat_print, "output_size:%d\n", (km->output_size[0])/sizeof(float));
+    //mp_printf(&mp_plat_print, "output_size:%d\r\n", (km->output_size[0])/sizeof(float));
     if(args[ARG_getlist].u_bool){
         ret_list = m_new(mp_obj_list_t, 1);
         mp_obj_list_init(ret_list, 0);
@@ -333,7 +333,7 @@ STATIC mp_obj_t py_kpu_run_with_output(size_t n_args, const mp_obj_t *pos_args, 
         float feature_tmp[MAX_FEATURE_LEN];
         ret_list = m_new(mp_obj_list_t, 1);
         mp_obj_list_init(ret_list, 0);
-        //mp_printf(&mp_plat_print, "feature len %d \n", output_count);
+        //mp_printf(&mp_plat_print, "feature len %d \r\n", output_count);
         if(output_count > MAX_FEATURE_LEN){
 		    mp_raise_ValueError("feature len out of 256\r\n");
 	    }
@@ -494,7 +494,7 @@ STATIC mp_obj_t py_lp_recog_load_weight_data(size_t n_args, const mp_obj_t *pos_
         const char *path = mp_obj_str_get_str(path_obj);  
         size_t weight_data_size = get_file_size(path);
 
-        mp_printf(&mp_plat_print, "weight_data_size: %d\n", weight_data_size);
+        mp_printf(&mp_plat_print, "weight_data_size: %d\r\n", weight_data_size);
         km->user_buffer = malloc(weight_data_size);
         if (!km->user_buffer) {
             mp_raise_msg(&mp_type_MemoryError, "weight data buffer memory allocation failed");
@@ -522,7 +522,7 @@ STATIC mp_obj_t py_lp_recog_load_weight_data(size_t n_args, const mp_obj_t *pos_
         path_addr = mp_obj_get_int(path_obj);
         size_t weight_data_size = mp_obj_get_int(size_obj);
         km->user_buffer = malloc(weight_data_size);
-        mp_printf(&mp_plat_print, "weight_data_size: %d\n", weight_data_size);
+        mp_printf(&mp_plat_print, "weight_data_size: %d\r\n", weight_data_size);
         if (!km->user_buffer) {
             mp_raise_msg(&mp_type_MemoryError, "weight data buffer memory allocation failed");
             return mp_const_none;
@@ -659,7 +659,7 @@ STATIC mp_obj_t py_kpu_deinit(mp_obj_t self_in)
             km->model_buffer = NULL;
             kpu_model_free(km->kmodel_ctx);
             kpu_model_buffer_del_ptr(km);
-            mp_printf(&mp_plat_print, "\nfree kpu model buf succeed\n");
+            mp_printf(&mp_plat_print, "free kpu model buf succeed\r\n");
         }
         else
             return mp_const_false;

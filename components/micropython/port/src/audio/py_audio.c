@@ -107,7 +107,7 @@ STATIC mp_obj_t Maix_audio_init_helper(Maix_audio_obj_t *self, size_t n_args, co
             audio_obj->record_obj = m_new(wav_encode_t,1);//new format obj
             if(NULL == audio_obj->record_obj)
             {
-                mp_printf(&mp_plat_print, "[CANMV]: Can not create encode object\n");
+                mp_printf(&mp_plat_print, "[CANMV]: Can not create encode object\r\n");
                 m_del(wav_encode_t,audio_obj->record_obj,1);
                 vfs_internal_close(audio_obj->fp,&close_code);
             }
@@ -131,7 +131,7 @@ STATIC mp_obj_t Maix_audio_init_helper(Maix_audio_obj_t *self, size_t n_args, co
             // return mp_const_none;
             if(err_code != 0)
             {
-                mp_printf(&mp_plat_print, "[CANMV]: seek error  close file\n");
+                mp_printf(&mp_plat_print, "[CANMV]: seek error  close file\r\n");
                 m_del(wav_encode_t,audio_obj->record_obj,1);
                 vfs_internal_close(audio_obj->fp,&close_code);
                 mp_raise_OSError(err_code);
@@ -213,7 +213,7 @@ STATIC mp_obj_t Maix_audio_play_process(mp_obj_t self_in,mp_obj_t I2S_dev) {
     uint32_t file_size = vfs_internal_size(audio->fp);
     if(0 == file_size)
     {
-        mp_printf(&mp_plat_print, "[CANMV]: file length is 0\n");
+        mp_printf(&mp_plat_print, "[CANMV]: file length is 0\r\n");
         return mp_const_false;
     }
     switch(audio->format)
@@ -288,14 +288,14 @@ STATIC mp_obj_t Maix_audio_record_process(size_t n_args, const mp_obj_t * pos_ar
     uint32_t file_size = vfs_internal_size(audio->fp);
     if(0 != file_size)
     {
-        mp_printf(&mp_plat_print, "[CANMV]: file length isn't empty\n");
+        mp_printf(&mp_plat_print, "[CANMV]: file length isn't empty\r\n");
         return mp_const_false;
     }
     switch(audio->format)
     {
         case AUDIO_WAV_FMT:
             if(args[ARG_channels].u_int > 2){//get channel num
-                mp_printf(&mp_plat_print, "[CANMV]: The number of channels must be less than or equal to 2\n");
+                mp_printf(&mp_plat_print, "[CANMV]: The number of channels must be less than or equal to 2\r\n");
                 return mp_const_false;
             }
             return wav_record_process(audio,args[ARG_channels].u_int);

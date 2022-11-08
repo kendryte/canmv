@@ -1151,7 +1151,7 @@ void svd22(const double A[4], double U[4], double S[2], double V[4])
     doubles_print_mat(U, 2, 2, "%20.10g");
     doubles_print_mat(SM, 2, 2, "%20.10g");
     doubles_print_mat(V, 2, 2, "%20.10g");
-    mp_printf(&mp_plat_print, "A:\n");
+    mp_printf(&mp_plat_print, "A:\r\n");
     doubles_print_mat(A, 2, 2, "%20.10g");
 
     double SVt[4];
@@ -1159,14 +1159,14 @@ void svd22(const double A[4], double U[4], double S[2], double V[4])
     double USVt[4];
     doubles_mat_AB(U, 2, 2, SVt, 2, 2, USVt, 2, 2);
 
-    mp_printf(&mp_plat_print, "USVt\n");
+    mp_printf(&mp_plat_print, "USVt\r\n");
     doubles_print_mat(USVt, 2, 2, "%20.10g");
 
     double diff[4];
     for (int i = 0; i < 4; i++)
         diff[i] = A[i] - USVt[i];
 
-    mp_printf(&mp_plat_print, "diff\n");
+    mp_printf(&mp_plat_print, "diff\r\n");
     doubles_print_mat(diff, 2, 2, "%20.10g");
 
     */

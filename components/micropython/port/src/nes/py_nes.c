@@ -155,7 +155,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(py_nes_init_obj, 1, py_nes_init);
 static mp_obj_t py_nes_load(mp_obj_t path_obj)
 {
     const char *path = mp_obj_str_get_str(path_obj);
-    mp_printf(&mp_plat_print, "path: %s\n", path);
+    mp_printf(&mp_plat_print, "path: %s\r\n", path);
 	if(InfoNES_Load(path) == 0)
 	{
 		// Initialize InfoNES
