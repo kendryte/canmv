@@ -13,7 +13,8 @@
 <br/>
 <br/>
 
-[English](README.md)
+* [中文](README_ZH.md)
+* [English](README.md)
 
 <br />
 <br />
@@ -40,6 +41,16 @@ CanMV 的目的是让 AIOT 编程更简单， 基于 [Micropython](http://www.mi
     <img src="assets/image/k210_core_board.jpg" height=500 alt="K210"/>
 </div>
 
+## CanMV 相关资源指南
+| No  | Link address                                                                           | Description                                                 |
+|:---:|----------------------------------------------------------------------------------------|-------------------------------------------------------------|
+|  1  | /                                                                                      | CanMV SDK 根目录。                                              |
+|  2  | /projects/xxx                                                                          | CanMV 开发板配置目录，您可以从这里开始定制编译您自己的固件，详细操作请参考 [CanMV build](build.md) |
+|  3  | [ 使用 Docker 编译](tools/docker)                                                      | 提供 Docker 镜像用于固件编译，可以降低搭建编译环境的工作量。                          |
+|  4  | [CanMV Docs](https://developer.canaan-creative.com/index.html?channel=developer#/word) | CanMV 文档，包括 API 说明、工具使用、常见问题以及其它。                           | 
+|  5  | [CanMV IDE](https://github.com/kendryte/canmv_ide)                                     | CanMV IDE 用于编辑和调试，它支持 Windows, Linux and Mac OS等不同操作系统。     |
+|  6  | [CanMV Examples](https://github.com/kendryte/canmv_examples)                           | 提供不同模块的使用示例，供学习参考。                                          |
+|  7  | [CanMV Releases](https://github.com/kendryte/canmv/releases)                           | 提供 CanMV 固件下载。                                              |
 
 ## 简单易懂的代码
 
@@ -105,34 +116,13 @@ while True:
 
 kpu.deinit()
 ```
-> 具体的使用方法请阅读教程后尝试
-
-
-## 固件发布
-
-
-
-## 文档
-
-查看 [CanMV document](https://developer.canaan-creative.com/index.html?channel=developer#/word)
-
-## 例示代码
-
-[CanMV_examples](https://github.com/kendryte/canmv_examples)
-
-## 从源码构建自己的固件
-
-参考 [构建文档](build.md)
-
-## 开源协议
-
-查看 [LICENSE](LICENSE.md) 文件
+具体的使用方法请阅读教程后尝试
 
 ## 使用 `C` 语言开发项目
 
-由于C语言比python具有更高的性能，可以使用C来开发产品，而不是python。在这种情况下，您仍然可以使用此代码库通过禁用micropython组件来构建自己的C开发固件。有关用法的详细信息，请参阅[构建文档](build.md)，可以从编译下载`projects/hello_world`开始。
+由于 C 语言比 python 具有更高的性能，您可能希望通过 C 来开发产品，而不是使用 python。在这种情况下，您仍然可以使用此代码库，可以通过禁用 micropython 组件来构建自己的 C 开发固件。有关用法的详细信息，请参阅[构建文档](build.md)，可以从编译下载 `projects/hello_world` 开始。
 
-大致上编译下载过程如下：
+大致编译下载过程如下：
 
 ```
 wget https://github.com/kendryte/kendryte-gnu-toolchain/releases/download/v8.2.0-20190409/kendryte-toolchain-ubuntu-amd64-8.2.0-20190409.tar.xz
@@ -143,3 +133,16 @@ python3 project.py build
 python3 project.py flash -B dan -b 1500000 -p /dev/ttyUSB0 -t
 ```
 
+## 版权声明
+
+参见 [LICENSE](LICENSE.md) 文件。
+
+## 贡献指南
+
+如果您对本项目感兴趣，想要反馈问题或提交代码，请参考 [CONTRIBUTING](CONTRIBUTING.md)。
+
+## 联系我们
+
+北京嘉楠捷思信息技术有限公司  
+网址：[canaan-creative.com](https://canaan-creative.com/)  
+商务垂询：[salesAI@canaan-creative.com](mailto:salesAI@canaan-creative.com)
