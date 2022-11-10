@@ -276,6 +276,14 @@ class ThreadSafeCounter:
     def append(self, arg):
         self.add([arg])
 
+    def remove(self, arg):
+        with self._lock:
+            if isinstance(self._value, list):
+                if arg in self._value:
+                    self._value.remove(arg)
+            else:
+                raise ValueError("must be a list")
+
     @property
     def value(self):
         return self._value
@@ -675,7 +683,7 @@ def run_tests(tests, args, result_dir, num_threads=1):
         )  # native doesn't have proper traceback info
         skip_tests.add("micropython/schedule.py")  # native code doesn't check pending events
 
-    def run_one_test(test_file):
+    def run_one_test(test_file, isRetry=False):
         global pyb
         test_file = test_file.replace("\\", "/")
 
@@ -720,6 +728,12 @@ def run_tests(tests, args, result_dir, num_threads=1):
         skip_it |= skip_revops and "reverse_op" in test_name
         skip_it |= skip_io_module and is_io_module
 
+        if isRetry:
+            filename_expected = os.path.join(failed_dir, test_basename + ".exp")
+            filename_mupy = os.path.join(failed_dir, test_basename + ".out")
+            rm_f(filename_expected)
+            rm_f(filename_mupy)
+
         if args.list_tests:
             if not skip_it:
                 print(test_file)
@@ -762,7 +776,8 @@ def run_tests(tests, args, result_dir, num_threads=1):
             skipped_tests.append(test_file)
             return
 
-        testcase_count.add(len(output_expected.splitlines()))
+        if not isRetry:
+            testcase_count.add(len(output_expected.splitlines()))
 
         if output_expected == output_mupy:
             print("PASS ", test_file)
@@ -777,7 +792,8 @@ def run_tests(tests, args, result_dir, num_threads=1):
             #     f.write(output_mupy)
         else:
             print("FAIL ", test_file)
-            failed_tests.append(test_file)
+            if not isRetry:
+                failed_tests.append(test_file)
 
             filename_expected = os.path.join(failed_dir, test_basename + ".exp")
             filename_mupy = os.path.join(failed_dir, test_basename + ".out")
@@ -786,6 +802,8 @@ def run_tests(tests, args, result_dir, num_threads=1):
             with open(filename_mupy, "wb") as f:
                 f.write(output_mupy)
             pyb.reopen()
+
+            return 'FAIL'
 
         test_count.increment()
 
@@ -813,7 +831,15 @@ def run_tests(tests, args, result_dir, num_threads=1):
     else:
         cnt = 0
         for test in tests:
-            run_one_test(test)
+            res = run_one_test(test)
+
+            if res == 'FAIL':
+                for i in range(2):
+                    res = run_one_test(test, True)
+                    if res != 'FAIL':
+                        failed_tests.remove(test)
+                        break
+
             cnt = cnt + 1
             if cnt % 8 == 7:
                 pyb.reopen()
@@ -849,6 +875,71 @@ def run_tests(tests, args, result_dir, num_threads=1):
             f.write(wrStr.join(failed_tests))
         print("{} tests failed: {}".format(len(failed_tests), " ".join(failed_tests)))
         # return False
+
+    # generate 
+    from datetime import datetime
+    from render import load_template, render_template
+
+    def _sort_test_results(results):
+        return sorted(results, key=lambda x: x['name'])
+
+    test_results = []
+
+    for test in passed_tests:
+        test_results.append({
+            'name': test,
+            'result': 'passed',
+        })
+
+    for test in skipped_tests:
+        test_results.append({
+            'name': test,
+            'result': 'skipped',
+        })
+
+    for test in failed_tests:
+        test_basename = test.replace("..", "_").replace("./", "").replace("/", "_")
+        test_expect_file = os.path.join(os.path.join(result_dir, "fail"), test_basename + ".exp")
+        test_output_file = os.path.join(os.path.join(result_dir, "fail"), test_basename + ".out")
+
+        try:
+            with open(test_expect_file, 'r') as f:
+                test_expect = f.read()
+        except Exception as e:
+            test_expect = None
+        try:
+            with open(test_output_file, 'r') as f:
+                test_output = f.read()
+        except Exception as e:
+            test_output = None
+
+        test_results.append({
+            'name': test,
+            'result': 'failed',
+            'expect': test_expect,
+            'output': test_output
+        })
+
+    summary_stats = {
+            "tests performed": test_count.value,
+            "individual testcases": testcase_count.value,
+            "tests passed": len(passed_tests),
+            "tests skipped": len(skipped_tests),
+            "tests failed":len(failed_tests),
+            }
+
+    sorted_test_results = _sort_test_results(test_results)
+
+    context = {
+        'test_report_title': 'CanMV Test Report',
+        'test_summary': summary_stats,
+        'test_results': sorted_test_results,
+        'timestamp': datetime.utcnow().strftime('%Y/%m/%d %H:%M:%S UTC')
+    }
+    template = load_template(os.path.join('html_report','template.html'))
+    rendered_template = render_template(template, context)
+    with open(os.path.join(result_dir,'report.html'), 'w') as template_file:
+        template_file.write(rendered_template)
 
     # all tests succeeded
     return True

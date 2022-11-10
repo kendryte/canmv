@@ -1,11 +1,5 @@
 period: 500
-time up: [CANMV]Timer:(80342f40) timer=0, channel=0, mode=1, period=500ms, priority=1, div=0, callback=80342e20, arg=3
-
-param: 1
-time up: [CANMV]Timer:(80342f40) timer=0, channel=0, mode=1, period=500ms, priority=1, div=0, callback=80342e20, arg=3
-
-param: 1
-time up: [CANMV]Timer:(80342f40) timer=0, channel=0, mode=1, period=500ms, priority=1, div=0, callback=80342e20, arg=3
-
-param: 1
+on_timer
+on_timer
+on_timer
 Done.
