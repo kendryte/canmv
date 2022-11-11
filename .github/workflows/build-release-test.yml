@@ -3,7 +3,7 @@ name: CanMV Build and Release and Test
 on:
   push:
     tags: [ "v*" ]
-    branches: [ "main", "test" ]
+    branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
 
@@ -71,42 +71,42 @@ jobs:
           artifacts: "release/**.bin"
           token: ${{ secrets.GITHUB_TOKEN  }}
 
-  test:
-    runs-on: self-hosted
-    needs: build
-    defaults:
-      run:
-        shell: bash
-    env:
-      SERIAL_DEV: /dev/ttyACM0
+  # test:
+  #   runs-on: self-hosted
+  #   needs: build
+  #   defaults:
+  #     run:
+  #       shell: bash
+  #   env:
+  #     SERIAL_DEV: /dev/ttyACM0
 
-    steps:
-      - name: Check Board
-        run: |
-          ls ${{ env.SERIAL_DEV }}
-          if [ $? -ne 0 ]; then
-            echo "Runner have no board connected."
-            exit -1
-          fi
+  #   steps:
+  #     - name: Check Board
+  #       run: |
+  #         ls ${{ env.SERIAL_DEV }}
+  #         if [ $? -ne 0 ]; then
+  #           echo "Runner have no board connected."
+  #           exit -1
+  #         fi
 
-      - uses: actions/checkout@v3
+  #     - uses: actions/checkout@v3
 
-      - uses: actions/download-artifact@v3
-        with:
-          path: ./build
-          name: "canmv-${{ github.sha }}"
+  #     - uses: actions/download-artifact@v3
+  #       with:
+  #         path: ./build
+  #         name: "canmv-${{ github.sha }}"
 
-      - name: Burn Test Firmware
-        run: |
-          python3 tools/flash/kflash_py/kflash.py -p ${{ env.SERIAL_DEV }} -b 1500000  build/canmv_k210_standard.bin
+  #     - name: Burn Test Firmware
+  #       run: |
+  #         python3 tools/flash/kflash_py/kflash.py -p ${{ env.SERIAL_DEV }} -b 1500000  build/canmv_k210_standard.bin
 
-      - name: Run Tests
-        run: |
-          cd tools/tests
-          python3 run-tests.py --target k210 --device ${{ env.SERIAL_DEV }} --baudrate 115200
-          cd -
+  #     - name: Run Tests
+  #       run: |
+  #         cd tools/tests
+  #         python3 run-tests.py --target k210 --device ${{ env.SERIAL_DEV }} --baudrate 115200
+  #         cd -
 
-      - uses: actions/upload-artifact@v3
-        with:
-          name: "canmv-test-results-${{ github.sha }}"
-          path: tools/tests/results
+  #     - uses: actions/upload-artifact@v3
+  #       with:
+  #         name: "canmv-test-results-${{ github.sha }}"
+  #         path: tools/tests/results
