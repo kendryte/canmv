@@ -13,5 +13,5 @@
  * limitations under the License.
  */
 #pragma once
-#define NNCASE_VERSION "1.0.0"
-#define NNCASE_VERSION_SUFFIX "-9fd39f9"
+#define NNCASE_VERSION "1.8.0"
+#define NNCASE_VERSION_SUFFIX "-55be52f"

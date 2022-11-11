@@ -83,7 +83,7 @@ extern const mp_obj_type_t py_image_type;
 STATIC mp_obj_t py_kpu_deinit(mp_obj_t self_in);
 
 
-struct model_header
+/*struct model_header
 {
     uint32_t identifier;
     uint32_t version;
@@ -95,6 +95,18 @@ struct model_header
     uint32_t inputs;
     uint32_t outputs;
     uint32_t reserved0;
+} __attribute__((aligned(8))) ;*/
+
+struct model_header
+{
+    uint32_t identifier;
+    uint32_t version;
+    uint32_t header_size;
+    uint32_t flags;
+    uint32_t alignment;
+    uint32_t modules;
+    uint32_t entry_module;
+    uint32_t entry_function;
 } __attribute__((aligned(8))) ;
 
 volatile uint32_t wait_kpu_done = 0;
@@ -244,16 +256,25 @@ STATIC mp_obj_t py_kpu_load_kmodel(size_t n_args, const mp_obj_t *pos_args, mp_m
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "Failed to add kpu_model_buffer"));
     }
     mp_printf(&mp_plat_print, "model load succeed\r\n");  //debug
+
     if(km->kmodel_ctx->is_nncase){
-        km->inputs = ((struct model_header*)km->model_buffer)->inputs;
-        km->outputs = ((struct model_header*)km->model_buffer)->outputs;
+        mp_printf(&mp_plat_print, "is_nncase\r\n");
+        struct model_header *h = (struct model_header*)km->model_buffer;
+        mp_printf(&mp_plat_print, "* identifier %u\r\n", h->identifier); //KMDL
+        mp_printf(&mp_plat_print, "* version %u\r\n", h->version); //5
+
+        km->inputs = 1; //((struct model_header*)km->model_buffer)->inputs;
+        km->outputs = 1; //((struct model_header*)km->model_buffer)->outputs;
+
     }
     else{
+        mp_printf(&mp_plat_print, "not nncase??\r\n");
         km->inputs = 0;
         km->outputs = ((kpu_kmodel_header_t*)km->model_buffer)->output_count;
     }
+    
     km->output_size = m_new(size_t, km->outputs);
-    km->output = m_new(mp_obj_t,km->outputs);  
+    km->output = m_new(mp_obj_t,km->outputs);  // il problema dovrebbe essere
 
     return mp_const_none;
 }

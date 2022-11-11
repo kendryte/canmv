@@ -38,6 +38,16 @@ typedef enum _datatype : uint8_t
 #undef DEFINE_DATATYPE
 } datatype_t;
 
+inline datatype_t parse_datatype_str(const std::string &name)
+{
+#define DEFINE_DATATYPE(id, t, n, value) \
+    if (name == #id)                     \
+        return datatype_t::dt_##id;
+#include "datatypes.def"
+#undef DEFINE_DATATYPE
+    throw std::runtime_error("Unsupported data type:" + std::string(name));
+}
+
 namespace detail
 {
     template <datatype_t Type>
@@ -101,6 +111,7 @@ struct padding
 {
     int32_t before;
     int32_t after;
+    int32_t interior = 0;
 
     int32_t sum() const noexcept { return before + after; }
 
@@ -151,6 +162,24 @@ inline std::string reduce_op_to_string(reduce_op_t op)
         return "reduce_sum";
     }
     return "unknown";
+}
+
+typedef enum _reduce_arg_op
+{
+    reduce_arg_min,
+    reduce_arg_max,
+} reduce_arg_op_t;
+
+inline std::string reduce_arg_op_to_string(reduce_arg_op_t op)
+{
+    switch (op)
+    {
+    case reduce_arg_min:
+        return "reduce_arg_min";
+    case reduce_arg_max:
+        return "reduce_arg_max";
+    }
+    return "unknown reduce arg op";
 }
 
 typedef enum _binary_op
@@ -213,6 +242,8 @@ inline std::string binary_op_to_string(binary_op_t op)
 typedef enum _unary_op
 {
     unary_abs,
+    unary_acos,
+    unary_asin,
     unary_ceil,
     unary_cos,
     unary_exp,
@@ -221,12 +252,14 @@ typedef enum _unary_op
     unary_neg,
     unary_round,
     unary_rsqrt,
+    unary_sign,
     unary_sin,
     unary_sqrt,
     unary_square,
     unary_tanh,
     unary_bitwise_not,
-    unary_logical_not
+    unary_logical_not,
+    unary_erf
 } unary_op_t;
 
 inline std::string unary_op_to_string(unary_op_t op)
@@ -235,6 +268,10 @@ inline std::string unary_op_to_string(unary_op_t op)
     {
     case unary_abs:
         return "unary_abs";
+    case unary_acos:
+        return "unary_acos";
+    case unary_asin:
+        return "unary_asin";
     case unary_ceil:
         return "unary_ceil";
     case unary_cos:
@@ -251,6 +288,8 @@ inline std::string unary_op_to_string(unary_op_t op)
         return "unary_round";
     case unary_rsqrt:
         return "unary_rsqrt";
+    case unary_sign:
+        return "unary_sign";
     case unary_sin:
         return "unary_sin";
     case unary_sqrt:
@@ -263,6 +302,38 @@ inline std::string unary_op_to_string(unary_op_t op)
         return "unary_bitwise_not";
     case unary_logical_not:
         return "unary_logical_not";
+    case unary_erf:
+        return "unary_erf";
+    }
+    return "unknown";
+}
+
+typedef enum _compare_op
+{
+    compare_equal,
+    compare_not_equal,
+    compare_greater,
+    compare_greater_equal,
+    compare_less,
+    compare_less_equal
+} compare_op_t;
+
+inline std::string compare_op_to_string(compare_op_t op)
+{
+    switch (op)
+    {
+    case compare_equal:
+        return "compare_equal";
+    case compare_not_equal:
+        return "compare_not_equal";
+    case compare_greater:
+        return "compare_greater";
+    case compare_greater_equal:
+        return "compare_greater_equal";
+    case compare_less:
+        return "compare_less";
+    case compare_less_equal:
+        return "compare_less_equal";
     }
     return "unknown";
 }
@@ -286,6 +357,19 @@ typedef enum _pad_mode
     pad_symmetric,
     pad_edge
 } pad_mode_t;
+
+typedef enum _roi_align_mode
+{
+    roi_align_avg,
+    roi_align_max
+} roi_align_mode_t;
+
+typedef enum _lstm_direction
+{
+    kForward,
+    kReverse,
+    kBidirectional
+} lstm_direction;
 
 typedef struct _quant_param
 {

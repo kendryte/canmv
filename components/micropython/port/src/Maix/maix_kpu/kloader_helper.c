@@ -24,6 +24,7 @@
 int load_file_from_flash(uint32_t addr, uint8_t *data_buf, uint32_t length){
     // w25qxx_init(3, 0, 25000000);
     //w25qxx_read_data(addr, data_buf, length);
+    mp_printf(&mp_plat_print,"Loading %u bytes to addr %u\r\n", length, addr);
     sys_spiffs_read(addr, length, data_buf);
 
     return 0;

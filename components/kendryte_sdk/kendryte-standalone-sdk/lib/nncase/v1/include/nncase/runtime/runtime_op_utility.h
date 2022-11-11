@@ -224,6 +224,23 @@ inline int32_t mul_and_carry_shift(int32_t value, int32_t mul, int32_t shift)
     return (int32_t)carry_shift<int64_t, Banker>((int64_t)value * mul, shift);
 }
 
+template <size_t Bits, bool Signed = true, class T = int64_t>
+inline bool within_range(T value) noexcept
+{
+    if constexpr (Signed)
+    {
+        auto min = -(1LL << (Bits - 1));
+        auto max = (1LL << (Bits - 1)) - 1;
+        return value >= min && value <= max;
+    }
+    else
+    {
+        auto min = 0ULL;
+        auto max = (1ULL << Bits) - 1;
+        return value >= min && value <= max;
+    }
+}
+
 template <class T>
 inline T clamp(T value, T min, T max)
 {
@@ -258,6 +275,40 @@ inline int get_last_not_contiguous_index(const runtime_shape_t &strides, const r
 
 template <size_t A, size_t B>
 constexpr auto is_not_equal = std::integral_constant<bool, std::not_equal_to<size_t> {}(A, B)> {};
+
+inline bool is_optimized_binary_op(binary_op_t op)
+{
+    return op == binary_add || op == binary_sub || op == binary_mul || op == binary_div || op == binary_min || op == binary_max;
+}
+
+inline bool is_optimized_unary_op(unary_op_t op)
+{
+    return op == unary_abs || op == unary_ceil || op == unary_cos || op == unary_exp || op == unary_floor || op == unary_log || op == unary_neg || op == unary_round || op == unary_sign || op == unary_sin || op == unary_sqrt || op == unary_square || op == unary_tanh;
+}
+
+template <class TShape>
+bool is_optimized_input_shape(TShape in_shape, TShape out_shape)
+{
+    assert(in_shape.size() <= out_shape.size());
+
+    // we only support scalar/vector broadcast now
+    if (in_shape.size() == 1 || in_shape == out_shape)
+    {
+        return true;
+    }
+
+    return false;
+}
+
+inline void get_gather_index(const std::vector<int> &per_axis_size, std::vector<int> &index, size_t i, int axis, int idx)
+{
+    if (idx != (int)per_axis_size.size())
+    {
+        int new_idx = i / per_axis_size[idx];
+        index.push_back(new_idx);
+        get_gather_index(per_axis_size, index, i - new_idx * per_axis_size[idx], axis, idx + 1);
+    }
+}
 
 struct DefaultCallable
 {

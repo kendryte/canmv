@@ -13,12 +13,22 @@
  * limitations under the License.
  */
 #pragma once
-#include "../runtime_module.h"
-#include <nncase/kernels/kernel_context.h>
-NNCASE_MODULES_K210_API
+#include <map>
+#include <string>
 
-struct NNCASE_API k210_kernel_context : public kernels::kernel_context
+namespace nncase
 {
-};
-
-END_NS_NNCASE_KERNELS_K210
+constexpr std::string_view datatype_names(datatype_t dt)
+{
+    switch (dt)
+    {
+#define DEFINE_DATATYPE(id, t, name, value) \
+    case dt_##id:                           \
+        return #name;
+#include <nncase/runtime/datatypes.def>
+#undef DEFINE_DATATYPE
+    default:
+        throw std::invalid_argument("invalid datatype");
+    }
+}
+}
