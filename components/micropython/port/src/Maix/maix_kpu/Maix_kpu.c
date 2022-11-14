@@ -264,7 +264,10 @@ STATIC mp_obj_t py_kpu_load_kmodel(size_t n_args, const mp_obj_t *pos_args, mp_m
         path_addr = mp_obj_get_int(args[ARG_path].u_obj);
         km->model_path = (mp_obj_t)path_addr;
         km->model_size = args[ARG_size].u_int;
-        km->model_buffer = malloc(km->model_size);
+        //aligment
+        uint8_t *model_data = malloc(km->model_size + 255);
+        km->model_buffer = (uint8_t *)(((uintptr_t)model_data+255)&(~255));        
+
         if (!km->model_buffer) {
             mp_raise_msg(&mp_type_MemoryError, "model buffer memory allocation failed");
             return mp_const_none;

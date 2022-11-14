@@ -117,7 +117,7 @@ int nncase_v1_run_kmodel(kpu_model_context_t *ctx, const uint8_t *src, dmac_chan
     }
     else
     {
-        printf("error: %s\n", ret.unwrap_err().message().c_str());
+        printf("[nncase-v1] error: %s\n", ret.unwrap_err().message().c_str());
     }
     return -1;
 }
