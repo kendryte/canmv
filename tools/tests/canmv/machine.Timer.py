@@ -2,7 +2,7 @@ import time
 from machine import Timer
 
 def on_timer(timer):
-    print("on_timer")
+    print("on timer cb")
 
 arg = 1
 

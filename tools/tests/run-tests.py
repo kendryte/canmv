@@ -268,13 +268,22 @@ class ThreadSafeCounter:
 
     def increment(self):
         self.add(1)
+    def decrement(self):
+        self.dec(1)
 
     def add(self, to_add):
         with self._lock:
             self._value += to_add
+    def dec(self, to_dec):
+        with self._lock:
+            self._value -= to_dec
 
     def append(self, arg):
         self.add([arg])
+    def remove(self, arg):
+        with self._lock:
+            if arg in self._value:
+                self._value.remove(arg)
 
     def remove(self, arg):
         with self._lock:
@@ -683,7 +692,7 @@ def run_tests(tests, args, result_dir, num_threads=1):
         )  # native doesn't have proper traceback info
         skip_tests.add("micropython/schedule.py")  # native code doesn't check pending events
 
-    def run_one_test(test_file, isRetry=False):
+    def run_one_test(test_file, isRetry = False):
         global pyb
         test_file = test_file.replace("\\", "/")
 
@@ -766,6 +775,15 @@ def run_tests(tests, args, result_dir, num_threads=1):
         if args.write_exp:
             return
 
+        if isRetry:
+            failed_tests.remove(test_file)
+
+            test_count.decrement()
+            testcase_count.dec(len(output_expected.splitlines()))
+
+            rm_f(os.path.join(failed_dir, test_basename + ".exp"))
+            rm_f(os.path.join(failed_dir, test_basename + ".out"))
+
         # run MicroPython
         output_mupy = run_micropython(pyb, args, test_file)
         # canonical form for all host platforms is to use \n for end-of-line
@@ -803,7 +821,7 @@ def run_tests(tests, args, result_dir, num_threads=1):
                 f.write(output_mupy)
             pyb.reopen()
 
-            return 'FAIL'
+            return "FAIL"
 
         test_count.increment()
 
@@ -832,12 +850,10 @@ def run_tests(tests, args, result_dir, num_threads=1):
         cnt = 0
         for test in tests:
             res = run_one_test(test)
-
-            if res == 'FAIL':
+            if res == "FAIL":
                 for i in range(2):
                     res = run_one_test(test, True)
-                    if res != 'FAIL':
-                        failed_tests.remove(test)
+                    if res != "FAIL":
                         break
 
             cnt = cnt + 1
@@ -876,70 +892,8 @@ def run_tests(tests, args, result_dir, num_threads=1):
         print("{} tests failed: {}".format(len(failed_tests), " ".join(failed_tests)))
         # return False
 
-    # generate 
-    from datetime import datetime
-    from render import load_template, render_template
-
-    def _sort_test_results(results):
-        return sorted(results, key=lambda x: x['name'])
-
-    test_results = []
-
-    for test in passed_tests:
-        test_results.append({
-            'name': test,
-            'result': 'passed',
-        })
-
-    for test in skipped_tests:
-        test_results.append({
-            'name': test,
-            'result': 'skipped',
-        })
-
-    for test in failed_tests:
-        test_basename = test.replace("..", "_").replace("./", "").replace("/", "_")
-        test_expect_file = os.path.join(os.path.join(result_dir, "fail"), test_basename + ".exp")
-        test_output_file = os.path.join(os.path.join(result_dir, "fail"), test_basename + ".out")
-
-        try:
-            with open(test_expect_file, 'r') as f:
-                test_expect = f.read()
-        except Exception as e:
-            test_expect = None
-        try:
-            with open(test_output_file, 'r') as f:
-                test_output = f.read()
-        except Exception as e:
-            test_output = None
-
-        test_results.append({
-            'name': test,
-            'result': 'failed',
-            'expect': test_expect,
-            'output': test_output
-        })
-
-    summary_stats = {
-            "tests performed": test_count.value,
-            "individual testcases": testcase_count.value,
-            "tests passed": len(passed_tests),
-            "tests skipped": len(skipped_tests),
-            "tests failed":len(failed_tests),
-            }
-
-    sorted_test_results = _sort_test_results(test_results)
-
-    context = {
-        'test_report_title': 'CanMV Test Report',
-        'test_summary': summary_stats,
-        'test_results': sorted_test_results,
-        'timestamp': datetime.utcnow().strftime('%Y/%m/%d %H:%M:%S UTC')
-    }
-    template = load_template(os.path.join('html_report','template.html'))
-    rendered_template = render_template(template, context)
-    with open(os.path.join(result_dir,'report.html'), 'w') as template_file:
-        template_file.write(rendered_template)
+    from report.render import render_result
+    render_result(test_count.value, testcase_count.value,passed_tests,skipped_tests,failed_tests,result_dir)
 
     # all tests succeeded
     return True
