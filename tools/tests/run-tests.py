@@ -268,13 +268,22 @@ class ThreadSafeCounter:
 
     def increment(self):
         self.add(1)
+    def decrement(self):
+        self.dec(1)
 
     def add(self, to_add):
         with self._lock:
             self._value += to_add
+    def dec(self, to_dec):
+        with self._lock:
+            self._value -= to_dec
 
     def append(self, arg):
         self.add([arg])
+    def remove(self, arg):
+        with self._lock:
+            if arg in self._value:
+                self._value.remove(arg)
 
     @property
     def value(self):
@@ -675,7 +684,7 @@ def run_tests(tests, args, result_dir, num_threads=1):
         )  # native doesn't have proper traceback info
         skip_tests.add("micropython/schedule.py")  # native code doesn't check pending events
 
-    def run_one_test(test_file):
+    def run_one_test(test_file, isRetry = False):
         global pyb
         test_file = test_file.replace("\\", "/")
 
@@ -752,6 +761,15 @@ def run_tests(tests, args, result_dir, num_threads=1):
         if args.write_exp:
             return
 
+        if isRetry:
+            failed_tests.remove(test_file)
+
+            test_count.decrement()
+            testcase_count.dec(len(output_expected.splitlines()))
+
+            rm_f(os.path.join(failed_dir, test_basename + ".exp"))
+            rm_f(os.path.join(failed_dir, test_basename + ".out"))
+
         # run MicroPython
         output_mupy = run_micropython(pyb, args, test_file)
         # canonical form for all host platforms is to use \n for end-of-line
@@ -787,6 +805,8 @@ def run_tests(tests, args, result_dir, num_threads=1):
                 f.write(output_mupy)
             pyb.reopen()
 
+            return "FAIL"
+
         test_count.increment()
 
     if pyb or args.list_tests:
@@ -813,7 +833,13 @@ def run_tests(tests, args, result_dir, num_threads=1):
     else:
         cnt = 0
         for test in tests:
-            run_one_test(test)
+            res = run_one_test(test)
+            if res == "FAIL":
+                for i in range(2):
+                    res = run_one_test(test, True)
+                    if res != "FAIL":
+                        break
+
             cnt = cnt + 1
             if cnt % 8 == 7:
                 pyb.reopen()
@@ -849,6 +875,9 @@ def run_tests(tests, args, result_dir, num_threads=1):
             f.write(wrStr.join(failed_tests))
         print("{} tests failed: {}".format(len(failed_tests), " ".join(failed_tests)))
         # return False
+
+    from report.render import render_result
+    render_result(test_count.value, testcase_count.value,passed_tests,skipped_tests,failed_tests,result_dir)
 
     # all tests succeeded
     return True

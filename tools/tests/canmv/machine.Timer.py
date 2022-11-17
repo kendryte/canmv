@@ -2,8 +2,7 @@ import time
 from machine import Timer
 
 def on_timer(timer):
-    print("time up:",timer)
-    print("param:",timer.callback_arg())
+    print("on timer cb")
 
 arg = 1
 
