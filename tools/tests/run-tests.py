@@ -285,6 +285,14 @@ class ThreadSafeCounter:
             if arg in self._value:
                 self._value.remove(arg)
 
+    def remove(self, arg):
+        with self._lock:
+            if isinstance(self._value, list):
+                if arg in self._value:
+                    self._value.remove(arg)
+            else:
+                raise ValueError("must be a list")
+
     @property
     def value(self):
         return self._value
@@ -729,6 +737,12 @@ def run_tests(tests, args, result_dir, num_threads=1):
         skip_it |= skip_revops and "reverse_op" in test_name
         skip_it |= skip_io_module and is_io_module
 
+        if isRetry:
+            filename_expected = os.path.join(failed_dir, test_basename + ".exp")
+            filename_mupy = os.path.join(failed_dir, test_basename + ".out")
+            rm_f(filename_expected)
+            rm_f(filename_mupy)
+
         if args.list_tests:
             if not skip_it:
                 print(test_file)
@@ -780,7 +794,8 @@ def run_tests(tests, args, result_dir, num_threads=1):
             skipped_tests.append(test_file)
             return
 
-        testcase_count.add(len(output_expected.splitlines()))
+        if not isRetry:
+            testcase_count.add(len(output_expected.splitlines()))
 
         if output_expected == output_mupy:
             print("PASS ", test_file)
@@ -795,7 +810,8 @@ def run_tests(tests, args, result_dir, num_threads=1):
             #     f.write(output_mupy)
         else:
             print("FAIL ", test_file)
-            failed_tests.append(test_file)
+            if not isRetry:
+                failed_tests.append(test_file)
 
             filename_expected = os.path.join(failed_dir, test_basename + ".exp")
             filename_mupy = os.path.join(failed_dir, test_basename + ".out")
