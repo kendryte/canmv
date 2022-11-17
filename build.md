@@ -28,7 +28,7 @@ git submodule update --init --recursive path_to_submodule
 ```
 
 * Download kendryte runtime libraries
-Download libnncase.tar.xz from (here)[https://drive.google.com/file/d/1g7bdewRmIUc7uvm947EugLEq_0gvKvc0/view?usp=share_link]
+Download libnncase.tar.xz from [here](https://drive.google.com/file/d/1g7bdewRmIUc7uvm947EugLEq_0gvKvc0/view?usp=share_link)
 
 ```
 cd canmv
