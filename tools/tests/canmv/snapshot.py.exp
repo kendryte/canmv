@@ -1,4 +1,4 @@
 init i2c:2 freq:100000
-[CANMV]: find ov2640
-[CANMV]: find ov sensor
+[CANMV]: sensor id = 9d
+[CANMV]: find gc0328
 Done.
