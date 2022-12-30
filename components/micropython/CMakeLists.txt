@@ -72,8 +72,10 @@ if(CONFIG_COMPONENT_MICROPYTHON_ENABLE)
     append_srcs_dir(MPY_PORT_SRCS "port/src/omv/py")
     append_srcs_dir(MPY_PORT_SRCS "port/src/standard_lib/machine")
     append_srcs_dir(MPY_PORT_SRCS "port/src/standard_lib/network")
-    append_srcs_dir(MPY_PORT_SRCS "port/src/standard_lib/network/esp32")
-    append_srcs_dir(MPY_PORT_SRCS "port/src/standard_lib/network/esp8285")
+    if(NOT CONFIG_MICROPY_LWIP_ENABLE)
+        append_srcs_dir(MPY_PORT_SRCS "port/src/standard_lib/network/esp32")
+        append_srcs_dir(MPY_PORT_SRCS "port/src/standard_lib/network/esp8285")
+    endif()
     if(CONFIG_MAIXPY_WIZNET5K_ENABLE)
         append_srcs_dir(MPY_PORT_SRCS "port/src/standard_lib/network/wiznet5k")
         append_srcs_dir(MPY_PORT_SRCS "port/src/standard_lib/network/wiznet5k/w5500")
@@ -83,6 +85,20 @@ if(CONFIG_COMPONENT_MICROPYTHON_ENABLE)
     append_srcs_dir(MPY_PORT_SRCS "port/src/standard_lib/socket")
     append_srcs_dir(MPY_PORT_SRCS "port/src/standard_lib/uos")
     append_srcs_dir(MPY_PORT_SRCS "port/src/standard_lib/utime")
+
+    ################################ add esp32c3 driver ##########################
+    if(CONFIG_NETWORK_ESP32XX_HOSTED)
+        list(APPEND ADD_INCLUDE "${mpy_port_dir}/src/standard_lib/network/esp32c3/esp_hosted_fg/include"
+                                "${mpy_port_dir}/src/standard_lib/network/esp32c3"
+                                #"${mpy_port_dir}/src/standard_lib/network/esp32c3/esp_hosted_fg/host/k210/app/control"
+            )
+        append_srcs_dir(MPY_PORT_SRCS "port/src/standard_lib/network/esp32c3/esp_hosted_fg/src")
+        append_srcs_dir(MPY_PORT_SRCS "port/src/standard_lib/network/esp32c3")
+        #append_srcs_dir(MPY_PORT_SRCS "port/src/standard_lib/network/esp32c3/esp_hosted_fg/host/k210/app/control")
+        
+        add_definitions(-Wno-stringop-truncation)
+    endif()
+    ##############################################################################
 
     list(APPEND MPY_SRCS    
                     "core/py/mpstate.c"
@@ -250,6 +266,63 @@ if(CONFIG_COMPONENT_MICROPYTHON_ENABLE)
         "core/extmod/modussl_axtls.c"
         "core/extmod/modussl_mbedtls.c"
         )
+    endif()
+
+    if(CONFIG_MICROPY_LWIP_ENABLE)
+        #message("----------**********------ " ${mpy_dir})
+        set(mpy_core_lwip_dir "core/lib/lwip/src")
+        list(APPEND ADD_INCLUDE "${mpy_dir}/${mpy_core_lwip_dir}/include"
+                                #"${mpy_dir}/core/extmod/lwip-include"
+                                "${mpy_dir}/port/src/standard_lib/network/lwip_inc/include"
+                                #"${mpy_dir}/${mpy_core_lwip_dir}/apps/httpd"
+        )
+        # list(APPEND ADD_INCLUDE "${mpy_dir}/${mpy_core_lwip_dir}/include"
+        #                         #"${mpy_dir}/core/extmod/lwip-include"
+        #                         "${mpy_dir}/port/src/standard_lib/network/lwip_port_rtos/include"
+        #                         #"${mpy_dir}/${mpy_core_lwip_dir}/apps/httpd"
+        # )
+
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-address")
+        list(APPEND MPY_EXTMOD_SRCS
+            "core/extmod/modlwip.c"
+            "${mpy_core_lwip_dir}/apps/mdns/mdns.c"
+            "${mpy_core_lwip_dir}/core/def.c"
+            "${mpy_core_lwip_dir}/core/dns.c"
+            "${mpy_core_lwip_dir}/core/inet_chksum.c"
+            "${mpy_core_lwip_dir}/core/init.c"
+            "${mpy_core_lwip_dir}/core/ip.c"
+            "${mpy_core_lwip_dir}/core/mem.c"
+            "${mpy_core_lwip_dir}/core/memp.c"
+            "${mpy_core_lwip_dir}/core/netif.c"
+            "${mpy_core_lwip_dir}/core/pbuf.c"
+            "${mpy_core_lwip_dir}/core/raw.c"
+            "${mpy_core_lwip_dir}/core/stats.c"
+            "${mpy_core_lwip_dir}/core/sys.c"
+            "${mpy_core_lwip_dir}/core/tcp.c"
+            "${mpy_core_lwip_dir}/core/tcp_in.c"
+            "${mpy_core_lwip_dir}/core/tcp_out.c"
+            "${mpy_core_lwip_dir}/core/timeouts.c"
+            "${mpy_core_lwip_dir}/core/udp.c"
+            "${mpy_core_lwip_dir}/core/ipv4/autoip.c"
+            "${mpy_core_lwip_dir}/core/ipv4/dhcp.c"
+            "${mpy_core_lwip_dir}/core/ipv4/etharp.c"
+            "${mpy_core_lwip_dir}/core/ipv4/icmp.c"
+            "${mpy_core_lwip_dir}/core/ipv4/igmp.c"
+            "${mpy_core_lwip_dir}/core/ipv4/ip4_addr.c"
+            "${mpy_core_lwip_dir}/core/ipv4/ip4.c"
+            "${mpy_core_lwip_dir}/core/ipv4/ip4_frag.c"
+            "${mpy_core_lwip_dir}/netif/ethernet.c"
+            "core/lib/netutils/dhcpserver.c"
+            #"${mpy_core_lwip_dir}/netif/slipif.c"
+        )
+        #append_srcs_dir(MPY_EXTMOD_SRCS "${mpy_core_lwip_dir}/api")
+        #list(APPEND MPY_EXTMOD_SRCS "port/src/standard_lib/network/lwip_port_rtos/src/sys_arch.c")
+
+        #list(APPEND MPY_EXTMOD_SRCS "core/lib/netutils/dhcpserver.c")
+        # append_srcs_dir(MPY_EXTMOD_SRCS "${mpy_core_lwip_dir}/apps/netbiosns")
+        # list(APPEND MPY_EXTMOD_SRCS   "${mpy_core_lwip_dir}/apps/httpd/fs.c"
+        #                             "${mpy_core_lwip_dir}/apps/httpd/httpd.c"
+        # )
     endif()
 
     list(APPEND ADD_SRCS    ${MPY_SRCS}

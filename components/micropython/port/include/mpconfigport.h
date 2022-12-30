@@ -178,7 +178,7 @@ extern const struct _mp_print_t mp_debug_print;
 #define MICROPY_PY_SYS_STDFILES             (1)
 #define MICROPY_PY_SYS_STDIO_BUFFER         (1)
 #define MICROPY_PY_UERRNO                   (1)
-#define MICROPY_PY_USELECT                  (0)
+#define MICROPY_PY_USELECT                  (1)
 #define MICROPY_PY_UTIME_MP_HAL             (1)
 
 #if CONFIG_MAIXPY_THREAD_ENABLE
@@ -253,11 +253,20 @@ extern const struct _mp_print_t mp_debug_print;
 #define MICROPY_PY_USOCKET_EVENTS           (MICROPY_PY_WEBREPL)
 #define MICROPY_PY_NETWORK                  (1)
 #define MICROPY_PY_USOCKET                  (1)
+#if CONFIG_MICROPY_LWIP_ENABLE
+#define MICROPY_PY_LWIP                     (1)
+#else
 #define MICROPY_PY_LWIP                     (0)
+#endif
 #define MICROPY_PY_UHASHLIB_MAIX            (1)
 #define MICROPY_PY_UHASHLIB_SHA256_MAIX     (1)
 #define MICROPY_PY_UCRYPTOLIB_MAIX          (1)
 
+#if CONFIG_NETWORK_ESP32XX_HOSTED
+#define MICROPY_PY_NETWORK_ESP32C3          (1)
+#else
+#define MICROPY_PY_NETWORK_ESP32C3          (0)
+#endif
 
 //disable ext str pool
 #define MICROPY_QSTR_EXTRA_POOL             mp_qstr_frozen_const_pool
@@ -384,6 +393,20 @@ extern const struct _mp_obj_module_t mp_module_touchscreen;
 #endif
 /////////////////////////////////////////////////////////////////////////////////
 
+#if MICROPY_PY_USOCKET && MICROPY_PY_LWIP
+// usocket implementation provided by lwIP
+#define SOCKET_BUILTIN_MODULE               { MP_ROM_QSTR(MP_QSTR_usocket), MP_ROM_PTR(&mp_module_lwip) },
+#define SOCKET_BUILTIN_MODULE_WEAK_LINKS    { MP_ROM_QSTR(MP_QSTR_socket), MP_ROM_PTR(&mp_module_lwip) },
+#elif MICROPY_PY_USOCKET
+// usocket implementation provided by skeleton wrapper
+#define SOCKET_BUILTIN_MODULE               { MP_ROM_QSTR(MP_QSTR_usocket), MP_ROM_PTR(&socket_module) },
+#define SOCKET_BUILTIN_MODULE_WEAK_LINKS    { MP_ROM_QSTR(MP_QSTR_socket), MP_ROM_PTR(&socket_module) },
+#else
+// no usocket module
+#define SOCKET_BUILTIN_MODULE
+#define SOCKET_BUILTIN_MODULE_WEAK_LINKS
+#endif
+
 #define MICROPY_PORT_BUILTIN_MODULES \
     { MP_OBJ_NEW_QSTR(MP_QSTR_uos), (mp_obj_t)&uos_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&utime_module }, \
@@ -391,8 +414,7 @@ extern const struct _mp_obj_module_t mp_module_touchscreen;
     { MP_OBJ_NEW_QSTR(MP_QSTR_maix), (mp_obj_t)&maix_module },\
     { MP_OBJ_NEW_QSTR(MP_QSTR_machine), (mp_obj_t)&machine_module },\
     { MP_OBJ_NEW_QSTR(MP_QSTR_network), (mp_obj_t)&network_module },\
-    { MP_OBJ_NEW_QSTR(MP_QSTR_usocket), (mp_obj_t)&socket_module }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_socket), (mp_obj_t)&socket_module }, \
+    SOCKET_BUILTIN_MODULE \
     { MP_OBJ_NEW_QSTR(MP_QSTR_image), (mp_obj_t)&image_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_sensor), (mp_obj_t)&sensor_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_lcd), (mp_obj_t)&lcd_module }, \
@@ -407,6 +429,8 @@ extern const struct _mp_obj_module_t mp_module_touchscreen;
     MAIXPY_PY_LODEPNG_DEF \
     MAIXPY_PY_TOUCHSCREEN_DEF
 
+    // { MP_OBJ_NEW_QSTR(MP_QSTR_usocket), (mp_obj_t)&socket_module }, 
+    // { MP_OBJ_NEW_QSTR(MP_QSTR_socket), (mp_obj_t)&socket_module }, 
 
 
 
@@ -422,6 +446,9 @@ extern const struct _mp_obj_module_t mp_module_touchscreen;
     { MP_OBJ_NEW_QSTR(MP_QSTR_struct), (mp_obj_t)&mp_module_ustruct }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_zlib), (mp_obj_t)&mp_module_uzlib }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_hashlib), (mp_obj_t)&mp_module_uhashlib_maix }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_select), (mp_obj_t)&mp_module_uselect }, \
+    SOCKET_BUILTIN_MODULE_WEAK_LINKS
+
 
 #define MICROPY_PY_MACHINE                  (1)
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW     mp_pin_make_new
@@ -477,8 +504,18 @@ extern const struct _mp_obj_module_t mp_module_touchscreen;
 	struct _nic_obj_t *modnetwork_nic; \
     MAIXPY_LVGL_ROOTS \
 
-
-
+#include "sysctl.h"
+static inline mp_uint_t k210_disable_irq(void)
+{
+    sysctl_disable_irq();
+    return 1;
+}
+static inline void k210_enable_irq(mp_uint_t state)
+{
+    sysctl_enable_irq();
+}
+#define MICROPY_BEGIN_ATOMIC_SECTION()    k210_disable_irq()
+#define MICROPY_END_ATOMIC_SECTION(state)  k210_enable_irq(state)
 
 
 #endif // _MPCONFIGPORT_H_

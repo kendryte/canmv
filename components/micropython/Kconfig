@@ -103,6 +103,16 @@ menu "Micropython configurations"
 			default n
 			select WIZNET5K_ENABLE
 
+		config MICROPY_LWIP_ENABLE
+			bool "Enable Lwip"
+			default n
+
+		config NETWORK_ESP32XX_HOSTED
+			bool "Enable esp32xx hosted driver"
+			default n
+			select MICROPY_LWIP_ENABLE
+			select FREERTOS_ENABLE
+
 	endmenu
 
 	menu "Builtin py modules configurations"

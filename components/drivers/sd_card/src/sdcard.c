@@ -78,6 +78,31 @@ void SD_LOW_SPEED_ENABLE(void)
 {
     spi_set_clk_rate(SD_SPI_DEVICE, 400000);
 }
+#include "platform_wrapper.h"
+extern esp_mutex_handle_t mutex_spi_trans;
+extern volatile bool maixpy_sdcard_loading;
+static void config_sd_spi_pin(void)
+{
+    //extern sdcard_config_t config;
+    //if(maixpy_sdcard_loading == 0)
+    {
+        xSemaphoreTake(mutex_spi_trans, portMAX_DELAY); 
+        //spi_set_clk_rate(SPI_DEVICE_1, 1000000 * 25);  
+    }
+    //spi_set_clk_rate(SPI_DEVICE_1, 1000000 * 25);
+
+    fpioa_set_function(config.sclk_pin, FUNC_SPI1_SCLK);
+    fpioa_set_function(config.mosi_pin, FUNC_SPI1_D0);
+    fpioa_set_function(config.miso_pin, FUNC_SPI1_D1);
+}
+static void config_network_spi_pin(void)
+{
+	// fpioa_set_function(12, FUNC_SPI1_SCLK);
+    // fpioa_set_function(11, FUNC_SPI1_D0);
+    // fpioa_set_function(15, FUNC_SPI1_D1);
+    //if(maixpy_sdcard_loading == 0)
+	    xSemaphoreGive(mutex_spi_trans);
+}
 
 static void sd_lowlevel_init(uint8_t spi_index)
 {
@@ -87,29 +112,36 @@ static void sd_lowlevel_init(uint8_t spi_index)
 
 static void sd_write_data(uint8_t *data_buff, uint32_t length)
 {
+    config_sd_spi_pin();
     spi_init(SD_SPI_DEVICE, SPI_WORK_MODE_0, SPI_FF_STANDARD, 8, 0);
     spi_send_data_standard(SD_SPI_DEVICE, SD_SS, NULL, 0, data_buff, length);
+    config_network_spi_pin();
 }
 
 static void sd_read_data(uint8_t *data_buff, uint32_t length)
 {
-
+    config_sd_spi_pin();
     spi_init(SD_SPI_DEVICE, SPI_WORK_MODE_0, SPI_FF_STANDARD, 8, 0);
     spi_receive_data_standard(SD_SPI_DEVICE, SD_SS, NULL, 0, data_buff, length);
+    config_network_spi_pin();
 }
 
 static void sd_write_data_dma(uint8_t *data_buff)
 {
+    config_sd_spi_pin();
     // spi_init(SD_SPI_DEVICE, SPI_WORK_MODE_0, SPI_FF_STANDARD, 32, 1); misaligned error
     spi_init(SD_SPI_DEVICE, SPI_WORK_MODE_0, SPI_FF_STANDARD, 8, 0);
     spi_send_data_standard_dma(SD_DMA_CH, SD_SPI_DEVICE, SD_SS, NULL, 0, (uint8_t *)(data_buff), 128 * 4);
+    config_network_spi_pin();
 }
 
 static void sd_read_data_dma(uint8_t *data_buff)
 {
+    config_sd_spi_pin();
     // spi_init(SD_SPI_DEVICE, SPI_WORK_MODE_0, SPI_FF_STANDARD, 32, 1); misaligned error
     spi_init(SD_SPI_DEVICE, SPI_WORK_MODE_0, SPI_FF_STANDARD, 8, 0);
     spi_receive_data_standard_dma(-1, SD_DMA_CH, SD_SPI_DEVICE, SD_SS, NULL, 0, data_buff, 128 * 4);
+    config_network_spi_pin();
 }
 
 /*
@@ -166,7 +198,7 @@ static void sd_end_cmd(void)
 static uint8_t sd_get_response(void)
 {
     uint8_t result;
-    uint16_t timeout = 0xFFFF; // min: 0x5f
+    uint16_t timeout = 0xfff;//0xFFFF; // min: 0x5f
     /*!< Check if response is got or a timeout is happen */
     while (timeout--)
     {
