@@ -753,7 +753,7 @@ ESP_DEBUG("spi_trans--payload_header->len:%d\r\n", len);
 				}
 				/* Give chance to other tasks */
 				//ESP_DEBUG("spi_trans--esp_msleep(0)\r\n");
-				esp_msleep(0);
+				//esp_msleep(0); // remove this will speed up and stable for spi_transaction
 				ESP_DEBUG("spi_trans--esp_msleep(0)--after\r\n");
 
 			} else {
@@ -975,7 +975,7 @@ static uint8_t * get_tx_buffer(uint8_t *is_valid_tx_buf)
 		payload_header->if_num  = buf_handle.if_num;
 		memcpy(payload, buf_handle.payload, min(len, MAX_PAYLOAD_SIZE));
 		payload_header->checksum = htole16(compute_checksum(sendbuf,
-				sizeof(struct esp_payload_header)+len));;
+				sizeof(struct esp_payload_header)+len));
 		//print_hex_dump(sendbuf, 12+len, "SPI send data");	
 	}
 

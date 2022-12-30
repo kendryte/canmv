@@ -33,7 +33,7 @@
  * */
 #define WAIT_TIME_B2B_CTRL_REQ               5
 #define DEFAULT_CTRL_RESP_TIMEOUT            30
-#define DEFAULT_CTRL_RESP_AP_SCAN_TIMEOUT    (60*3)
+#define DEFAULT_CTRL_RESP_AP_SCAN_TIMEOUT    60 //(60*3)
 
 
 #define SUCCESS_STR                          "success"

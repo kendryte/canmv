@@ -73,7 +73,7 @@ extern uint32_t rng_get(void);
 #define MEMP_NUM_TCP_SEG (32)
 #endif
 
-#if 1
+#if 0
 // lwip takes 45600 bytes; TCP dl/ul are around 1200/1000 k/s on local network
 #define MEM_SIZE (16000)
 #define TCP_MSS (1460)
@@ -91,7 +91,7 @@ extern uint32_t rng_get(void);
 #define MEMP_NUM_TCP_SEG (150)
 #endif
 
-#if 0
+#if 1
 // lwip TCP rx/tx are around 1600/1200 k/s on local network
 //内存堆 heap 大小
 #define MEM_SIZE (25*1024)
