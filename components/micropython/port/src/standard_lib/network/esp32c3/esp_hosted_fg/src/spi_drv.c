@@ -754,8 +754,6 @@ ESP_DEBUG("spi_trans--payload_header->len:%d\r\n", len);
 				/* Give chance to other tasks */
 				//ESP_DEBUG("spi_trans--esp_msleep(0)\r\n");
 				//esp_msleep(0); // remove this will speed up and stable for spi_transaction
-				ESP_DEBUG("spi_trans--esp_msleep(0)--after\r\n");
-
 			} else {
 				rx_checksum = le16toh(payload_header->checksum);
 				payload_header->checksum = 0;

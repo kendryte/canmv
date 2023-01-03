@@ -88,7 +88,7 @@ static void init_ap(void)
 
 
 //struct netif netif_esp32c3;
-struct netif *g_netif_esp32c3[2]={NULL};
+//struct netif *g_netif_esp32c3[2]={NULL};
 
 
 /**
@@ -110,7 +110,6 @@ static void sta_rx_callback(struct network_handle *net_handle)
 		if (p != NULL) {
             pbuf_take(p, rx_buffer->payload, rx_buffer->len);
             //if (netif_esp32c3.input(p, &netif_esp32c3) != ERR_OK) {
-            //if (g_netif_esp32c3[0]->input(p, g_netif_esp32c3[0]) != ERR_OK) {
 			if (netif->input(p, netif) != ERR_OK) {
                 pbuf_free(p);
             }
@@ -143,7 +142,6 @@ static void ap_rx_callback(struct network_handle *net_handle)
 		if (p != NULL) {
             pbuf_take(p, rx_buffer->payload, rx_buffer->len);
             //if (netif_esp32c3.input(p, &netif_esp32c3) != ERR_OK) {
-            //if (g_netif_esp32c3[1]->input(p, g_netif_esp32c3[1]) != ERR_OK) {
 			if (netif->input(p, netif) != ERR_OK) {
                 pbuf_free(p);
             }
@@ -287,7 +285,6 @@ void esp32c3_tcpip_init(esp32c3_t *self, int itf) {
     #undef IP
 
     struct netif *n = &self->netif[itf];
-    //g_netif_esp32c3[itf] = &self->netif[itf];//netif 句柄传递给全局变量，以便rx cb使用
     n->name[0] = 'w';
     n->name[1] = '0' + itf;
     #if LWIP_IPV6
