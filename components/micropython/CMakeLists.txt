@@ -272,15 +272,9 @@ if(CONFIG_COMPONENT_MICROPYTHON_ENABLE)
         #message("----------**********------ " ${mpy_dir})
         set(mpy_core_lwip_dir "core/lib/lwip/src")
         list(APPEND ADD_INCLUDE "${mpy_dir}/${mpy_core_lwip_dir}/include"
-                                #"${mpy_dir}/core/extmod/lwip-include"
                                 "${mpy_dir}/port/src/standard_lib/network/lwip_inc/include"
                                 #"${mpy_dir}/${mpy_core_lwip_dir}/apps/httpd"
         )
-        # list(APPEND ADD_INCLUDE "${mpy_dir}/${mpy_core_lwip_dir}/include"
-        #                         #"${mpy_dir}/core/extmod/lwip-include"
-        #                         "${mpy_dir}/port/src/standard_lib/network/lwip_port_rtos/include"
-        #                         #"${mpy_dir}/${mpy_core_lwip_dir}/apps/httpd"
-        # )
 
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-address")
         list(APPEND MPY_EXTMOD_SRCS

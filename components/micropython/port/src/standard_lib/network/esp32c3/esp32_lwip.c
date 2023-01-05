@@ -78,10 +78,11 @@ static void init_ap(void)
 #include "lwip/dhcp.h"
 #include "lwip/timeouts.h"
 #include "lwip/dns.h"
-//#include "lwip/tcpip.h"
+
+#if DHCP_SERVER
 #include "lwip/priv/tcpip_priv.h"
 #include "netif/ethernet.h"
-
+#endif
 
 // #include "lwip/apps/netbiosns.h"
 // #include "lwip/apps/httpd.h" // http服务器
@@ -231,6 +232,7 @@ static err_t esp32c3_netif_init(struct netif *netif)
 }
 
 /* Exported types ------------------------------------------------------------*/
+#if DHCP_SERVER
 #define DHCP_START                 1
 #define DHCP_WAIT_ADDRESS          2
 #define DHCP_ADDRESS_ASSIGNED      3
@@ -257,6 +259,7 @@ static err_t esp32c3_netif_init(struct netif *netif)
 
 uint8_t DHCP_state;
 uint32_t IPaddress = 0;
+#endif
 
 void esp32c3_tcpip_init(esp32c3_t *self, int itf) {
     if(itf == ESP32_ITF_STA){
@@ -295,18 +298,18 @@ void esp32c3_tcpip_init(esp32c3_t *self, int itf) {
     netif_set_hostname(n, "CanMV");
     netif_set_default(n);
     netif_set_up(n);
-	//DHCP_state = DHCP_START;
 
     if (itf == ESP32_ITF_STA) {
         dns_setserver(0, &ipconfig[3]);
         dhcp_set_struct(n, &self->dhcp_client);
+		//DHCP_state = DHCP_START;
         dhcp_start(n);
     } else {
         dhcp_server_init(&self->dhcp_server, &ipconfig[0], &ipconfig[1]);
     }
     netif_set_link_up(n);
     //esp32c3_tcpip_set_link_up(self, itf);
-    printf("lwip init finish\r\n");
+    //printf("lwip init finish\r\n");
 
     #if LWIP_MDNS_RESPONDER
     // TODO better to call after IP address is set
@@ -381,7 +384,6 @@ int esp32c3_send_ethernet(esp32c3_t *self, int itf, size_t len, const void *buf)
 
 }
 
-//----------------------------old fun
 #if 1
 /* 显示DHCP分配的IP地址 */
 #if LWIP_DHCP
@@ -413,36 +415,6 @@ static void display_ip(void)
 }
 #endif
 
-// static void esp_network_lwip_init(void)
-// {
-// 	struct ip4_addr ipaddr, netmask, gw;
-// 	lwip_init();
-
-// 	netif_add(&netif_esp32c3, IP4_ADDR_ANY, IP4_ADDR_ANY, IP4_ADDR_ANY, NULL, esp32c3_netif_init, netif_input);
-// 	netif_esp32c3.name[0] = 'e';
-// 	netif_esp32c3.name[1] = '0';
-// 	//netif_create_ip6_linklocal_address(&netif, 1);
-// 	//netif.ip6_autoconfig_enabled = 1;
-// 	netif_esp32c3.hostname = "lyr_lwip"; // ★路由器中显示的名称
-// 	//netif_set_status_callback(&netif_esp32c3, netif_status_callback);
-// 	#if LWIP_DNS
-// 		IP4_ADDR(&ipaddr, 8, 8, 8, 8); // 首选DNS服务器
-// 		dns_setserver(0, &ipaddr);
-// 		IP4_ADDR(&ipaddr, 8, 8, 4, 4); // 备用DNS服务器
-// 		dns_setserver(1, &ipaddr);
-// 	#endif
-// 	netif_set_default(&netif_esp32c3);
-// 	printf("lwip init finish -------------\r\n");
-// 	netif_set_up(&netif_esp32c3);
-// 	netif_set_link_up(&netif_esp32c3);
-// 	/* Start DHCP and HTTPD */
-// 	dhcp_start(&netif_esp32c3 );
-
-// 	// netbiosns_init();
-// 	// netbiosns_set_name("k210test"); // 计算机名 (测试方法: (1)ping 计算机名 (2)用浏览器访问http://计算机名/) // 注意: 路由器中显示的名称可以和计算机名不同
-// 	// httpd_init(); // 初始化lwip自带的http服务器 (lwip/apps/httpd/*)
-// }
-
 void lwip_task(void const *arg)
 {
 	
@@ -454,7 +426,7 @@ void lwip_task(void const *arg)
 		#if LWIP_DHCP
 		display_ip();
 		#endif
-		esp_msleep(50);
+		esp_msleep(80);
 	}
 }
 
@@ -468,77 +440,11 @@ sys_now(void)
 }
 
 
-#if 0 //SYS_LIGHTWEIGHT_PROT
-
-// sys_prot_t
-// sys_arch_protect(void)
-// {
-// #if LWIP_FREERTOS_SYS_ARCH_PROTECT_USES_MUTEX
-//   BaseType_t ret;
-//   LWIP_ASSERT("sys_arch_protect_mutex != NULL", sys_arch_protect_mutex != NULL);
-
-//   ret = xSemaphoreTakeRecursive(sys_arch_protect_mutex, portMAX_DELAY);
-//   LWIP_ASSERT("sys_arch_protect failed to take the mutex", ret == pdTRUE);
-// #else /* LWIP_FREERTOS_SYS_ARCH_PROTECT_USES_MUTEX */
-//   taskENTER_CRITICAL();
-// #endif /* LWIP_FREERTOS_SYS_ARCH_PROTECT_USES_MUTEX */
-// #if LWIP_FREERTOS_SYS_ARCH_PROTECT_SANITY_CHECK
-//   {
-//     /* every nested call to sys_arch_protect() returns an increased number */
-//     sys_prot_t ret = sys_arch_protect_nesting;
-//     sys_arch_protect_nesting++;
-//     LWIP_ASSERT("sys_arch_protect overflow", sys_arch_protect_nesting > ret);
-//     return ret;
-//   }
-// #else
-//   return 1;
-// #endif
-// }
-
-// void
-// sys_arch_unprotect(sys_prot_t pval)
-// {
-// #if LWIP_FREERTOS_SYS_ARCH_PROTECT_USES_MUTEX
-//   BaseType_t ret;
-// #endif
-// #if LWIP_FREERTOS_SYS_ARCH_PROTECT_SANITY_CHECK
-//   LWIP_ASSERT("unexpected sys_arch_protect_nesting", sys_arch_protect_nesting > 0);
-//   sys_arch_protect_nesting--;
-//   LWIP_ASSERT("unexpected sys_arch_protect_nesting", sys_arch_protect_nesting == pval);
-// #endif
-
-// #if LWIP_FREERTOS_SYS_ARCH_PROTECT_USES_MUTEX
-//   LWIP_ASSERT("sys_arch_protect_mutex != NULL", sys_arch_protect_mutex != NULL);
-
-//   ret = xSemaphoreGiveRecursive(sys_arch_protect_mutex);
-//   LWIP_ASSERT("sys_arch_unprotect failed to give the mutex", ret == pdTRUE);
-// #else /* LWIP_FREERTOS_SYS_ARCH_PROTECT_USES_MUTEX */
-//   taskEXIT_CRITICAL();
-// #endif /* LWIP_FREERTOS_SYS_ARCH_PROTECT_USES_MUTEX */
-//   LWIP_UNUSED_ARG(pval);
-// }
-
-//#define MICROPY_BEGIN_ATOMIC_SECTION	portDISABLE_INTERRUPTS
-
-sys_prot_t sys_arch_protect() {
-    //return (sys_prot_t)MICROPY_BEGIN_ATOMIC_SECTION();
-	//portDISABLE_INTERRUPTS();
-	sysctl_disable_irq();
-
-	return 1;
-}
-
-void sys_arch_unprotect(sys_prot_t state) {
-    //MICROPY_END_ATOMIC_SECTION((mp_uint_t)state);
-	//portENABLE_INTERRUPTS();
-    sysctl_enable_irq();
-}
-
-#endif /* SYS_LIGHTWEIGHT_PROT */
-
+#if DHCP_SERVER
 #include "lwip/ip4_addr.h"
 
-void LwIP_DHCP_task(void * pvParameters)
+//void LwIP_DHCP_task(void * pvParameters)
+void lwip_task(void const *arg)
 {
   ip4_addr_t ipaddr;
   ip4_addr_t netmask;
@@ -549,6 +455,7 @@ void LwIP_DHCP_task(void * pvParameters)
 	struct netif * netif = &esp32c3_state.netif[ESP32_ITF_STA];
   for (;;)
   {
+	sys_check_timeouts();  
 	switch (DHCP_state)
 	{
 	case DHCP_START:
@@ -639,6 +546,9 @@ void LwIP_DHCP_task(void * pvParameters)
 	}
 
 	/* wait 250 ms */
-	vTaskDelay(25);
+	//vTaskDelay(25);
+	display_ip();
+	esp_msleep(80);
    }
 }
+#endif

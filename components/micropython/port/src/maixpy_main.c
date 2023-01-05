@@ -538,6 +538,8 @@ void free_km_buf_timer_init(void)
 }
 #endif
 
+SemaphoreHandle_t mutex_spi_trans;
+
 void mp_task(void *pvParameter)
 {
   volatile void *tmp;
@@ -547,6 +549,9 @@ void mp_task(void *pvParameter)
   vTaskGetInfo(mp_main_task_handle, &task_status, (BaseType_t)pdTRUE, (eTaskState)eInvalid);
   volatile void *mp_main_stack_base = task_status.pxStackBase;
   mp_thread_init((void *)mp_main_stack_base, MP_TASK_STACK_LEN);
+
+  mutex_spi_trans = xSemaphoreCreateMutex();
+	assert(mutex_spi_trans);
 #endif
 
 #if MICROPY_PY_LWIP
@@ -587,8 +592,6 @@ void mp_task(void *pvParameter)
     }
   }
 #endif
-	// mutex_spi_trans = xSemaphoreCreateMutex();
-	// assert(mutex_spi_trans);
 
 soft_reset:
   sipeed_reset_sys_mem();

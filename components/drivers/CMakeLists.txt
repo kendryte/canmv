@@ -4,12 +4,8 @@ if(CONFIG_COMPONENT_DRIVERS_ENABLE)
                             "joystick/include"
                             "lcd/include"
                             "sd_card/include"
-                            "../micropython/port/src/standard_lib/network/esp32c3/esp_hosted_fg/include"
                             )
-    # if(CONFIG_NETWORK_ESP32XX_HOSTED)
-    #     list(APPEND ADD_INCLUDE "../micropython/port/src/standard_lib/network/esp32c3/esp_hosted_fg/include"
-    #         )
-    # endif()
+  
     aux_source_directory("flash/src"    FLASH_SRCS)
     aux_source_directory("joystick/src" JOYSTICK_SRCS)
     aux_source_directory("lcd/src"      LCD_SRCS)

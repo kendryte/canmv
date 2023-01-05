@@ -13,23 +13,21 @@
 // limitations under the License.
 
 /** Includes **/
-//#include "cmsis_os.h"
 #include "string.h"
-//#include "spi.h"
-//#include "gpio.h"
+
 #include "trace.h"
 #include "spi_drv.h"
 #include "adapter.h"
 #include "serial_drv.h"
 #include "netdev_if.h"
-//lyradd--
+
 #include "platform_wrapper.h"
 #include "fpioa.h"
 #include "gpiohs.h"
 #include "spi.h"
 #include "sdcard.h"
-#include "lwip/timeouts.h"
-//--lyradd
+//#include "lwip/timeouts.h"
+
 
 /** Constants/Macros **/
 #define TO_SLAVE_QUEUE_SIZE               30 //10
@@ -87,8 +85,8 @@ static struct netdev_ops esp_net_ops = {
 
 static semaphore_handle_t osSemaphore;
 //static 
-esp_mutex_handle_t mutex_spi_trans;
-//extern SemaphoreHandle_t mutex_spi_trans;
+//esp_mutex_handle_t mutex_spi_trans;
+extern SemaphoreHandle_t mutex_spi_trans;
 
 static thread_handle_t process_rx_task_id = 0;
 static thread_handle_t transaction_task_id = 0;
@@ -234,39 +232,6 @@ static void deinit_netdev(void)
 		}
 	}
 }
-/**
-  * @brief  check if alternate function of a GPIO set or not
-  * @param  GPIOx - GPIO Instance like A,B,..
-  * @retval 1 if alternate function set else 0
-  */
-// static int is_gpio_alternate_function_set(GPIO_TypeDef  *GPIOx, uint32_t pin)
-// {
-// #define GPIO_NUMBER 16U
-// 	uint32_t position;
-// 	uint32_t ioposition = 0x00U;
-// 	uint32_t iocurrent = 0x00U;
-
-// 	/* Check the parameters */
-// 	assert_param(IS_GPIO_ALL_INSTANCE(GPIOx));
-// 	assert_param(IS_GPIO_PIN(pin));
-
-// 	/* Configure the port pins */
-// 	for(position = 0U; position < GPIO_NUMBER; position++)
-// 	{
-// 		/* Get the IO position */
-// 		ioposition = 0x01U << position;
-// 		/* Get the current IO position */
-// 		iocurrent = (uint32_t)(pin) & ioposition;
-
-// 		if(iocurrent == ioposition)
-// 		{
-// 			if (GPIOx->AFR[position >> 3U]) {
-// 				return 1;
-// 			}
-// 		}
-// 	}
-// 	return 0;
-// }
 
 /**
   * @brief  Set hardware type to ESP32 or ESP32S2 depending upon
@@ -288,130 +253,10 @@ static void deinit_netdev(void)
 
 /** function definition **/
 
-//----------------spi transaction start
-static spi_transfer_width_t sipeed_spi_get_frame_size(size_t data_bit_length)
-{
-    if (data_bit_length < 8)
-        return SPI_TRANS_CHAR;
-    else if (data_bit_length < 16)
-        return SPI_TRANS_SHORT;
-    return SPI_TRANS_INT;
-}
-
-#include <utils.h>
-static void hard_spi_set_tmod(uint8_t spi_num, uint32_t tmod)
-{
-    configASSERT(spi_num < SPI_DEVICE_MAX && spi_num != 2);
-    volatile spi_t *spi_handle = spi[spi_num];
-    uint8_t tmod_offset = 0;
-    switch (spi_num)
-    {
-    case 0:
-    case 1:
-        tmod_offset = 8;
-        break;
-    case 2:
-        configASSERT(!"Spi Bus 2 Not Support!");
-        break;
-    case 3:
-    default:
-        tmod_offset = 10;
-        break;
-    }
-    set_bit(&spi_handle->ctrlr0, 3 << tmod_offset, tmod << tmod_offset);
-}
-
-static void hard_spi_transfer_data_standard(spi_device_num_t spi_num, spi_chip_select_t chip_select, const uint8_t *tx_buff, size_t tx_len, uint8_t *rx_buff, size_t rx_len)
-{
-    configASSERT(spi_num < SPI_DEVICE_MAX && spi_num != 2);
-    configASSERT(tx_len > 0);
-    size_t index, fifo_len;
-    // size_t rx_len = tx_len;
-    // size_t tx_len = rx_len;
-    hard_spi_set_tmod(spi_num, SPI_TMOD_TRANS_RECV);
-
-    volatile spi_t *spi_handle = spi[spi_num];
-
-    uint8_t dfs_offset;
-    switch (spi_num)
-    {
-    case 0:
-    case 1:
-        dfs_offset = 16;
-        break;
-    case 2:
-        configASSERT(!"Spi Bus 2 Not Support!");
-        break;
-    case 3:
-    default:
-        dfs_offset = 0;
-        break;
-    }
-    uint32_t data_bit_length = (spi_handle->ctrlr0 >> dfs_offset) & 0x1F;
-    spi_transfer_width_t frame_width = sipeed_spi_get_frame_size(data_bit_length);
-    spi_handle->ctrlr1 = (uint32_t)(tx_len / frame_width - 1);
-    spi_handle->ssienr = 0x01;
-    spi_handle->ser = 1U << chip_select;
-    uint32_t i = 0;
-    while (tx_len)
-    {
-        fifo_len = 32 - spi_handle->txflr;
-        fifo_len = fifo_len < tx_len ? fifo_len : tx_len;
-        switch (frame_width)
-        {
-        case SPI_TRANS_INT:
-            fifo_len = fifo_len / 4 * 4;
-            for (index = 0; index < fifo_len / 4; index++)
-                spi_handle->dr[0] = ((uint32_t *)tx_buff)[i++];
-            break;
-        case SPI_TRANS_SHORT:
-            fifo_len = fifo_len / 2 * 2;
-            for (index = 0; index < fifo_len / 2; index++)
-                spi_handle->dr[0] = ((uint16_t *)tx_buff)[i++];
-            break;
-        default:
-            for (index = 0; index < fifo_len; index++)
-                spi_handle->dr[0] = tx_buff[i++];
-            break;
-        }
-        tx_len -= fifo_len;
-    }
-
-    while ((spi_handle->sr & 0x05) != 0x04)
-        ;
-    i = 0;
-    while (rx_len)
-    {
-        fifo_len = spi_handle->rxflr;
-        fifo_len = fifo_len < rx_len ? fifo_len : rx_len;
-        switch (frame_width)
-        {
-        case SPI_TRANS_INT:
-            fifo_len = fifo_len / 4 * 4;
-            for (index = 0; index < fifo_len / 4; index++)
-                ((uint32_t *)rx_buff)[i++] = spi_handle->dr[0];
-            break;
-        case SPI_TRANS_SHORT:
-            fifo_len = fifo_len / 2 * 2;
-            for (index = 0; index < fifo_len / 2; index++)
-                ((uint16_t *)rx_buff)[i++] = (uint16_t)spi_handle->dr[0];
-            break;
-        default:
-            for (index = 0; index < fifo_len; index++)
-                rx_buff[i++] = (uint8_t)spi_handle->dr[0];
-            break;
-        }
-
-        rx_len -= fifo_len;
-    }
-    spi_handle->ser = 0x00;
-    spi_handle->ssienr = 0x00;
-}
-//----------------spi transaction end
-
  // HANDSHAKE_Pin and READY_Pin callback
 void pin_callback(void *args)
 {
+	//sysctl_disable_irq();
 	portBASE_TYPE taskWoken = pdFALSE;
 	/* Post semaphore to notify SPI slave is ready for next transaction */
 	if (osSemaphore != NULL) {
@@ -419,6 +264,7 @@ void pin_callback(void *args)
 		//xSemaphoreGive(osSemaphore);
 		xSemaphoreGiveFromISR(osSemaphore, &taskWoken);
 	}
+	//sysctl_enable_irq();
 }
 
 /** Local Functions **/
@@ -429,7 +275,7 @@ void pin_callback(void *args)
   */
 void reset_slave(void)
 {
-	fpioa_set_function(14, FUNC_GPIOHS0 + HANDSHAKE_GPIO); //handshake pin
+	fpioa_set_function(HANDSHAKE_PIN, FUNC_GPIOHS0 + HANDSHAKE_GPIO); //handshake pin
 	gpiohs_set_drive_mode(HANDSHAKE_GPIO, GPIO_DM_INPUT_PULL_DOWN);
     gpiohs_set_pin_edge(HANDSHAKE_GPIO, GPIO_PE_RISING);
 	gpiohs_irq_register(HANDSHAKE_GPIO, 1, pin_callback, NULL);
@@ -449,6 +295,20 @@ void reset_slave(void)
     hard_delay(50); //50
 }
 
+static void set_spi_pin(void)
+{
+	fpioa_set_function(12, FUNC_SPI1_SCLK);
+    fpioa_set_function(11, FUNC_SPI1_D0);
+    fpioa_set_function(15, FUNC_SPI1_D1);
+	fpioa_set_function(10, FUNC_SPI1_SS0);
+	//fpioa_set_function(10, FUNC_GPIOHS0 + ESP_SPI_CS_GPIO); //cs pin
+
+	// gpiohs_set_drive_mode(ESP_SPI_CS_GPIO, GPIO_DM_OUTPUT);
+    // gpiohs_set_pin(ESP_SPI_CS_GPIO, GPIO_PV_HIGH);
+	spi_set_clk_rate(SPI_DEVICE_1, SPI_TRANS_RATE);
+	spi_init(SPI_DEVICE_1, SPI_WORK_MODE_2, SPI_FF_STANDARD, 8, 0);
+}
+
 /** Exported Functions **/
 /**
   * @brief  spi driver initialize
@@ -462,19 +322,12 @@ void stm_spi_init(void)
 	/* Check if supported board */
 	//set_hardware_type();
 
-	//--lyradd--init spi pin and handshake date_ready pin
-	fpioa_set_function(12, FUNC_SPI1_SCLK);
-    fpioa_set_function(11, FUNC_SPI1_D0);
-    fpioa_set_function(15, FUNC_SPI1_D1);
-	fpioa_set_function(10, FUNC_SPI1_SS0);
-	//fpioa_set_function(10, FUNC_GPIOHS0 + ESP_SPI_CS_GPIO); //cs pin
-
+	//init spi pin and handshake date_ready pin
 	// gpiohs_set_drive_mode(ESP_SPI_CS_GPIO, GPIO_DM_OUTPUT);
     // gpiohs_set_pin(ESP_SPI_CS_GPIO, GPIO_PV_HIGH);
-	spi_init(SPI_DEVICE_1, SPI_WORK_MODE_2, SPI_FF_STANDARD, 8, 0);
-	spi_set_clk_rate(SPI_DEVICE_1, SPI_TRANS_RATE);
+	set_spi_pin();
 
-	fpioa_set_function(13, FUNC_GPIOHS0 + DATA_READY_GPIO); //ready pin
+	fpioa_set_function(DATA_READY_PIN, FUNC_GPIOHS0 + DATA_READY_GPIO); //ready pin
 	gpiohs_set_drive_mode(DATA_READY_GPIO, GPIO_DM_INPUT_PULL_DOWN);
     gpiohs_set_pin_edge(DATA_READY_GPIO, GPIO_PE_RISING);
 	gpiohs_irq_register(DATA_READY_GPIO, 1, pin_callback, NULL);
@@ -491,10 +344,11 @@ void stm_spi_init(void)
 	/* spi handshake semaphore */
 	//osSemaphore = osSemaphoreCreate(osSemaphore(SEM) , 1);
 	vSemaphoreCreateBinary(osSemaphore);
+	//osSemaphore = xSemaphoreCreateCounting(255, 1);
 	assert(osSemaphore);
 
-	mutex_spi_trans = xSemaphoreCreateMutex();
-	assert(mutex_spi_trans);
+	// mutex_spi_trans = xSemaphoreCreateMutex();
+	// assert(mutex_spi_trans);
 
 	/* Queue - tx */
 	to_slave_queue = xQueueCreate(TO_SLAVE_QUEUE_SIZE,
@@ -662,6 +516,7 @@ static void stop_spi_transactions_for_msec(int x)
   */
  static stm_ret_t spi_transaction_v1(uint8_t * txbuff)
 {
+	//TODO: spi driver for esp32
 	return 0;
 }
 
@@ -699,27 +554,12 @@ static stm_ret_t spi_transaction_v2(uint8_t * txbuff)
 	// 		(uint8_t *)rxbuff, MAX_SPI_BUFFER_SIZE, HAL_MAX_DELAY);
 	// while( hspi1.State == HAL_SPI_STATE_BUSY );
 	// HAL_GPIO_WritePin(USR_SPI_CS_GPIO_Port, USR_SPI_CS_Pin, GPIO_PV_HIGH);
-//printf("ready spi Transmit\r\n");
 
-	fpioa_set_function(12, FUNC_SPI1_SCLK);
-    fpioa_set_function(11, FUNC_SPI1_D0);
-    fpioa_set_function(15, FUNC_SPI1_D1);
-	spi_set_clk_rate(SPI_DEVICE_1, SPI_TRANS_RATE);
-	spi_init(SPI_DEVICE_1, SPI_WORK_MODE_2, SPI_FF_STANDARD, 8, 0);
+	set_spi_pin();
 	//gpiohs_set_pin(ESP_SPI_CS_GPIO, GPIO_PV_LOW);
 	spi_dup_send_receive_data_dma(DMAC_CHANNEL2, DMAC_CHANNEL1, SPI_DEVICE_1, SPI_CHIP_SELECT_0, 
 									(uint8_t*)txbuff, MAX_SPI_BUFFER_SIZE, (uint8_t *)rxbuff, MAX_SPI_BUFFER_SIZE);
-	//hard_spi_transfer_data_standard(SPI_DEVICE_1, SPI_CHIP_SELECT_0,  (uint8_t*)txbuff, MAX_SPI_BUFFER_SIZE, (uint8_t *)rxbuff, MAX_SPI_BUFFER_SIZE);
-
-	// extern sdcard_config_t config;
-    // fpioa_set_function(config.sclk_pin, FUNC_SPI1_SCLK);
-    // fpioa_set_function(config.mosi_pin, FUNC_SPI1_D0);
-    // fpioa_set_function(config.miso_pin, FUNC_SPI1_D1);
-
-    //fpioa_set_function(config.cs_pin, FUNC_GPIOHS0 + config.cs_gpio_num);
-
 	//gpiohs_set_pin(ESP_SPI_CS_GPIO, GPIO_PV_HIGH);
-//printf("hard_spi_transfer_data_standard finish \r\n");
 	// switch(retval)
 	// {
 	// 	case HAL_OK:
@@ -732,8 +572,7 @@ static stm_ret_t spi_transaction_v2(uint8_t * txbuff)
 			/* Fetch length and offset from payload header */
 			len = le16toh(payload_header->len);
 			offset = le16toh(payload_header->offset);
-ESP_DEBUG("spi_trans--payload_header->len:%d\r\n", len);
-// printf("payload_header->offset:%d ?= %ld\r\n", offset, sizeof(struct esp_payload_header));
+			ESP_DEBUG("spi_trans--payload_header->len:%d\r\n", len);
 // print_hex_dump(rxbuff, 12+len, "SPI read data");
 
 			if ((!len) ||
@@ -838,8 +677,6 @@ static void transaction_task(void const* pvParameters)
 	}
 
 	for (;;) {
-		//sys_check_timeouts();
-
 		if (osSemaphore != NULL) {
 			/* Wait till slave is ready for next transaction */
 			//if (osSemaphoreWait(osSemaphore , osWaitForever) == osOK) {
@@ -847,6 +684,7 @@ static void transaction_task(void const* pvParameters)
 				check_and_execute_spi_transaction();
 			}
 		}
+		//esp_msleep(0);
 	}
 }
 
@@ -876,7 +714,7 @@ static void process_rx_task(void const* pvParameters)
 
 		/* point to payload */
 		payload = buf_handle.payload;
-ESP_DEBUG("process_rx_task--payload len:%d, if_type:%d\r\n", buf_handle.payload_len, buf_handle.if_type);
+		ESP_DEBUG("process_rx_task--payload len:%d, if_type:%d\r\n", buf_handle.payload_len, buf_handle.if_type);
 		/* process received buffer for all possible interface types */
 		if (buf_handle.if_type == ESP_SERIAL_IF) {
 

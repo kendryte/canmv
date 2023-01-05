@@ -164,7 +164,7 @@ void esp32c3_init(esp32c3_t *self)
 		register_event_callbacks();
 
 			/* Start DHCP Client */
-		// xTaskCreate(LwIP_DHCP_task, "DHCP", 1024, NULL, 4, NULL);
+		//xTaskCreate(LwIP_DHCP_task, "DHCP", GET_TASK_STACK_LEN(2048), NULL, 4, NULL);
 
 		BaseType_t xReturned;
 		xReturned = xTaskCreate((TaskFunction_t)lwip_task, 

@@ -221,16 +221,17 @@ STATIC mp_obj_t network_esp32c3_connect(size_t n_args, const mp_obj_t *pos_args,
     int is_wpa3_supported = 0;
     int listen_interval = 3; //DEFAULT_LISTEN_INTERVAL
     is_wpa3_supported = args[ARG_auth].u_int;
-    //int ret = esp32c3_wifi_join(self->esp, ssid.len, ssid.buf, key.len, key.buf, args[ARG_auth].u_int, bssid.buf, args[ARG_channel].u_int);
     int ret = test_station_mode_connect(ssid.buf, key.buf, bssid.buf, is_wpa3_supported, listen_interval);
     if (ret != 0) {
         mp_raise_OSError(ret);
     }
     else{
-        if(self->esp->wifi_join_state == WIFI_JOIN_STATE_JOINED){
+        //if(self->esp->wifi_join_state == WIFI_JOIN_STATE_JOINED)
+        {
             //lwip dhcp init
             dhcp_stop(&self->esp->netif[self->itf]);
             dhcp_start(&self->esp->netif[self->itf]);
+            esp32c3_tcpip_set_link_up(self->esp, self->itf);
         }
         self->esp->wifi_join_state = WIFI_JOIN_STATE_JOINED;
     }
