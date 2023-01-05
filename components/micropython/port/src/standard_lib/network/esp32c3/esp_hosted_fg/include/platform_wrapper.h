@@ -9,7 +9,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include "stdint.h"
-// ----freertos---lyradd
+// ----freertos---
 //#include "portmacro.h"
 #include "FreeRTOS.h"
 #include "task.h"
@@ -23,7 +23,7 @@
 #define esp_timer_handle_t                     TimerHandle_t
 #define MILLISEC_TO_TICK(x)                    ((x) / portTICK_PERIOD_MS)
 #define GET_TASK_STACK_LEN(size)               ((size) / sizeof(StackType_t))
-//-----lyradd
+//-----
 
 #define MCU_PLATFORM
 

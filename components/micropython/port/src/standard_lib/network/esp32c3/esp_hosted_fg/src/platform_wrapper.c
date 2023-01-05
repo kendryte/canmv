@@ -44,7 +44,7 @@ struct timer_handle_t {
 	esp_timer_handle_t timer_id;
 };
 
-//---------lyradd
+
 #define osErrorOS	0xff
 #define osOK 		0
 
@@ -67,7 +67,6 @@ static int32_t osSemaphoreRelease(semaphore_handle_t semaphore_id)
   	return result;
 }
 
-//---------
 
 int control_path_platform_init(void)
 {
@@ -75,7 +74,7 @@ int control_path_platform_init(void)
 
 	// /* control path semaphore */
 	// readSemaphore = osSemaphoreCreate(osSemaphore(READSEM) , 1);
-	//readSemaphore = xSemaphoreCreateCounting(65535, 1); //lyradd
+	//readSemaphore = xSemaphoreCreateCounting(65535, 1);
 	vSemaphoreCreateBinary(readSemaphore);
 
 	assert(readSemaphore);
@@ -255,7 +254,7 @@ void * hosted_create_semaphore(int init_value)
 	}
 
 	//*sem_id = osSemaphoreCreate(osSemaphore(sem_template_ctrl) , 1);
-	//*sem_id = xSemaphoreCreateCounting(65535, init_value); //lyradd
+	//*sem_id = xSemaphoreCreateCounting(65535, init_value);
 	vSemaphoreCreateBinary(*sem_id);
 
 	if (!*sem_id) {

@@ -22,13 +22,13 @@ extern "C" {
 
 /** includes **/
 //#include "cmsis_os.h"
-// ----freertos--->lyradd
+// ----freertos--->
 #include "portmacro.h"
 #include "FreeRTOS.h"
 #include "task.h"
 #include "semphr.h"
 #include "queue.h"
-//<---lyradd
+//<---
 #include "esp_common/common.h"
 
 struct serial_ll_operations;

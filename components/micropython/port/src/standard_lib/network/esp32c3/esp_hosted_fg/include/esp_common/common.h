@@ -23,9 +23,8 @@ extern "C" {
 /** Includes **/
 #include "stdint.h"
 #include "stddef.h"
-//lyradd--
+
 #include "platform_wrapper.h"
-//--lyradd
 
 /** Constants/Macros **/
 #define UNUSED_VAR(x)                     (void)(x);
