@@ -18,23 +18,14 @@
 //#include "lib/netutils/dhcpserver.h"
 
 /** Constants/Macros **/
-//#define LWIP_TASK_STACK_SIZE     4096
-
-// #define TASK_STACK_SIZE (32 * 1024)
-// #define TASK_STACK_LEN (TASK_STACK_SIZE / sizeof(StackType_t))
 
 
 /** Function declaration **/
-// static void init_sta(void);
-// static void init_ap(void);
-
 static void sta_rx_callback(struct network_handle *net_handle);
 static void ap_rx_callback(struct network_handle *net_handle);
-//static void lwip_task(void const *arg);
-//static void esp_network_lwip_init(void);
+
 struct network_handle *esp_net_handle[2];
-//struct network_handle *sta_handle, *ap_handle;
-//static thread_handle_t lwip_task_id = 0;
+
 
 //------------------------network----------------------------
 
@@ -223,7 +214,7 @@ static err_t esp32c3_netif_init(struct netif *netif)
 			printf("Failed to get softap mac\n\r");
 			return FAILURE;
 		}
-		printf("get softap mac finish\n\r");
+		//printf("get softap mac finish\n\r");
 	}
 	convert_mac_to_bytes(&netif->hwaddr[0], mac);
 	netif->hwaddr_len = sizeof(netif->hwaddr);
@@ -293,7 +284,7 @@ void esp32c3_tcpip_init(esp32c3_t *self, int itf) {
     #if LWIP_IPV6
     netif_add(n, &ipconfig[0].u_addr.ip4, &ipconfig[1].u_addr.ip4, &ipconfig[2].u_addr.ip4, self, esp32c3_netif_init, ethernet_input);
     #else
-    netif_add(n, &ipconfig[0], &ipconfig[1], &ipconfig[2], self, esp32c3_netif_init, netif_input); //netif_input);
+    netif_add(n, &ipconfig[0], &ipconfig[1], &ipconfig[2], self, esp32c3_netif_init, netif_input);
     #endif
     netif_set_hostname(n, "CanMV");
     netif_set_default(n);
@@ -359,7 +350,6 @@ int esp32c3_tcpip_link_status(esp32c3_t *self, int itf) {
         }
     } else {
         return ESP32_LINK_DOWN;
-        //return cyw43_wifi_link_status(self, itf);
     }
 }
 

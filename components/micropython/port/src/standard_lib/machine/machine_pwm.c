@@ -169,7 +169,8 @@ STATIC mp_obj_t k210_pwm_duty(size_t n_args, const mp_obj_t *args) {
     machine_pwm_obj_t *self = (machine_pwm_obj_t *)(args[0]);
     //get freq
     if (n_args == 1) {
-        return mp_obj_new_int((*(machine_pwm_obj_t *)(args[0])).duty);
+        // return mp_obj_new_int((*(machine_pwm_obj_t *)(args[0])).duty);
+        return mp_obj_new_float((*(machine_pwm_obj_t *)(args[0])).duty);
     }
     //set freq
     double duty =mp_obj_get_float(args[1]);
