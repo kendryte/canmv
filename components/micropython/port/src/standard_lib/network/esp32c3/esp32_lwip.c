@@ -18,23 +18,14 @@
 //#include "lib/netutils/dhcpserver.h"
 
 /** Constants/Macros **/
-//#define LWIP_TASK_STACK_SIZE     4096
-
-// #define TASK_STACK_SIZE (32 * 1024)
-// #define TASK_STACK_LEN (TASK_STACK_SIZE / sizeof(StackType_t))
-
 
 /** Function declaration **/
-// static void init_sta(void);
-// static void init_ap(void);
-
 static void sta_rx_callback(struct network_handle *net_handle);
 static void ap_rx_callback(struct network_handle *net_handle);
 //static void lwip_task(void const *arg);
 //static void esp_network_lwip_init(void);
 struct network_handle *esp_net_handle[2];
-//struct network_handle *sta_handle, *ap_handle;
-//static thread_handle_t lwip_task_id = 0;
+
 
 //------------------------network----------------------------
 
@@ -195,10 +186,10 @@ static err_t esp32_netif_output(struct netif *netif, struct pbuf *p)
   	return ERR_OK;
 }
 
-static void netif_status_callback(struct netif *netif)
-{
-  	printf("netif status changed %s\n", ip4addr_ntoa(netif_ip4_addr(netif)));
-}
+// static void netif_status_callback(struct netif *netif)
+// {
+//   	printf("netif status changed %s\n", ip4addr_ntoa(netif_ip4_addr(netif)));
+// }
 
 static err_t esp32c3_netif_init(struct netif *netif)
 {
@@ -223,7 +214,7 @@ static err_t esp32c3_netif_init(struct netif *netif)
 			printf("Failed to get softap mac\n\r");
 			return FAILURE;
 		}
-		printf("get softap mac finish\n\r");
+		//printf("get softap mac finish\n\r");
 	}
 	convert_mac_to_bytes(&netif->hwaddr[0], mac);
 	netif->hwaddr_len = sizeof(netif->hwaddr);

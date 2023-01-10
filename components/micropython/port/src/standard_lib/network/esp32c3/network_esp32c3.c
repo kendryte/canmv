@@ -122,8 +122,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(network_esp32c3_deinit_obj, network_esp32c3_dei
 STATIC mp_obj_t network_esp32c3_active(size_t n_args, const mp_obj_t *args) {
     network_esp32c3_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     if (n_args == 1) {
-        //return mp_obj_new_bool(esp32c3_tcpip_link_status(self->esp, self->itf));
-        return mp_const_none; 
+        return mp_obj_new_bool(esp32c3_tcpip_link_status(self->esp, self->itf));
+        //return mp_const_none; 
     } else {
         esp32c3_wifi_set_up(self->esp, self->itf, mp_obj_is_true(args[1]));
         return mp_const_none;
