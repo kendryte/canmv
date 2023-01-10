@@ -45,7 +45,7 @@
 #include "sysctl.h"
 
 
-#define _D //mp_printf(&mp_plat_print, "%d\n",__LINE__)
+#define _D //mp_printf(&mp_plat_print, "%d\r\n",__LINE__)
 
 
 /*-------------------------------------------------------------------*/

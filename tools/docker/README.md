@@ -9,11 +9,12 @@ Require one of the following tool combinations:
 * [Podman] & [podman-compose]
 * [Docker] & [docker-compose]
 
-
 ## About the docker and podman
 Docker and podman are both containerization tools. They are similar in many ways, but there are also some differences. For example, docker is a commercial product, and podman is an open source project. Docker is more popular than podman, but podman is more lightweight than docker. You can choose one of them according to your needs.
 I would suggest you to use podman, because it is more lightweight and open source.  
 The following instructions are based on podman rootless mode with Win11 WSL2, but it should work on other operating systems.
+
+For Linux user, usually it's easy to follow the official documentation to install docker or podman. But for Windows user, it's not that easy. Here's the experience guide how I set up my K210 development environment with WSL2 and Podman. Share with you: [Install Podman without desktop on Windows WSL2](podman_on_wsl2.md).
 
 ## Start build server
 I used to start the build server in the background, then attach to it with an interactive console. Here's how to do it:  

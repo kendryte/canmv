@@ -1,0 +1,4 @@
+init i2c:2 freq:100000
+[CANMV]: sensor id = 9d
+[CANMV]: find gc0328
+Done.

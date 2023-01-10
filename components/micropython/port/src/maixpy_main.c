@@ -103,6 +103,15 @@
 /********* others *******/
 #include "boards.h"
 
+#if MICROPY_PY_LWIP
+#include "lwip/init.h"
+#include "lwip/apps/mdns.h"
+#include "lwip/opt.h"
+#if MICROPY_PY_NETWORK_ESP32C3
+#include "esp32_if.h"
+#endif
+#endif
+
 #ifdef CONFIG_MAIXPY_K210_UARTHS_DEBUG
 #define MAIXPY_DEBUG_UARTHS_REPL_UART2 // Debug by UARTHS  (use `printk()`) and REPL by UART2
 #endif
@@ -460,7 +469,7 @@ int sd_preload(int core)
 {
   sd_preinit_config();
   bool sd_is_ready = false;
-  for (int i = 0; i < 3; i++)
+  for (int i = 0; i < 2; i++) //3
   {
     // will wait 3s for sd
     if (0 == sd_init())
@@ -511,7 +520,7 @@ static void deinit_kpu_timer_cb(TimerHandle_t xExpiredTimer)
     extern int kpu_model_buffer_free_all_ptr(void);
 
     int n = kpu_model_buffer_free_all_ptr();
-    mp_printf(&mp_plat_print, "free %d kpu model buffer\n>>>", n);
+    mp_printf(&mp_plat_print, "free %d kpu model buffer\n>>>\r\n", n);
 }
 
 void free_km_buf_timer_init(void)
@@ -524,10 +533,12 @@ void free_km_buf_timer_init(void)
                               &xTimerBuffer );  // The buffer that will hold the software timer structure.
   if(timer_hander_deinit_kpu == NULL)
   {
-    mp_printf(&mp_plat_print, "The timer was not created\n");
+    mp_printf(&mp_plat_print, "The timer was not created\r\n");
   }
 }
 #endif
+
+SemaphoreHandle_t mutex_spi_trans;
 
 void mp_task(void *pvParameter)
 {
@@ -538,7 +549,28 @@ void mp_task(void *pvParameter)
   vTaskGetInfo(mp_main_task_handle, &task_status, (BaseType_t)pdTRUE, (eTaskState)eInvalid);
   volatile void *mp_main_stack_base = task_status.pxStackBase;
   mp_thread_init((void *)mp_main_stack_base, MP_TASK_STACK_LEN);
+
+  mutex_spi_trans = xSemaphoreCreateMutex();
+	assert(mutex_spi_trans);
 #endif
+
+#if MICROPY_PY_LWIP
+  // lwIP doesn't allow to reinitialise itself by subsequent calls to this function
+  // because the system timeout list (next_timeout) is only ever reset by BSS clearing.
+  // So for now we only init the lwIP stack once on power-up.
+  lwip_init();
+  #if LWIP_MDNS_RESPONDER
+  mdns_resp_init();
+  #endif
+#endif
+  #if MICROPY_PY_NETWORK_ESP32C3
+  {
+    esp32c3_init(&esp32c3_state);
+    esp32c3_wifi_ap_set_ssid(&esp32c3_state, 5, (const uint8_t *)"CanMV");
+    esp32c3_wifi_ap_set_password(&esp32c3_state, 8, (const uint8_t *)"12345678");
+  }
+  #endif
+
   config_data_t *config = (config_data_t *)pvParameter;
 #if MICROPY_ENABLE_GC
   void *gc_heap = malloc(config->gc_heap_size);
@@ -631,7 +663,12 @@ soft_reset:
   #if MICROPY_PY_THREAD
   free_km_buf_timer_init();
   #endif
+  #if MICROPY_PY_NETWORK_ESP32C3
+  sd_preload(0);
+  #else
   mount_sdcard();
+  #endif
+
   // mp_printf(&mp_plat_print, "[CanMV] init end\r\n"); // for canmv ide
   // run boot-up scripts
   mp_hal_set_interrupt_char(CHAR_CTRL_C);

@@ -140,7 +140,7 @@ STATIC void machine_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_pr
     else
         unit = "ns";
     mp_printf(print, 
-        "[CANMV]Timer:(%p) timer=%d, channel=%d, mode=%d, period=%d%s, priority=%d, div=%d, callback=%p, arg=%p",
+        "[CANMV]Timer:(%p) timer=%d, channel=%d, mode=%d, period=%d%s, priority=%d, div=%d, callback=%p, arg=%p\r\n",
         self, self->timer, self->channel, self->mode, self->period, unit, self->priority, self->div, self->callback, self->arg);
 }
 
@@ -400,7 +400,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_timer_start_obj, machine_timer_start);
 // 		self->freq = MP_OBJ_SMALL_INT_VALUE(freq);
 // 	else
 // 	{
-// 		mp_printf(&mp_plat_print, "[CANMV]TIMER:type error\n");
+// 		mp_printf(&mp_plat_print, "[CANMV]TIMER:type error\r\n");
 // 		return mp_const_none;
 // 	}
 // 	timer_disable(self->timer, self->channel);

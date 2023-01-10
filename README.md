@@ -1,31 +1,23 @@
 <img height=230 src="assets/image/CanMV_logo_800x260.png">
-
-
-
 <br />
 <br />
-
 <a href="LICENSE.md">
     <img src="https://img.shields.io/badge/license-Apache%20v2.0-orange.svg?style=for-the-badge" alt="License" />
 </a>
-
-
 <br/>
 <br/>
 
-[中文](README_ZH.md)
-
-<br />
-<br />
+* [中文](README_ZH.md)
+* [English](README.md)  
 
 **CanMV, makes AIOT easier!**
 
-This implementation was based on Sipeed MaixPy, but it diverged from it and is now a completely independent project. Thanks for Sipeed's contribution on MaixPy!
+This implementation was based on Sipeed MaixPy, but it diverged from it and is now a completely independent project. Thanks for Sipeed's contribution on MaixPy!  
 
-CanMV is designed to make AIOT programming easier, based on the [Micropython](http://www.micropython.org) syntax, running on the powerful embedded AI SOC series from [Canaan](https://kendryte.com). Currently it's running on K210. 
+CanMV is designed to make AIOT programming easier, based on the [Micropython](http://www.micropython.org) syntax, running on the powerful embedded AI SOC series from [Canaan](https://kendryte.com). Currently it's running on K210.   
 
 
-> K210 brief: 
+> K210 briefs: 
 > * Image Recognition with hardware AI acceleration
 > * Dual core with FPU
 > * 8MB(6MB+2MB) RAM
@@ -39,6 +31,17 @@ CanMV is designed to make AIOT programming easier, based on the [Micropython](ht
 <div class="board_pic">
     <img src="assets/image/k210_core_board.jpg" height=500 alt="K210"/>
 </div>
+
+## CanMV resources guide
+| No  | Link address                                                                           | Description                                                                                                                          |
+|:---:|----------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
+|  1  | /                                                                                      | CanMV SDK root folder                                                                                                                |
+|  2  | /projects/xxx                                                                          | CanMV Boards configuation. You can build your own firmware starting here, refer to [CanMV build](build.md) for detailed instructions |
+|  3  | [Build with Docker](tools/docker)                                                      | We provide you the docker image of CanMV building system. Just try it!                                          |
+|  4  | [CanMV Docs](https://developer.canaan-creative.com/index.html?channel=developer#/word) | CanMV Documention, including API description, FAQ and others                                                                         | 
+|  5  | [CanMV IDE](https://github.com/kendryte/canmv_ide)                                     | CanMV IDE for programming and debugging, support Windows, Linux and Mac OS.                                                          |
+|  6  | [CanMV Examples](https://github.com/kendryte/canmv_examples)                           | Examples to guild you how to use each component of CanMV                                                                             |
+|  7  | [CanMV Releases](https://github.com/kendryte/canmv/releases)                           | CanMV firmware releases. You can download the latest version here.                                                                   |
 
 
 ## Sample code
@@ -105,28 +108,7 @@ while True:
 
 kpu.deinit()
 ```
-> please read doc before run it
-
-## Release
-
-
-
-## Documentation
-
-Doc refer to [CanMV document](https://developer.canaan-creative.com/index.html?channel=developer#/word)
-
-## Examples
-
-[CanMV_examples](https://github.com/kendryte/canmv_examples)
-
-## Build From Source
-
-See [build doc](build.md)
-
-## License
-
-See [LICENSE](LICENSE.md) file
-
+Please read doc before run it.  
 
 ## for C developers
 
@@ -134,7 +116,7 @@ As C language has higher performance than python,  sometimes you may use C to de
 
 The compilation process is briefly as follows:
 
-```
+```bash
 wget https://github.com/kendryte/kendryte-gnu-toolchain/releases/download/v8.2.0-20190409/kendryte-toolchain-ubuntu-amd64-8.2.0-20190409.tar.xz
 sudo tar -Jxvf kendryte-toolchain-ubuntu-amd64-8.2.0-20190409.tar.xz -C /opt
 cd projects/hello_world
@@ -143,4 +125,16 @@ python3 project.py build
 python3 project.py flash -B auto -b 1500000 -p /dev/ttyUSB0 -t
 ```
 
+## License
 
+See [LICENSE](LICENSE.md) file
+
+## Contribute this project
+
+If you are interested in this project and would like feedback or submit documentation, please refer to [CONTRIBUTING](CONTRIBUTING.md)
+
+## Contact us
+
+Canaan Inc.  
+Website：[canaan-creative.com](https://canaan-creative.com/)  
+Business Inquiry：[salesAI@canaan-creative.com](mailto:salesAI@canaan-creative.com)

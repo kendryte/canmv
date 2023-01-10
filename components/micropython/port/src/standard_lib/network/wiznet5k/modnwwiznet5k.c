@@ -410,7 +410,7 @@ STATIC void wiz_cris_exit(void) {
 /* The handler of ip assign first */
 static void dhcp_ip_assign(void) {
 #ifdef _DHCP_DEBUG_
-  mp_printf(&mp_plat_print, "get ip success");
+  mp_printf(&mp_plat_print, "get ip success\r\n");
 #endif
   uint8_t ip[4], gw[4], sn[4], dns[4];
 

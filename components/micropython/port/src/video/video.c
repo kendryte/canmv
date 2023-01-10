@@ -40,7 +40,7 @@ int video_play_avi_init(const char* path, avi_t* avi)
         return err;
     }
     //stream
-    // mp_printf(&mp_plat_print, "movi offset: %d %x\n", avi->offset_movi, avi->offset_movi);
+    // mp_printf(&mp_plat_print, "movi offset: %d %x\r\n", avi->offset_movi, avi->offset_movi);
     // offset = avi_srarch_id(buf, read_size, (uint8_t*)"movi");
     err = avi_get_streaminfo(buf+avi->offset_movi+4, avi);
     if( err != 0)
@@ -49,7 +49,7 @@ int video_play_avi_init(const char* path, avi_t* avi)
         video_stop_play(avi);
         return err;
     }
-    // mp_printf(&mp_plat_print, "----2--:%d %d\n", avi->stream_id, avi->stream_size);
+    // mp_printf(&mp_plat_print, "----2--:%d %d\r\n", avi->stream_id, avi->stream_size);
     vfs_internal_seek(file, avi->offset_movi+12, VFS_SEEK_SET, &err);
     avi->img_buf = (uint8_t*)video_hal_malloc(avi->width * avi->height * 2);
     if(!avi->img_buf)
@@ -139,10 +139,10 @@ video_status_t video_play_avi(avi_t* avi)
         
         if(++avi->index_buf_save > 3)
             avi->index_buf_save = 0;
-        // mp_printf(&mp_plat_print, "save index:%d\n", avi->index_buf_save);
+        // mp_printf(&mp_plat_print, "save index:%d\r\n", avi->index_buf_save);
 
         while( !avi->audio_buf[avi->index_buf_save].empty );//buffer full, wait for play complete
-        // mp_printf(&mp_plat_print, "save index:%d ok\n", avi->index_buf_save);
+        // mp_printf(&mp_plat_print, "save index:%d ok\r\n", avi->index_buf_save);
         vfs_internal_read(avi->file, avi->audio_buf[avi->index_buf_save].buf, avi->stream_size+8, &err);
         if( err != 0)
         {
@@ -161,7 +161,7 @@ video_status_t video_play_avi(avi_t* avi)
             if(!avi->audio_buf[avi->index_buf_play].empty)
             {
                 video_hal_audio_play(avi->audio_buf[avi->index_buf_play].buf, avi->audio_buf[avi->index_buf_play].len, avi->audio_channels);
-                // mp_printf(&mp_plat_print, "play index:%d\n", avi->index_buf_play);
+                // mp_printf(&mp_plat_print, "play index:%d\r\n", avi->index_buf_play);
             }
         }
         else if(avi->index_buf_play == avi->index_buf_save)//play complete already, restart play, play index no change
@@ -169,12 +169,12 @@ video_status_t video_play_avi(avi_t* avi)
             if(!avi->audio_buf[avi->index_buf_play].empty)
             {
                 video_hal_audio_play(avi->audio_buf[avi->index_buf_play].buf, avi->audio_buf[avi->index_buf_play].len, avi->audio_channels);
-                // mp_printf(&mp_plat_print, "play index:%d\n", avi->index_buf_play);
+                // mp_printf(&mp_plat_print, "play index:%d\r\n", avi->index_buf_play);
             }
         }
         ++avi->audio_count;
         pbuf = avi->audio_buf[avi->index_buf_save].buf;
-        // mp_printf(&mp_plat_print, "save:%d %d\n", avi->index_buf_save, avi->audio_buf_len[avi->index_buf_save]);
+        // mp_printf(&mp_plat_print, "save:%d %d\r\n", avi->index_buf_save, avi->audio_buf_len[avi->index_buf_save]);
         status = VIDEO_STATUS_DECODE_AUDIO;
     } 
     err = avi_get_streaminfo(pbuf + avi->stream_size, avi);
@@ -198,7 +198,7 @@ int video_stop_play(avi_t* avi)
 {
     int err;
 
-    // mp_printf(&mp_plat_print, "stop play\n");
+    // mp_printf(&mp_plat_print, "stop play\r\n");
     vfs_internal_close(avi->file, &err);
     avi->status = VIDEO_STATUS_PLAY_END;
     video_hal_audio_deinit(avi);

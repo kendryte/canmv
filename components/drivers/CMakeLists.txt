@@ -5,6 +5,7 @@ if(CONFIG_COMPONENT_DRIVERS_ENABLE)
                             "lcd/include"
                             "sd_card/include"
                             )
+  
     aux_source_directory("flash/src"    FLASH_SRCS)
     aux_source_directory("joystick/src" JOYSTICK_SRCS)
     aux_source_directory("lcd/src"      LCD_SRCS)

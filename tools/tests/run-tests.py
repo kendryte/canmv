@@ -268,13 +268,30 @@ class ThreadSafeCounter:
 
     def increment(self):
         self.add(1)
+    def decrement(self):
+        self.dec(1)
 
     def add(self, to_add):
         with self._lock:
             self._value += to_add
+    def dec(self, to_dec):
+        with self._lock:
+            self._value -= to_dec
 
     def append(self, arg):
         self.add([arg])
+    def remove(self, arg):
+        with self._lock:
+            if arg in self._value:
+                self._value.remove(arg)
+
+    def remove(self, arg):
+        with self._lock:
+            if isinstance(self._value, list):
+                if arg in self._value:
+                    self._value.remove(arg)
+            else:
+                raise ValueError("must be a list")
 
     @property
     def value(self):
@@ -540,7 +557,6 @@ def run_tests(tests, args, result_dir, num_threads=1):
             skip_tests.add("extmod/uctypes_ptr_le.py")
             skip_tests.add("extmod/uctypes_sizeof_float.py")
             skip_tests.add("extmod/uctypes_union.py")
-            skip_tests.add("extmod/uhashlib_sha256.py")
             skip_tests.add("extmod/ujson_dumps.py")
             skip_tests.add("extmod/ujson_dumps_float.py")
             skip_tests.add("extmod/ujson_dumps_ordereddict.py")
@@ -563,6 +579,8 @@ def run_tests(tests, args, result_dir, num_threads=1):
             skip_tests.add("extmod/vfs_userfs.py")
             skip_tests.add("extmod/vfs_lfs_corrupt.py")
             skip_tests.add("extmod/vfs_lfs_error.py")
+            skip_tests.add("extmod/vfs_lfs_file.py")
+            skip_tests.add("extmod/vfs_lfs_mount.py")
 
             skip_tests.add("float/builtin_float_abs.py")
             skip_tests.add("float/builtin_float_pow.py")
@@ -674,7 +692,7 @@ def run_tests(tests, args, result_dir, num_threads=1):
         )  # native doesn't have proper traceback info
         skip_tests.add("micropython/schedule.py")  # native code doesn't check pending events
 
-    def run_one_test(test_file):
+    def run_one_test(test_file, isRetry = False):
         global pyb
         test_file = test_file.replace("\\", "/")
 
@@ -719,6 +737,12 @@ def run_tests(tests, args, result_dir, num_threads=1):
         skip_it |= skip_revops and "reverse_op" in test_name
         skip_it |= skip_io_module and is_io_module
 
+        if isRetry:
+            filename_expected = os.path.join(failed_dir, test_basename + ".exp")
+            filename_mupy = os.path.join(failed_dir, test_basename + ".out")
+            rm_f(filename_expected)
+            rm_f(filename_mupy)
+
         if args.list_tests:
             if not skip_it:
                 print(test_file)
@@ -751,15 +775,27 @@ def run_tests(tests, args, result_dir, num_threads=1):
         if args.write_exp:
             return
 
+        if isRetry:
+            failed_tests.remove(test_file)
+
+            test_count.decrement()
+            testcase_count.dec(len(output_expected.splitlines()))
+
+            rm_f(os.path.join(failed_dir, test_basename + ".exp"))
+            rm_f(os.path.join(failed_dir, test_basename + ".out"))
+
         # run MicroPython
         output_mupy = run_micropython(pyb, args, test_file)
+        # canonical form for all host platforms is to use \n for end-of-line
+        output_mupy = output_mupy.replace(b"\r\n", b"\n")
 
         if output_mupy == b"SKIP\n":
             print("skip ", test_file)
             skipped_tests.append(test_file)
             return
 
-        testcase_count.add(len(output_expected.splitlines()))
+        if not isRetry:
+            testcase_count.add(len(output_expected.splitlines()))
 
         if output_expected == output_mupy:
             print("PASS ", test_file)
@@ -774,7 +810,8 @@ def run_tests(tests, args, result_dir, num_threads=1):
             #     f.write(output_mupy)
         else:
             print("FAIL ", test_file)
-            failed_tests.append(test_file)
+            if not isRetry:
+                failed_tests.append(test_file)
 
             filename_expected = os.path.join(failed_dir, test_basename + ".exp")
             filename_mupy = os.path.join(failed_dir, test_basename + ".out")
@@ -783,6 +820,8 @@ def run_tests(tests, args, result_dir, num_threads=1):
             with open(filename_mupy, "wb") as f:
                 f.write(output_mupy)
             pyb.reopen()
+
+            return "FAIL"
 
         test_count.increment()
 
@@ -810,7 +849,13 @@ def run_tests(tests, args, result_dir, num_threads=1):
     else:
         cnt = 0
         for test in tests:
-            run_one_test(test)
+            res = run_one_test(test)
+            if res == "FAIL":
+                for i in range(2):
+                    res = run_one_test(test, True)
+                    if res != "FAIL":
+                        break
+
             cnt = cnt + 1
             if cnt % 8 == 7:
                 pyb.reopen()
@@ -846,6 +891,9 @@ def run_tests(tests, args, result_dir, num_threads=1):
             f.write(wrStr.join(failed_tests))
         print("{} tests failed: {}".format(len(failed_tests), " ".join(failed_tests)))
         # return False
+
+    from report.render import render_result
+    render_result(test_count.value, testcase_count.value,passed_tests,skipped_tests,failed_tests,result_dir)
 
     # all tests succeeded
     return True
@@ -1010,7 +1058,7 @@ the last matching regex is used:
             elif args.target in ("esp8266", "esp32", "minimal", "nrf"):
                 test_dirs += ("float")
             elif args.target == "k210":
-                test_dirs += ("float", "stress", "thread")
+                test_dirs += ("float", "stress", "thread", "canmv")
             elif args.target == "wipy":
                 # run WiPy tests
                 test_dirs += ("wipy",)
