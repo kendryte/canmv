@@ -48,88 +48,6 @@ static thread_handle_t lwip_task_id = 0;
 
 esp32c3_t esp32c3_state;
 
-#if 0
-#include "esp32_control.h" //app/
-static void sta_rx_callback(struct network_handle *net_handle);
-
-#define DEFAULT_LISTEN_INTERVAL             3
-
-static void wifi_control_path_task(void)
-{
-	bool scan_ap_list = false, stop = false;
-	int wifi_mode = WIFI_MODE_STA;
-	int station_connect_retry=0;
-
-	int ret;
-	char ssid[SSID_LENGTH]= {0};
-	char pwd[PASSWORD_LENGTH] = {0};
-	char bssid[BSSID_LENGTH]= {0};
-	int is_wpa3_supported = 0;
-	int listen_interval = 0;
-
-
-	printf("Station mode: ssid: %s passwd %s \n\r",
-			INPUT_STATION__SSID, INPUT_STATION_PASSWORD);
-
-	strncpy((char* )&ssid, INPUT_STATION__SSID,
-			min(SSID_LENGTH, strlen(INPUT_STATION__SSID)+1));
-	strncpy((char* )&pwd, INPUT_STATION_PASSWORD,
-			min(PASSWORD_LENGTH, strlen(INPUT_STATION_PASSWORD)+1));
-	if (strlen(INPUT_STATION_BSSID)) {
-		strncpy((char* )&bssid, INPUT_STATION_BSSID,
-			min(BSSID_LENGTH, strlen(INPUT_STATION_BSSID)+1));
-	}
-	is_wpa3_supported = 0; // 0 no // get_boolean_param(INPUT_STATION_IS_WPA3_SUPPORTED);
-	if (get_num_from_string(&listen_interval, INPUT_STATION_LISTEN_INTERVAL)) {
-		printf("Could not parse listen_interval, defaulting to 3\n\r");
-		listen_interval = DEFAULT_LISTEN_INTERVAL;
-	}
-
-	if (init_hosted_control_lib()) {
-		printf("init hosted control lib failed\n\r");
-		return;
-	}
-
-	while(1){
-		if(!stop){
-			if (test_set_wifi_mode(wifi_mode)) {
-				printf("Failed to set wifi mode to %u\n\r", wifi_mode);
-				return ESP_FAIL;
-			}
-			test_get_available_wifi();
-			//test_station_mode_get_mac_addr(mac);
-			ret = test_station_mode_connect(ssid, pwd, bssid,
-					is_wpa3_supported, listen_interval);
-			if (ret) {
-				printf("Failed to connect with AP \n\r");
-				//hard_delay(50000);
-				station_connect_retry++;
-				printf("connect count:%d\r\n", station_connect_retry);
-				esp_msleep(5000);
-				continue;
-				//return ESP_FAIL;
-			} else {
-				printf("Connected to %s \n\r", ssid);
-				//test_station_mode_get_info();
-				//printf("--------------------\n\r");
-				//control_path_call_event(STATION_CONNECTED);
-				init_sta();
-				esp_network_lwip_init();
-				stop = true;
-			}
-		} else {
-			esp_msleep(5000);
-		}
-	}
-	register_event_callbacks();
-
-}
-#endif
-
-// static void lwip_timer(void)
-// {
-// 	printf("lwip timer test..\n\r");
-// }
 
 void esp32c3_init(esp32c3_t *self)
 {
@@ -178,17 +96,6 @@ void esp32c3_init(esp32c3_t *self)
 		}
 		assert(lwip_task_id);
 
-		// timer_hander_lwip = xTimerCreateStatic( "lwip_timer",             // Text name for the task.  Helps debugging only.  Not used by FreeRTOS.
-		// 					1,     // The period of the timer in ticks.//20 ms
-		// 					pdTRUE,           // This is not an auto-reload timer.
-		// 					( void * ) 1,    // A variable incremented by the software timer's callback function
-		// 					sys_check_timeouts, // The function to execute when the timer expires.
-		// 					&xTimerBuffer );  // The buffer that will hold the software timer structure.
-		// if(timer_hander_lwip == NULL)
-		// {
-		// 	printf("lwip timer was not created\n");
-		// }
-		// xTimerStart(timer_hander_lwip, 1);
 	}
 
 }
@@ -254,8 +161,6 @@ void esp32c3_wifi_set_up(esp32c3_t *self, int itf, bool up) {
     if (up) {
         if (self->itf_state == 0) {
 			// TODO: set wifi tx power
-            // cyw43_wifi_on(self, country);
-            // cyw43_wifi_pm(self, 10 << 20 | 1 << 16 | 1 << 12 | 20 << 4 | 2);
         }
         if (itf == ESP32_ITF_AP) {
             esp32c3_wifi_softap_set_up(self, true);
@@ -298,8 +203,6 @@ static void esp32c3_wifi_softap_set_up(esp32c3_t *self, bool up) {
 									self->ap_max_conn, self->ap_ssid_hidden, self->ap_bandwidth);
 		if (ret) {
 			printf("Failed to start softAP \n\r");
-			//hard_delay(50000);
-			//return ESP_FAIL;
 		} else {
 			printf("started %s softAP\n\r", self->ap_ssid);
 			//control_path_call_event(SOFTAP_STARTED);

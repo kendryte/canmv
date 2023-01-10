@@ -74,11 +74,8 @@ ctrl_cmd_t * wifi_get_power_save_mode(ctrl_cmd_t req)
 
 ctrl_cmd_t * wifi_ap_scan_list(ctrl_cmd_t req)
 {
-	printf(" wifi_ap_scan_list --start--\r\n");
 	CTRL_SEND_REQ(CTRL_REQ_GET_AP_SCAN_LIST);
-	printf(" wifi_ap_scan_list ----1\r\n");
 	CTRL_DECODE_RESP_IF_NOT_ASYNC();
-	printf(" wifi_ap_scan_list ----2\r\n");
 }
 
 ctrl_cmd_t * wifi_get_ap_config(ctrl_cmd_t req)
