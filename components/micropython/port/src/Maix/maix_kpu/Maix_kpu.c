@@ -45,6 +45,8 @@
 
 #define MAX_MODEL_NUM 8
 
+#define MEMPOOL_DESC_LEN 8
+
 extern int load_file_from_flash(uint32_t addr, uint8_t *data_buf, uint32_t length);
 extern int load_file_from_ff(const char *path, void* buffer, size_t model_size);
 extern mp_uint_t get_file_size(const char *path);
@@ -82,8 +84,14 @@ extern const mp_obj_type_t py_image_type;
 
 STATIC mp_obj_t py_kpu_deinit(mp_obj_t self_in);
 
+struct model_header_base
+{
+    uint32_t identifier;
+    uint32_t version;
+} __attribute__((aligned(8))) ;
 
-struct model_header
+
+struct model_header_v0
 {
     uint32_t identifier;
     uint32_t version;
@@ -96,6 +104,45 @@ struct model_header
     uint32_t outputs;
     uint32_t reserved0;
 } __attribute__((aligned(8))) ;
+
+struct model_header_v1
+{
+    uint32_t identifier;
+    uint32_t version;
+    uint32_t header_size;
+    uint32_t flags;
+    uint32_t alignment;
+    uint32_t modules;
+    uint32_t entry_module;
+    uint32_t entry_function;
+} __attribute__((aligned(8))) ;
+
+// for kmodel v5
+struct module_header
+{
+    char type[16]; //stackvm (lunghezza 16)
+    uint32_t version; // 1
+    uint32_t header_size; // 48
+    uint32_t size; //  64768
+    uint32_t mempools; // 2
+    uint32_t shared_mempools; // 0
+    uint32_t sections; // 2function_
+    uint32_t functions; // 1
+    uint32_t reserved0; // 0
+} __attribute__((aligned(8))) ;
+
+// for kmodel v5
+struct function_header
+{
+    uint32_t header_size; // 32
+    uint32_t size; // 88
+    uint32_t input_pool_size; // 3136
+    uint32_t output_pool_size; //40
+    uint32_t inputs; // 1
+    uint32_t outputs; // 1
+    uint32_t entrypoint; // 0
+    uint32_t text_size; // 3210
+}__attribute__((aligned(8))) ;
 
 volatile uint32_t wait_kpu_done = 0;
 volatile uint32_t g_ai_done_flag = 0;
@@ -217,7 +264,10 @@ STATIC mp_obj_t py_kpu_load_kmodel(size_t n_args, const mp_obj_t *pos_args, mp_m
         path_addr = mp_obj_get_int(args[ARG_path].u_obj);
         km->model_path = (mp_obj_t)path_addr;
         km->model_size = args[ARG_size].u_int;
-        km->model_buffer = malloc(km->model_size);
+        //aligment
+        uint8_t *model_data = malloc(km->model_size + 255);
+        km->model_buffer = (uint8_t *)(((uintptr_t)model_data+255)&(~255));        
+
         if (!km->model_buffer) {
             mp_raise_msg(&mp_type_MemoryError, "model buffer memory allocation failed");
             return mp_const_none;
@@ -244,19 +294,74 @@ STATIC mp_obj_t py_kpu_load_kmodel(size_t n_args, const mp_obj_t *pos_args, mp_m
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "Failed to add kpu_model_buffer"));
     }
     mp_printf(&mp_plat_print, "model load succeed\r\n");  //debug
+
     if(km->kmodel_ctx->is_nncase){
-        km->inputs = ((struct model_header*)km->model_buffer)->inputs;
-        km->outputs = ((struct model_header*)km->model_buffer)->outputs;
+        struct model_header_base *h = (struct model_header*)km->model_buffer;
+        mp_printf(&mp_plat_print, "kModel version %u\r\n", h->version);
+
+        if(h->version <= 4){
+            km->inputs = ((struct model_header_v0*)km->model_buffer)->inputs;
+            km->outputs = ((struct model_header_v0*)km->model_buffer)->outputs;
+        }
+
+        //kModelv5/nncasev1
+        else{
+            struct model_header_v1 *hm = (struct model_header_v1*)km->model_buffer;
+
+            //iterate over modules
+            uint32_t skip = hm->header_size;
+            bool v5_dim_ok = false;
+            for(uint32_t im = 0; im < hm->modules; im++){
+
+                // find entry module
+                struct module_header *hmd = (struct module_header*)(km->model_buffer + skip);
+                if(im == hm->entry_module){
+                    skip += hmd->header_size;
+                    skip += (hmd->mempools) * MEMPOOL_DESC_LEN;
+                    skip += (hmd->shared_mempools) * MEMPOOL_DESC_LEN;
+
+                    // Find entry functin
+                    for(uint32_t fi = 0; fi < hmd->functions; fi++){
+                        struct function_header *fh = (struct function_header*)(km->model_buffer + skip);
+                        if(fi == hm->entry_function){
+                            km->inputs = fh->inputs;
+                            km->outputs = fh->outputs;
+                            v5_dim_ok = true;
+                            break;
+                        }
+                        else{
+                            // skip the function
+                            skip += fh->size;
+                            mp_printf(&mp_plat_print,"skip: %d\r\n", skip);
+                        }
+                    }
+                    if (v5_dim_ok)
+                        break;
+                }
+                else{
+                    // skip the whole module
+                    skip += hmd->size;
+                    mp_printf(&mp_plat_print,"skip: %d\r\n", skip);
+                }
+            }
+            if(!v5_dim_ok)
+                mp_raise_msg(&mp_type_Exception, "failed to find entry function");
+                
+            mp_printf(&mp_plat_print, "* inputs %u\r\n", km->inputs);
+            mp_printf(&mp_plat_print, "* outputs %u\r\n", km->outputs);
+        }
     }
     else{
         km->inputs = 0;
         km->outputs = ((kpu_kmodel_header_t*)km->model_buffer)->output_count;
     }
+    
     km->output_size = m_new(size_t, km->outputs);
-    km->output = m_new(mp_obj_t,km->outputs);  
+    km->output = m_new(mp_obj_t,km->outputs);
 
     return mp_const_none;
 }
+
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(py_kpu_load_kmodel_obj,2, py_kpu_load_kmodel);
 
 STATIC mp_obj_t py_kpu_run_with_output(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)

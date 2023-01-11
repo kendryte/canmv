@@ -10,7 +10,13 @@ if(CONFIG_COMPONENT_KENDRYTE_SDK_ENABLE)
                             "kendryte-standalone-sdk/lib/drivers/include"
                             "kendryte-standalone-sdk/lib/utils/include"
                             "kendryte-standalone-sdk/lib/nncase/include"
+                            "kendryte-standalone-sdk/lib/nncase/v1"
+                            "kendryte-standalone-sdk/lib/nncase/v1/include"
+                            "kendryte-standalone-sdk/lib/nncase/v0"
+                            "kendryte-standalone-sdk/lib/nncase/v0/include"
                             "kendryte-standalone-sdk/third_party/xtl/include"
+                            "kendryte-standalone-sdk/third_party/mpark-variant/include"
+                            "kendryte-standalone-sdk/third_party/gsl-lite/include"
         )
     if(CONFIG_FREERTOS_ENABLE)
         list(APPEND ADD_INCLUDE "kendryte-standalone-sdk/lib/freertos/include"
@@ -23,13 +29,19 @@ if(CONFIG_COMPONENT_KENDRYTE_SDK_ENABLE)
     append_srcs_dir(ADD_SRCS "kendryte-standalone-sdk/lib/bsp")
     append_srcs_dir(ADD_SRCS "kendryte-standalone-sdk/lib/drivers")
     append_srcs_dir(ADD_SRCS "src")
-    #ADD_SUBDIRECTORY("kendryte-standalone-sdk/lib/nncase")
-    append_srcs_dir(ADD_SRCS "kendryte-standalone-sdk/lib/nncase/runtime/neutral")
-    append_srcs_dir(ADD_SRCS "kendryte-standalone-sdk/lib/nncase/runtime/k210")
-    append_srcs_dir(ADD_SRCS "kendryte-standalone-sdk/lib/nncase/runtime/cpu")
-    append_srcs_dir(ADD_SRCS "kendryte-standalone-sdk/lib/nncase/runtime")
+   
     append_srcs_dir(ADD_SRCS "kendryte-standalone-sdk/lib/nncase")
     append_srcs_dir(ADD_SRCS "kendryte-standalone-sdk/third_party/xtl")
+    append_srcs_dir(ADD_SRCS "kendryte-standalone-sdk/third_party/mpark-variant")
+    append_srcs_dir(ADD_SRCS "kendryte-standalone-sdk/third_party/gsl-lite")
+    
+    append_srcs_dir(ADD_SRCS "kendryte-standalone-sdk/lib/nncase/v0")
+    append_srcs_dir(ADD_SRCS "kendryte-standalone-sdk/lib/nncase/v0/runtime/neutral")
+    append_srcs_dir(ADD_SRCS "kendryte-standalone-sdk/lib/nncase/v0/runtime/k210")
+    append_srcs_dir(ADD_SRCS "kendryte-standalone-sdk/lib/nncase/v0/runtime/cpu")
+    append_srcs_dir(ADD_SRCS "kendryte-standalone-sdk/lib/nncase/v0/runtime")
+    
+    append_srcs_dir(ADD_SRCS "kendryte-standalone-sdk/lib/nncase/v1")
 	
     if(CONFIG_FREERTOS_ENABLE)
         append_srcs_dir(ADD_SRCS "kendryte-standalone-sdk/lib/freertos")
@@ -62,6 +74,9 @@ if(CONFIG_COMPONENT_KENDRYTE_SDK_ENABLE)
     if(CONFIG_MIC_ARRAY_ENABLE)
         list(APPEND ADD_STATIC_LIB "libs/lib_mic.a")
     endif()
+
+    list(APPEND ADD_STATIC_LIB "kendryte-standalone-sdk/lib/nncase/v1/lib/libnncase.runtime.a")
+    list(APPEND ADD_STATIC_LIB "kendryte-standalone-sdk/lib/nncase/v1/lib/libnncase.rt_modules.k210.a")
     ###############################################
 
     list(APPEND ADD_DEFINITIONS -DCONFIG_LOG_LEVEL=${CONFIG_SDK_LOG_LEVEL}
