@@ -43,13 +43,19 @@
 #include "lwip/dns.h"
 #include "lwip/dhcp.h"
 
-#include "network_esp32c3.h"
-#include "esp32_if.h"
-
 // u32_t sys_now(void) {
 //     return mp_hal_ticks_ms();
 // }
 
+u32_t sys_now(void)
+{
+  return xTaskGetTickCount() * portTICK_PERIOD_MS;
+}
+#endif
+
+#if MICROPY_PY_NETWORK_ESP32C3
+#include "network_esp32c3.h"
+#include "esp32_if.h"
 #endif
 
 // module network - network configuration
