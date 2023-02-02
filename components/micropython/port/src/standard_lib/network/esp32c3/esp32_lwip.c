@@ -423,12 +423,6 @@ void lwip_task(void const *arg)
 
 #endif
 
-u32_t
-sys_now(void)
-{
-  return xTaskGetTickCount() * portTICK_PERIOD_MS;
-}
-
 
 #if DHCP_SERVER
 #include "lwip/ip4_addr.h"
