@@ -21,6 +21,7 @@
 #include <math.h>
 
 #include <mp.h>
+#include "py_assert.h"
 #include "py/qstr.h"
 #include "py/obj.h"
 #include "py/runtime.h"
@@ -579,6 +580,50 @@ STATIC mp_obj_t py_sigmoid(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(py_sigmoid_obj, 1, py_sigmoid);
 
+STATIC mp_obj_t py_softmax(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
+{    
+    mp_obj_t li;
+
+    if((2 == n_args) && (mp_obj_get_type(pos_args[0]) == &k210_kpu_type)) {
+        li = pos_args[1];
+    }
+    else if((1 == n_args) && (mp_obj_get_type(pos_args[0]) != &k210_kpu_type)) {
+        li = pos_args[0];
+    }
+    else {
+        mp_raise_ValueError(NULL);
+    }
+
+    PY_ASSERT_TYPE(li, &mp_type_list);
+
+    size_t nitems = 0;
+    const mp_obj_t *items = 0;
+
+    mp_obj_get_array(li, &nitems, (mp_obj_t **)&items);
+
+    float *dati = m_new(float, nitems);
+    float *dato = m_new(float, nitems);
+
+    for (int i = 0; i < nitems; i++) {
+        dati[i] = mp_obj_get_float(*items++);
+    }
+
+    maix_kpu_helper_softmax(dati, dato, nitems);
+
+    mp_obj_list_t *lo = m_new(mp_obj_list_t, 1);
+    mp_obj_list_init(lo, 0);
+
+    for (int i = 0; i < nitems; i++) {
+        mp_obj_list_append(lo, mp_obj_new_float(dato[i]));
+    }
+
+    m_del(float, dati, nitems);
+    m_del(float, dato, nitems);
+
+    return MP_OBJ_FROM_PTR(lo);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(py_softmax_obj, 1, py_softmax);
+
 #if 0
 //need IR camera to test
 #define FACE_GENUINE_THRESH 0.90f
@@ -697,6 +742,7 @@ STATIC const mp_rom_map_elem_t k210_kpu_locals_dict_table[] = {
     {MP_ROM_QSTR(MP_QSTR_init_yolo2), MP_ROM_PTR(&py_init_yolo2_obj)},
     {MP_ROM_QSTR(MP_QSTR_deinit),  MP_ROM_PTR(&py_kpu_deinit_obj) },
     {MP_ROM_QSTR(MP_QSTR_sigmoid),  MP_ROM_PTR(&py_sigmoid_obj) },
+    {MP_ROM_QSTR(MP_QSTR_softmax),  MP_ROM_PTR(&py_softmax_obj) },
     {MP_ROM_QSTR(MP_QSTR_feature_compare),  MP_ROM_PTR(&py_feature_compare_obj) },
 #ifdef LP_RECOG_EN 
     {MP_ROM_QSTR(MP_QSTR_lp_recog_load_weight_data),  MP_ROM_PTR(&py_lp_recog_load_weight_data_obj) },
