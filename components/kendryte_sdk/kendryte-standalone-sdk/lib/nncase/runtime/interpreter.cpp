@@ -62,6 +62,34 @@ uint32_t interpreter_base::model_size(const uint8_t *buffer)
     return size;
 }
 
+int interpreter_base::probe_model_size(const uint8_t *buffer)
+{
+    auto offset = buffer;
+
+    const model_header *_mdl_buffer = reinterpret_cast<const model_header *>(buffer);
+
+    // Validate model
+    if (_mdl_buffer->identifier != MODEL_IDENTIFIER || _mdl_buffer->version != MODEL_VERSION || (_mdl_buffer->target != MODEL_TARGET_CPU && _mdl_buffer->target != MODEL_TARGET_K210))
+        return -1;
+
+    offset += sizeof(model_header);
+    offset += sizeof(memory_range) * _mdl_buffer->inputs;
+    offset += sizeof(runtime_shape_t) * _mdl_buffer->inputs;
+    offset += sizeof(memory_range) * _mdl_buffer->outputs;
+    offset += _mdl_buffer->constants;
+    node_headers_ = { reinterpret_cast<const node_header *>(offset), _mdl_buffer->nodes };
+    offset += sizeof(node_header) * _mdl_buffer->nodes;
+
+    uint32_t size = (uint32_t)(offset - buffer);
+    for (int i = 0; i < _mdl_buffer->nodes; i++)
+    {
+        struct node_header cnt_layer_header = node_headers_[i];
+        ;
+        size += cnt_layer_header.body_size;
+    }
+    return size;
+}
+
 bool interpreter_base::initialize()
 {
     return true;

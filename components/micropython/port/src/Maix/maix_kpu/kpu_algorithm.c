@@ -19,10 +19,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+
 #include "kpu_algorithm.h"
 
 // L2 归一化
-uint32_t l2normalize(float *x, float *dx, int len)
+uint32_t maix_kpu_alg_l2normalize(float *x, float *dx, int len)
 {
     int f;
     float sum = 0;
@@ -38,7 +39,7 @@ uint32_t l2normalize(float *x, float *dx, int len)
     return 0;
 }
 
-void maix_kpu_helper_softmax(float *x, float *dx, uint32_t len)
+void maix_kpu_alg_softmax(float *x, float *dx, uint32_t len)
 {
     float max_value = x[0];
     for(uint32_t i = 0; i < len; i++)
@@ -102,7 +103,6 @@ uint32_t calulate_score(float *feature, float *saved_feature, uint32_t saved_len
 }
 */
 
-#ifdef LP_RECOG_EN
 // licenseplate_recognization
 static void run_fully(const float *features, const uint32_t len, const float *weight, const float *bias, const uint32_t n_logit, float *result)
 {
@@ -212,5 +212,4 @@ void lp_recog_process(const float *features, uint32_t size, const float *weight_
 	
 	//sprintf(result, "%s%c%c%c%c%c%c", d1, d2, d3, d4, d5, d6, d7);
 }
-#endif
 

@@ -58,6 +58,11 @@ public:
         return ret;
     }
 
+    int probe_model_size(const uint8_t *buffer)
+    {
+        return interpreter_.probe_model_size(buffer);
+    }
+
     int get_output(uint32_t index, uint8_t **data, size_t *size)
     {
         if (index >= interpreter_.outputs_size())
@@ -174,4 +179,16 @@ int nncase_run_kmodel(kpu_model_context_t *ctx, const uint8_t *src, dmac_channel
 {
     auto nnctx = reinterpret_cast<nncase_context *>(ctx->nncase_ctx);
     return nnctx->run_kmodel(src, dma_ch, done_callback, userdata);
+}
+
+int nncase_probe_model_buffer_size(const uint8_t *buffer)
+{
+    auto nnctx = new (std::nothrow) nncase_context();
+    int size = -1;
+
+    size = nnctx->probe_model_size(buffer);
+
+    delete nnctx;
+
+    return size;
 }

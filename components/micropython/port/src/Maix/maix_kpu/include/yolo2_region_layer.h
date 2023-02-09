@@ -2,6 +2,8 @@
 #define _YOLO2_REGION_LAYER
 
 #include <stdint.h>
+#include <math.h>
+
 #include "kpu.h"
 #include "objlist.h"
 
@@ -42,11 +44,11 @@ typedef struct
     float **probs;
 } yolo2_region_layer_t;
 
-//typedef void(*callback_draw_box)(uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2, uint32_t class, float prob);
 static inline float sigmoid(float x)
 {
     return 1.f / (1.f + expf(-x));
 }
+
 int yolo_region_layer_init(yolo2_region_layer_t *rl, int width, int height, int channels, int origin_width, int origin_height);
 void yolo_region_layer_deinit(yolo2_region_layer_t *rl);
 void yolo_region_layer_run(yolo2_region_layer_t *rl);
