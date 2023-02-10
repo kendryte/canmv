@@ -761,7 +761,7 @@ STATIC mp_obj_t k210_kpu_lpr_deinit(mp_obj_t self_in)
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(k210_kpu_lpr_deinit_obj, k210_kpu_lpr_deinit);
 
 STATIC const mp_rom_map_elem_t k210_kpu_lpr_locals_dict_table[] = {
-    {MP_ROM_QSTR(MP_QSTR_init),     MP_ROM_PTR(&k210_kpu_lpr_init_obj) },
+    {MP_ROM_QSTR(MP_QSTR_load),     MP_ROM_PTR(&k210_kpu_lpr_init_obj) },
     {MP_ROM_QSTR(MP_QSTR_run),      MP_ROM_PTR(&kpu_post_process_lpr_run_obj) },
     {MP_ROM_QSTR(MP_QSTR_deinit),   MP_ROM_PTR(&k210_kpu_lpr_deinit_obj) },
 };
