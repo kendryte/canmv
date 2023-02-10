@@ -64,8 +64,6 @@ public:
             return -1;
 
         auto shape = interpreter_.input_shape_at(index);
-        printf("0:%d,1:%d,2:%d,3:%d\n", shape[0], shape[1], shape[2], shape[3]);
-
         *chn = shape[1]; *h = shape[2]; *w = shape[3];
 
         return 0;
