@@ -251,10 +251,6 @@ static inline void maix_kpu_helper_free_mem(kpu_used_mem_info_t *mem)
     if(MEM_TYPE_PTR == mem->type) {
         free(mem->ptr);
         mem->ptr = NULL;
-    } else if(MEM_TYPE_MP_KPU_OBJ == mem->type) {
-        mp_obj_k210_kpu_t *obj = (mp_obj_k210_kpu_t *)mem->ptr;
-
-        mp_printf(&mp_plat_print, "TODO: free kpu object.");
     }
 }
 

@@ -39,20 +39,65 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define ENABLE_LPR          1
-#define ENABLE_YOLO2        1
 #define MAX_FEATURE_LEN     256     // Face Feature Calculate and Compare length
 
 const mp_obj_type_t k210_kpu_type;
 
+STATIC const mp_obj_type_t k210_kpu_interpreter_type;
 STATIC const mp_obj_type_t k210_kpu_act_type;
 STATIC const mp_obj_type_t k210_kpu_face_type;
-#if ENABLE_LPR
 STATIC const mp_obj_type_t k210_kpu_lpr_type;
-#endif //ENABLE_LPR
-#if ENABLE_YOLO2
 STATIC const mp_obj_type_t k210_kpu_yolo2_type;
-#endif //ENABLE_YOLO2
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Type KPU ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+STATIC const mp_rom_map_elem_t k210_kpu_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_activation),      MP_ROM_PTR(&k210_kpu_act_type) },
+    { MP_ROM_QSTR(MP_QSTR_face),            MP_ROM_PTR(&k210_kpu_face_type) },
+
+    { MP_ROM_QSTR(MP_QSTR_interpreter),     MP_ROM_PTR(&k210_kpu_interpreter_type) },
+    { MP_ROM_QSTR(MP_QSTR_lpr),             MP_ROM_PTR(&k210_kpu_lpr_type) },
+    { MP_ROM_QSTR(MP_QSTR_yolo2),           MP_ROM_PTR(&k210_kpu_yolo2_type) },
+};
+STATIC MP_DEFINE_CONST_DICT(k210_kpu_dict, k210_kpu_locals_dict_table);
+
+const mp_obj_type_t k210_kpu_type = {
+    {&mp_type_type},
+    .name = MP_QSTR_KPU,
+    .locals_dict = (mp_obj_dict_t *)&k210_kpu_dict,
+};
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Interpreter Function ///////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+typedef struct _mp_obj_k210_kpu_interpreter {
+    mp_obj_base_t base;
+
+    struct {
+        kpu_model_context_t ctx;
+        char path[128];
+        size_t size;
+        uint8_t *buffer;
+    } model;
+
+    union
+    {
+        uint32_t _data;
+        struct 
+        {
+            uint32_t load_kmodel : 1;
+            uint32_t run_kmodel : 1;
+        };
+    } state;
+
+    struct {
+        k210_kpu_shape_t input;
+        k210_kpu_shape_t output;
+    } shape;
+
+    uint8_t sha256[32];
+
+} __attribute__((aligned(8))) mp_obj_k210_kpu_interpreter_t;
 
 volatile uint32_t wait_kpu_done = 0;
 volatile uint32_t g_ai_done_flag = 0;
@@ -62,17 +107,17 @@ static void ai_done(void *ctx)
     g_ai_done_flag = 1;
 }
 
-STATIC mp_obj_t k210_kpu_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args)
+STATIC mp_obj_t k210_kpu_interpreter_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args)
 {
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
 
-    mp_obj_k210_kpu_t *self = (mp_obj_k210_kpu_t*)malloc(sizeof(mp_obj_k210_kpu_t));
+    mp_obj_k210_kpu_interpreter_t *self = (mp_obj_k210_kpu_interpreter_t*)malloc(sizeof(mp_obj_k210_kpu_interpreter_t));
     if(NULL == self)
     {
         mp_raise_msg(&mp_type_MemoryError, "No memory space");
     }
 
-    memset(self, 0, sizeof(mp_obj_k210_kpu_t));
+    memset(self, 0, sizeof(mp_obj_k210_kpu_interpreter_t));
     self->base.type = type;
 
     kpu_used_mem_info_t mem = {(void *)self, MEM_TYPE_PTR};
@@ -85,10 +130,10 @@ STATIC mp_obj_t k210_kpu_make_new(const mp_obj_type_t *type, size_t n_args, size
     return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC void k210_kpu_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind)
+STATIC void k210_kpu_interpreter_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind)
 {
-    mp_obj_k210_kpu_t *self = MP_OBJ_TO_PTR(self_in);
-    PY_ASSERT_TYPE(self_in, &k210_kpu_type);
+    mp_obj_k210_kpu_interpreter_t *self = MP_OBJ_TO_PTR(self_in);
+    PY_ASSERT_TYPE(self_in, &k210_kpu_interpreter_type);
 
     mp_printf(print, "KPU (K210)\n");
     mp_printf(&mp_plat_print, "slef         : 0x%lx\n", self);
@@ -135,16 +180,16 @@ STATIC void k210_kpu_print(const mp_print_t *print, mp_obj_t self_in, mp_print_k
     mp_printf(print, "model_output_count    : %d\n", self->model.ctx.output_count);
 }
 
-STATIC mp_obj_t k210_kpu_load_kmodel(mp_obj_t self_in, mp_obj_t input)
+STATIC mp_obj_t k210_kpu_interpreter_load_kmodel(mp_obj_t self_in, mp_obj_t input)
 {
-    mp_obj_k210_kpu_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_obj_k210_kpu_interpreter_t *self = MP_OBJ_TO_PTR(self_in);
     mp_obj_t model_path = input;
 
     int load_from = 0; // 0: filesystem; 1: rawflash
     mp_int_t offset = 0;
     const char *path = NULL;
 
-    PY_ASSERT_TYPE(self_in, &k210_kpu_type);
+    PY_ASSERT_TYPE(self_in, &k210_kpu_interpreter_type);
 
     if (&mp_type_str == mp_obj_get_type(input)) // load model from filesystem
     {
@@ -253,12 +298,12 @@ STATIC mp_obj_t k210_kpu_load_kmodel(mp_obj_t self_in, mp_obj_t input)
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(k210_kpu_load_kmodel_obj, k210_kpu_load_kmodel);
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(k210_kpu_interpreter_load_kmodel_obj, k210_kpu_interpreter_load_kmodel);
 
-STATIC mp_obj_t k210_kpu_run_kmodel(mp_obj_t self_in, mp_obj_t input)
+STATIC mp_obj_t k210_kpu_interpreter_run_kmodel(mp_obj_t self_in, mp_obj_t input)
 {
-    mp_obj_k210_kpu_t *self = MP_OBJ_TO_PTR(self_in);
-    PY_ASSERT_TYPE(self_in, &k210_kpu_type);
+    mp_obj_k210_kpu_interpreter_t *self = MP_OBJ_TO_PTR(self_in);
+    PY_ASSERT_TYPE(self_in, &k210_kpu_interpreter_type);
 
     if(0x00 == self->state.load_kmodel)
     {
@@ -304,14 +349,14 @@ STATIC mp_obj_t k210_kpu_run_kmodel(mp_obj_t self_in, mp_obj_t input)
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(k210_kpu_run_kmodel_obj, k210_kpu_run_kmodel);
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(k210_kpu_interpreter_run_kmodel_obj, k210_kpu_interpreter_run_kmodel);
 
-STATIC mp_obj_t k210_kpu_get_outputs(mp_obj_t self_in)
+STATIC mp_obj_t k210_kpu_interpreter_get_outputs(mp_obj_t self_in)
 {
     mp_obj_t lo = MP_OBJ_NULL;
-    mp_obj_k210_kpu_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_obj_k210_kpu_interpreter_t *self = MP_OBJ_TO_PTR(self_in);
 
-    PY_ASSERT_TYPE(self_in, &k210_kpu_type);
+    PY_ASSERT_TYPE(self_in, &k210_kpu_interpreter_type);
 
     if((0x00 == self->state.load_kmodel) || (0x00 == self->state.run_kmodel))
     {
@@ -334,46 +379,37 @@ STATIC mp_obj_t k210_kpu_get_outputs(mp_obj_t self_in)
 
     return MP_OBJ_FROM_PTR(lo);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(k210_kpu_get_outputs_obj, k210_kpu_get_outputs);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(k210_kpu_interpreter_get_outputs_obj, k210_kpu_interpreter_get_outputs);
 
-STATIC mp_obj_t k210_kpu_deinit(mp_obj_t self_in)
+STATIC mp_obj_t k210_kpu_interpreter_deinit(mp_obj_t self_in)
 {
-    mp_obj_k210_kpu_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_obj_k210_kpu_interpreter_t *self = MP_OBJ_TO_PTR(self_in);
 
-    PY_ASSERT_TYPE(self_in, &k210_kpu_type);
+    PY_ASSERT_TYPE(self_in, &k210_kpu_interpreter_type);
 
     maix_kpu_heler_del_mem_from_list(self->model.buffer);
 
-    memset(self, 0, sizeof(mp_obj_k210_kpu_t));
-    self->base.type = &k210_kpu_type;
+    memset(self, 0, sizeof(mp_obj_k210_kpu_interpreter_t));
+    self->base.type = &k210_kpu_interpreter_type;
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(k210_kpu_deinit_obj, k210_kpu_deinit);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(k210_kpu_interpreter_deinit_obj, k210_kpu_interpreter_deinit);
 
-STATIC const mp_rom_map_elem_t k210_kpu_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_load),            MP_ROM_PTR(&k210_kpu_load_kmodel_obj) },
-    { MP_ROM_QSTR(MP_QSTR_run),             MP_ROM_PTR(&k210_kpu_run_kmodel_obj) },
-    { MP_ROM_QSTR(MP_QSTR_get_outputs),     MP_ROM_PTR(&k210_kpu_get_outputs_obj) },
-    { MP_ROM_QSTR(MP_QSTR_deinit),          MP_ROM_PTR(&k210_kpu_deinit_obj) },
-
-    { MP_ROM_QSTR(MP_QSTR_act),             MP_ROM_PTR(&k210_kpu_act_type) },
-    { MP_ROM_QSTR(MP_QSTR_face),            MP_ROM_PTR(&k210_kpu_face_type) },
-#if ENABLE_LPR
-    { MP_ROM_QSTR(MP_QSTR_lpr),             MP_ROM_PTR(&k210_kpu_lpr_type) },
-#endif // ENABLE_LPR
-#if ENABLE_YOLO2
-    { MP_ROM_QSTR(MP_QSTR_yolo2),           MP_ROM_PTR(&k210_kpu_yolo2_type) },
-#endif // ENABLE_YOLO2
+STATIC const mp_rom_map_elem_t k210_kpu_interpreter_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_load),            MP_ROM_PTR(&k210_kpu_interpreter_load_kmodel_obj) },
+    { MP_ROM_QSTR(MP_QSTR_run),             MP_ROM_PTR(&k210_kpu_interpreter_run_kmodel_obj) },
+    { MP_ROM_QSTR(MP_QSTR_get_outputs),     MP_ROM_PTR(&k210_kpu_interpreter_get_outputs_obj) },
+    { MP_ROM_QSTR(MP_QSTR_deinit),          MP_ROM_PTR(&k210_kpu_interpreter_deinit_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(k210_kpu_dict, k210_kpu_locals_dict_table);
+STATIC MP_DEFINE_CONST_DICT(k210_kpu_interpreter_dict, k210_kpu_interpreter_locals_dict_table);
 
-const mp_obj_type_t k210_kpu_type = {
+STATIC const mp_obj_type_t k210_kpu_interpreter_type = {
     {&mp_type_type},
-    .name = MP_QSTR_KPU,
-    .print = k210_kpu_print,
-    .make_new = k210_kpu_make_new,
-    .locals_dict = (mp_obj_dict_t *)&k210_kpu_dict,
+    .name = MP_QSTR_interpreter,
+    .print = k210_kpu_interpreter_print,
+    .make_new = k210_kpu_interpreter_make_new,
+    .locals_dict = (mp_obj_dict_t *)&k210_kpu_interpreter_dict,
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -435,7 +471,7 @@ STATIC MP_DEFINE_CONST_DICT(k210_kpu_act_locals_dict, k210_kpu_act_locals_dict_t
 
 STATIC const mp_obj_type_t k210_kpu_act_type = {
     { &mp_type_type },
-    .name = MP_QSTR_act,
+    .name = MP_QSTR_nn_activation,
     .locals_dict = (void*)&k210_kpu_act_locals_dict,
 };
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -528,11 +564,10 @@ STATIC const mp_obj_type_t k210_kpu_face_type = {
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //LPR Post-Processing Function ////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#if ENABLE_LPR
 typedef struct _mp_obj_k210_kpu_lpr {
     mp_obj_base_t base;
 
-    mp_obj_k210_kpu_t *parent;
+    mp_obj_k210_kpu_interpreter_t *parent;
 
     struct
     {
@@ -547,7 +582,7 @@ typedef struct _mp_obj_k210_kpu_lpr {
 STATIC mp_obj_t k210_kpu_lpr_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
 
-    PY_ASSERT_TYPE(args[0], &k210_kpu_type);
+    PY_ASSERT_TYPE(args[0], &k210_kpu_interpreter_type);
 
     mp_obj_k210_kpu_lpr_t *self = (mp_obj_k210_kpu_lpr_t*)malloc(sizeof(mp_obj_k210_kpu_lpr_t));
     if(NULL == self)
@@ -564,7 +599,7 @@ STATIC mp_obj_t k210_kpu_lpr_make_new(const mp_obj_type_t *type, size_t n_args, 
     }
 
     self->base.type = type;
-    self->parent = (mp_obj_k210_kpu_t *)MP_OBJ_TO_PTR(args[0]);
+    self->parent = (mp_obj_k210_kpu_interpreter_t *)MP_OBJ_TO_PTR(args[0]);
 
     return MP_OBJ_FROM_PTR(self);
 }
@@ -734,20 +769,18 @@ STATIC MP_DEFINE_CONST_DICT(k210_kpu_lpr_locals_dict, k210_kpu_lpr_locals_dict_t
 
 STATIC const mp_obj_type_t k210_kpu_lpr_type = {
     { &mp_type_type },
-    .name = MP_QSTR_lpr,
+    .name = MP_QSTR_license_plate_recognition,
     .print = k210_kpu_lpr_print,
     .make_new = k210_kpu_lpr_make_new,
     .locals_dict = (void*)&k210_kpu_lpr_locals_dict,
 };
-#endif // ENABLE_LPR
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //YoloV2 Function /////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#if ENABLE_YOLO2
 typedef struct _mp_obj_k210_kpu_yolo2 {
     mp_obj_base_t base;
 
-    mp_obj_k210_kpu_t *parent;
+    mp_obj_k210_kpu_interpreter_t *parent;
 
     struct
     {
@@ -765,7 +798,7 @@ typedef struct _mp_obj_k210_kpu_yolo2 {
 STATIC mp_obj_t k210_kpu_yolo2_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
 
-    PY_ASSERT_TYPE(args[0], &k210_kpu_type);
+    PY_ASSERT_TYPE(args[0], &k210_kpu_interpreter_type);
 
     mp_obj_k210_kpu_yolo2_t *self = (mp_obj_k210_kpu_yolo2_t*)malloc(sizeof(mp_obj_k210_kpu_yolo2_t));
     if(NULL == self)
@@ -782,7 +815,7 @@ STATIC mp_obj_t k210_kpu_yolo2_make_new(const mp_obj_type_t *type, size_t n_args
     }
 
     self->base.type = type;
-    self->parent = (mp_obj_k210_kpu_t *)MP_OBJ_TO_PTR(args[0]);
+    self->parent = (mp_obj_k210_kpu_interpreter_t *)MP_OBJ_TO_PTR(args[0]);
 
     return MP_OBJ_FROM_PTR(self);
 }
@@ -982,7 +1015,6 @@ STATIC const mp_obj_type_t k210_kpu_yolo2_type = {
     .make_new = k210_kpu_yolo2_make_new,
     .locals_dict = (void*)&k210_kpu_yolo2_locals_dict,
 };
-#endif // ENABLE_YOLO2
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
