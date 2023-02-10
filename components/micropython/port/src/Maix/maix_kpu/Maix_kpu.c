@@ -53,12 +53,12 @@ STATIC const mp_obj_type_t k210_kpu_yolo2_type;
 // Type KPU ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 STATIC const mp_rom_map_elem_t k210_kpu_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_activation),      MP_ROM_PTR(&k210_kpu_act_type) },
-    { MP_ROM_QSTR(MP_QSTR_face),            MP_ROM_PTR(&k210_kpu_face_type) },
+    { MP_ROM_QSTR(MP_QSTR_act),     MP_ROM_PTR(&k210_kpu_act_type) },
+    { MP_ROM_QSTR(MP_QSTR_face),    MP_ROM_PTR(&k210_kpu_face_type) },
 
-    { MP_ROM_QSTR(MP_QSTR_interpreter),     MP_ROM_PTR(&k210_kpu_interpreter_type) },
-    { MP_ROM_QSTR(MP_QSTR_lpr),             MP_ROM_PTR(&k210_kpu_lpr_type) },
-    { MP_ROM_QSTR(MP_QSTR_yolo2),           MP_ROM_PTR(&k210_kpu_yolo2_type) },
+    { MP_ROM_QSTR(MP_QSTR_inter),   MP_ROM_PTR(&k210_kpu_interpreter_type) },
+    { MP_ROM_QSTR(MP_QSTR_lpr),     MP_ROM_PTR(&k210_kpu_lpr_type) },
+    { MP_ROM_QSTR(MP_QSTR_yolo2),   MP_ROM_PTR(&k210_kpu_yolo2_type) },
 };
 STATIC MP_DEFINE_CONST_DICT(k210_kpu_dict, k210_kpu_locals_dict_table);
 
