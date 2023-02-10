@@ -58,6 +58,19 @@ public:
         return ret;
     }
 
+    int get_input_shape_at(size_t index, int *chn, int *h, int *w)
+    {
+        if(index >= interpreter_.inputs_size())
+            return -1;
+
+        auto shape = interpreter_.input_shape_at(index);
+        printf("0:%d,1:%d,2:%d,3:%d\n", shape[0], shape[1], shape[2], shape[3]);
+
+        *chn = shape[1]; *h = shape[2]; *w = shape[3];
+
+        return 0;
+    }
+
     int probe_model_size(const uint8_t *buffer)
     {
         return interpreter_.probe_model_size(buffer);
@@ -179,6 +192,12 @@ int nncase_run_kmodel(kpu_model_context_t *ctx, const uint8_t *src, dmac_channel
 {
     auto nnctx = reinterpret_cast<nncase_context *>(ctx->nncase_ctx);
     return nnctx->run_kmodel(src, dma_ch, done_callback, userdata);
+}
+
+int nncase_get_input_shape(kpu_model_context_t *ctx, size_t index, int *chn, int *h, int *w)
+{
+    auto nnctx = reinterpret_cast<nncase_context *>(ctx->nncase_ctx);
+    return nnctx->get_input_shape_at(index, chn, h, w);
 }
 
 int nncase_probe_model_buffer_size(const uint8_t *buffer)

@@ -31,7 +31,7 @@ int maix_kpu_helper_load_file_from_rawflash(uint32_t addr, uint8_t *data_buf, ui
 mp_uint_t maix_kpu_helper_get_mode_size_from_rawflash(uint32_t offset);
 
 int maix_kpu_helper_load_file_from_filesystem(const char *path, void *buffer, size_t model_size);
-mp_uint_t maix_kpu_helper_get_mode_size_from_filesystem(const char *path);
+mp_uint_t maix_kpu_helper_get_file_size_from_filesystem(const char *path);
 
 int maix_kpu_helper_add_mem_to_list(kpu_used_mem_info_t *mem);
 int maix_kpu_heler_del_mem_from_list(void *ptr);

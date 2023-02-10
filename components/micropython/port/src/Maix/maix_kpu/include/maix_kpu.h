@@ -10,21 +10,20 @@
 #include "kpu_algorithm.h"
 #include "kpu_helper.h"
 
-#include "yolo2_region_layer.h"
-
 #ifdef  __cplusplus
 extern "C" {
 #endif
 
 // NCHW
 typedef struct _k210_kpu_shape {
+    int vaild;
     int num;
     int chn;
     int h;
     int w;
 } k210_kpu_shape_t;
 
-typedef struct _k210_kpu_obj_t
+typedef struct _mp_obj_k210_kpu
 {
     mp_obj_base_t base;
 
@@ -50,7 +49,9 @@ typedef struct _k210_kpu_obj_t
         k210_kpu_shape_t output;
     } shape;
 
-} __attribute__((aligned(8))) k210_kpu_obj_t;
+    uint8_t sha256[32];
+
+} __attribute__((aligned(8))) mp_obj_k210_kpu_t;
 
 #ifdef  __cplusplus
 }

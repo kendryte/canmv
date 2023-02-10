@@ -35,18 +35,26 @@ typedef struct
 } sortable_box_t;
 
 
-int yolo_region_layer_init(yolo2_region_layer_t *rl, int width, int height, int channels, int origin_width, int origin_height)
+int yolo_region_layer_init(yolo2_region_layer_t *rl, k210_kpu_shape_t *input, k210_kpu_shape_t *output)
 {
     int flag = 0;
 
-    rl->coords = 4;
-    //rl->image_width = 320;
-    //rl->image_height = 240;
+    if((0x00 == input->vaild) || (0x00 == output->vaild))
+    {
+        return -5;
+    }
 
-    rl->net_width = origin_width;
-    rl->net_height = origin_height;
-    rl->layer_width = width;
-    rl->layer_height = height;
+    rl->coords = 4;
+    rl->image_width = input->w;
+    rl->image_height = input->h;
+
+    rl->net_width = input->w;
+    rl->net_height = input->h;
+
+    rl->layer_width = output->w;
+    rl->layer_height = output->h;
+    rl->classes = (output->chn / 5) - 5;
+
     rl->boxes_number = (rl->layer_width * rl->layer_height * rl->anchor_number); 
     rl->output_number = (rl->boxes_number * (rl->classes + rl->coords + 1));
 

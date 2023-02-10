@@ -60,9 +60,13 @@ int maix_kpu_helper_probe_model_size(uint8_t *model_buffer)
 
 int maix_kpu_helper_get_input_shape(kpu_model_context_t *ctx, int *chn, int *h, int *w)
 {
+    if(chn) *chn = 0;
+    if(h) *h = 0;
+    if(w) *w = 0;
+
     if(ctx->is_nncase)
     {
-        return -1;
+        return nncase_get_input_shape(ctx, 0, chn, h, w);
     }
     else
     {
@@ -73,9 +77,9 @@ int maix_kpu_helper_get_input_shape(kpu_model_context_t *ctx, int *chn, int *h, 
             const kpu_model_conv_layer_argument_t *first_layer = (const kpu_model_conv_layer_argument_t *)ctx->body_start;
             kpu_layer_argument_t layer_arg = *(volatile kpu_layer_argument_t *)(ctx->model_buffer + first_layer->layer_offset);
 
-            *chn = 1 + layer_arg.image_channel_num.data.i_ch_num;
-            *h = 1 + layer_arg.image_size.data.i_col_high;
-            *w = 1 + layer_arg.image_size.data.i_row_wid;
+            if(chn) *chn = 1 + layer_arg.image_channel_num.data.i_ch_num;
+            if(h) *h = 1 + layer_arg.image_size.data.i_col_high;
+            if(w) *w = 1 + layer_arg.image_size.data.i_row_wid;
 
             return 0;
         }
@@ -91,19 +95,42 @@ int maix_kpu_helper_get_input_shape(kpu_model_context_t *ctx, int *chn, int *h, 
 
 int maix_kpu_helper_get_output_shape(kpu_model_context_t *ctx, int *chn, int *h, int *w)
 {
+    if(chn) *chn = 0;
+    if(h) *h = 0;
+    if(w) *w = 0;
+
     if(ctx->is_nncase)
     {
         return -1;
     }
     else
     {
-        uint8_t *body = ctx->body_start;
+        const kpu_model_layer_header_t *_layer = NULL;
+        const kpu_model_layer_header_t *output_layer = ctx->layer_headers + ctx->layers_length - 1;
+        const kpu_model_layer_header_t *conv2_layer = ctx->layer_headers + ctx->layers_length - 2;
 
-        for(int i = 0; i < ctx->layers_length; i++)
+        if((KL_DEQUANTIZE != output_layer->type) || (KL_K210_CONV != conv2_layer->type))
         {
-            const kpu_model_layer_header_t *_layer = ctx->layer_headers + i;
-            mp_printf(&mp_plat_print, "%d->type %d\n", i, _layer->type);
+            return -1;
+        }
+
+        uint8_t *body = ctx->body_start;
+        for(int i = 0; i < (ctx->layers_length - 2); i++)
+        {
+            _layer = ctx->layer_headers + i;
             body += _layer->body_size;
+        }
+
+        if(KL_K210_CONV == _layer->type)
+        {
+            const kpu_model_conv_layer_argument_t *conv_layer = (const kpu_model_conv_layer_argument_t *)body;
+            kpu_layer_argument_t layer_arg = *(volatile kpu_layer_argument_t *)(ctx->model_buffer + conv_layer->layer_offset);
+
+            if(chn) *chn = 1 + layer_arg.image_channel_num.data.o_ch_num;
+            if(h) *h = 1 + layer_arg.image_size.data.o_col_high;
+            if(w) *w = 1 + layer_arg.image_size.data.o_row_wid;
+
+            return 0;
         }
     }
 
@@ -147,7 +174,7 @@ int maix_kpu_helper_load_file_from_filesystem(const char *path, void *buffer, si
     return ret;
 }
 
-mp_uint_t maix_kpu_helper_get_mode_size_from_filesystem(const char *path)
+mp_uint_t maix_kpu_helper_get_file_size_from_filesystem(const char *path)
 {
     mp_obj_t fp;
     mp_uint_t size = 0;
@@ -225,7 +252,7 @@ static inline void maix_kpu_helper_free_mem(kpu_used_mem_info_t *mem)
         free(mem->ptr);
         mem->ptr = NULL;
     } else if(MEM_TYPE_MP_KPU_OBJ == mem->type) {
-        k210_kpu_obj_t *obj = (k210_kpu_obj_t *)mem->ptr;
+        mp_obj_k210_kpu_t *obj = (mp_obj_k210_kpu_t *)mem->ptr;
 
         mp_printf(&mp_plat_print, "TODO: free kpu object.");
     }

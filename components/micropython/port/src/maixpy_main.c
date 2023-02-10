@@ -520,7 +520,7 @@ static void deinit_kpu_timer_cb(TimerHandle_t xExpiredTimer)
     extern int maix_kpu_helper_free_mem_list(void);
 
     int n = maix_kpu_helper_free_mem_list();
-    mp_printf(&mp_plat_print, "free %d kpu model buffer\n>>>\r\n", n);
+    mp_printf(&mp_plat_print, "free %d kpu buffers\n>>>\r\n", n);
 }
 
 void free_km_buf_timer_init(void)

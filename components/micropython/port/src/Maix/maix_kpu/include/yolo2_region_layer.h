@@ -4,8 +4,7 @@
 #include <stdint.h>
 #include <math.h>
 
-#include "kpu.h"
-#include "objlist.h"
+#include "maix_kpu.h"
 
 typedef struct
 {
@@ -49,7 +48,8 @@ static inline float sigmoid(float x)
     return 1.f / (1.f + expf(-x));
 }
 
-int yolo_region_layer_init(yolo2_region_layer_t *rl, int width, int height, int channels, int origin_width, int origin_height);
+int yolo_region_layer_init(yolo2_region_layer_t *rl, k210_kpu_shape_t *input, k210_kpu_shape_t *output);
+
 void yolo_region_layer_deinit(yolo2_region_layer_t *rl);
 void yolo_region_layer_run(yolo2_region_layer_t *rl);
 void yolo_region_layer_get_rect(yolo2_region_layer_t *rl, mp_obj_list_t* out_box);
