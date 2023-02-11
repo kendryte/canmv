@@ -139,7 +139,7 @@ int maix_kpu_helper_get_output_shape(kpu_model_context_t *ctx, int *chn, int *h,
             int c = 1 + layer_arg.image_channel_num.data.o_ch_num;
             if(0x00 != (c % 5))
             {
-                c = 1 + layer_arg.image_channel_num.data.o_ch_num_coef;
+                return -1;
             }
 
             if(chn) *chn = c;

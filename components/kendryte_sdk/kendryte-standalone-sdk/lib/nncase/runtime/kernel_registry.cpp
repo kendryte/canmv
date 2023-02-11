@@ -81,7 +81,7 @@ kernel_call_result runtime::call_kernel(runtime_opcode opcode, xtl::span<const u
 
 runtime_shape_t runtime::get_conv2d_layer_output_shape(runtime_opcode opcode, xtl::span<const uint8_t> body)
 {
-    runtime_shape_t shape = {-1, -1, -1, -1};
+    runtime_shape_t shape = {0, 0, 0, 0};
 
     if(rop_k210_kpu_conv2d == opcode)
     {
@@ -91,15 +91,13 @@ runtime_shape_t runtime::get_conv2d_layer_output_shape(runtime_opcode opcode, xt
         options.deserialize(reader);
 
         int c = 1 + options.layer.image_channel_num.data.o_ch_num;
-        if(0x00 != (c % 5))
+        if(0x00 == (c % 5))
         {
-            c = 1 + options.layer.image_channel_num.data.o_ch_num_coef;
+            shape[0] =  0x01;
+            shape[1] =  c;
+            shape[2] =  1 + options.layer.image_size.data.o_col_high;
+            shape[3] =  1 + options.layer.image_size.data.o_row_wid;
         }
-
-        shape[0] =  0x01;
-        shape[1] =  c;
-        shape[2] =  1 + options.layer.image_size.data.o_col_high;
-        shape[3] =  1 + options.layer.image_size.data.o_row_wid;
     }
 
     return shape;

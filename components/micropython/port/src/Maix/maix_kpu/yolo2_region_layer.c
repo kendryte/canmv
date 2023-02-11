@@ -53,7 +53,15 @@ int yolo_region_layer_init(yolo2_region_layer_t *rl, k210_kpu_shape_t *input, k2
 
     rl->layer_width = output->w;
     rl->layer_height = output->h;
-    rl->classes = (output->chn / 5) - 5;
+
+    if(output->chn <= 25)
+    {
+        rl->classes = 0;
+    }
+    else
+    {
+        rl->classes = (output->chn / 5) - 5;
+    }
 
     rl->boxes_number = (rl->layer_width * rl->layer_height * rl->anchor_number); 
     rl->output_number = (rl->boxes_number * (rl->classes + rl->coords + 1));
