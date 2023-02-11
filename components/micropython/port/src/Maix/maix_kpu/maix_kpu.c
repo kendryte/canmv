@@ -53,12 +53,12 @@ STATIC const mp_obj_type_t k210_kpu_yolo2_type;
 // Type KPU ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 STATIC const mp_rom_map_elem_t k210_kpu_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_act),     MP_ROM_PTR(&k210_kpu_act_type) },
-    { MP_ROM_QSTR(MP_QSTR_face),    MP_ROM_PTR(&k210_kpu_face_type) },
+    { MP_ROM_QSTR(MP_QSTR_act),         MP_ROM_PTR(&k210_kpu_act_type) },
+    { MP_ROM_QSTR(MP_QSTR_face),        MP_ROM_PTR(&k210_kpu_face_type) },
 
-    { MP_ROM_QSTR(MP_QSTR_interp),   MP_ROM_PTR(&k210_kpu_interpreter_type) },
-    { MP_ROM_QSTR(MP_QSTR_lpr),     MP_ROM_PTR(&k210_kpu_lpr_type) },
-    { MP_ROM_QSTR(MP_QSTR_yolo2),   MP_ROM_PTR(&k210_kpu_yolo2_type) },
+    { MP_ROM_QSTR(MP_QSTR_interp),      MP_ROM_PTR(&k210_kpu_interpreter_type) },
+    { MP_ROM_QSTR(MP_QSTR_lpr),         MP_ROM_PTR(&k210_kpu_lpr_type) },
+    { MP_ROM_QSTR(MP_QSTR_yolo2),       MP_ROM_PTR(&k210_kpu_yolo2_type) },
 };
 STATIC MP_DEFINE_CONST_DICT(k210_kpu_dict, k210_kpu_locals_dict_table);
 
@@ -183,7 +183,6 @@ STATIC mp_obj_t k210_kpu_interpreter_make_new(const mp_obj_type_t *type, size_t 
 STATIC mp_obj_t k210_kpu_interpreter_load_kmodel(mp_obj_t self_in, mp_obj_t input)
 {
     mp_obj_k210_kpu_interpreter_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_obj_t model_path = input;
 
     int load_from = 0; // 0: filesystem; 1: rawflash
     mp_int_t offset = 0;
@@ -367,7 +366,7 @@ STATIC mp_obj_t k210_kpu_interpreter_get_outputs(mp_obj_t self_in)
     size_t output_size = 0;
     if(0x00 != kpu_get_output(&self->model.ctx, 0, (uint8_t **)&output, &output_size))
     {
-        mp_raise_OSError("Failed to get kpu outputs");
+        mp_raise_msg(&mp_type_OSError, "Failed to get kpu outputs");
     }
     output_size /= sizeof(float);
 
@@ -775,7 +774,7 @@ STATIC mp_obj_t kpu_post_process_lpr_run(mp_obj_t self_in)
     size_t output_size = 0;
     if(0x00 != kpu_get_output(&self->parent->model.ctx, 0, (uint8_t **)&output, &output_size))
     {
-        mp_raise_OSError("Failed to get kpu outputs");
+        mp_raise_msg(&mp_type_OSError, "Failed to get kpu outputs");
     }
 
     mp_obj_list_t *ret_list = m_new(mp_obj_list_t, sizeof(mp_obj_list_t));
@@ -1017,7 +1016,7 @@ STATIC mp_obj_t k210_kpu_yolo2_run(mp_obj_t self_in)
     size_t output_size = 0;
     if(0x00 != kpu_get_output(&self->parent->model.ctx, 0, (uint8_t **)&output, &output_size))
     {
-        mp_raise_OSError("Failed to get kpu outputs");
+        mp_raise_msg(&mp_type_OSError, "Failed to get kpu outputs");
     }
 
     yolo2_region_layer_t r;

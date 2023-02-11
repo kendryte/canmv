@@ -124,7 +124,7 @@ int maix_kpu_helper_get_output_shape(kpu_model_context_t *ctx, int *chn, int *h,
             return -1;
         }
 
-        uint8_t *body = ctx->body_start;
+        const uint8_t *body = ctx->body_start;
         for(int i = 0; i < (ctx->layers_length - 2); i++)
         {
             _layer = ctx->layer_headers + i;
@@ -210,7 +210,7 @@ mp_uint_t maix_kpu_helper_get_file_size_from_filesystem(const char *path)
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-static volatile spinlock_t _mem_lock = SPINLOCK_INIT;
+static spinlock_t _mem_lock = SPINLOCK_INIT;
 
 static kpu_used_mem_info_t _mem_table[64] = {
     [0 ... 63] = {NULL, 0}

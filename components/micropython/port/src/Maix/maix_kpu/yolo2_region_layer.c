@@ -278,10 +278,10 @@ static void get_region_boxes(yolo2_region_layer_t *rl, float *predictions, float
     correct_region_boxes(rl, boxes);
 }
 
-static int nms_comparator(void *pa, void *pb)
+static int nms_comparator(const void *pa, const void *pb)
 {
-    sortable_box_t a = *(sortable_box_t *)pa;
-    sortable_box_t b = *(sortable_box_t *)pb;
+    const sortable_box_t a = *(sortable_box_t *)pa;
+    const sortable_box_t b = *(sortable_box_t *)pb;
     float diff = a.probs[a.index][b.class] - b.probs[b.index][b.class];
 
     if (diff < 0)
@@ -291,10 +291,10 @@ static int nms_comparator(void *pa, void *pb)
     return 0;
 }
 
-static int nms_comparator_0(void *pa, void *pb)
+static int nms_comparator_0(const void *pa, const void *pb)
 {
-    sortable_box_t a = *(sortable_box_t *)pa;
-    sortable_box_t b = *(sortable_box_t *)pb;
+    const sortable_box_t a = *(sortable_box_t *)pa;
+    const sortable_box_t b = *(sortable_box_t *)pb;
     //float diff = a.probs[a.index][b.class] - b.probs[b.index][b.class];
     float diff = a.probs[a.index][0] - b.probs[b.index][0];
 
@@ -401,7 +401,7 @@ static void region_layer_output(yolo2_region_layer_t *rl, obj_info_t *obj_info)
     uint32_t obj_number = 0;
     uint32_t image_width = rl->image_width;
     uint32_t image_height = rl->image_height;
-    uint32_t boxes_number = rl->boxes_number;
+    // uint32_t boxes_number = rl->boxes_number;
     float threshold = rl->threshold;
     box_t *boxes = (box_t *)rl->boxes;
     
