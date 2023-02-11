@@ -78,3 +78,29 @@ kernel_call_result runtime::call_kernel(runtime_opcode opcode, xtl::span<const u
         return kcr_error;
     }
 }
+
+runtime_shape_t runtime::get_conv2d_layer_output_shape(runtime_opcode opcode, xtl::span<const uint8_t> body)
+{
+    runtime_shape_t shape = {-1, -1, -1, -1};
+
+    if(rop_k210_kpu_conv2d == opcode)
+    {
+        span_reader reader(body);
+
+        nncase::runtime::k210::kpu_conv2d_options options; 
+        options.deserialize(reader);
+
+        int c = 1 + options.layer.image_channel_num.data.o_ch_num;
+        if(0x00 != (c % 5))
+        {
+            c = 1 + options.layer.image_channel_num.data.o_ch_num_coef;
+        }
+
+        shape[0] =  0x01;
+        shape[1] =  c;
+        shape[2] =  1 + options.layer.image_size.data.o_col_high;
+        shape[3] =  1 + options.layer.image_size.data.o_row_wid;
+    }
+
+    return shape;
+}

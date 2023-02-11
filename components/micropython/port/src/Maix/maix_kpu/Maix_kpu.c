@@ -109,7 +109,7 @@ static void ai_done(void *ctx)
 
 STATIC mp_obj_t k210_kpu_interpreter_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args)
 {
-    mp_arg_check_num(n_args, n_kw, 0, 1, false);
+    // mp_arg_check_num(n_args, n_kw, 0, 1, false);
 
     mp_obj_k210_kpu_interpreter_t *self = (mp_obj_k210_kpu_interpreter_t*)malloc(sizeof(mp_obj_k210_kpu_interpreter_t));
     if(NULL == self)
@@ -136,8 +136,8 @@ STATIC void k210_kpu_interpreter_print(const mp_print_t *print, mp_obj_t self_in
     PY_ASSERT_TYPE(self_in, &k210_kpu_interpreter_type);
 
     mp_printf(print, "KPU (K210)\n");
-    mp_printf(&mp_plat_print, "slef         : 0x%lx\n", self);
-    mp_printf(&mp_plat_print, "parent       : (null)\n");
+    mp_printf(print, "self                  : 0x%lx\n", self);
+    mp_printf(print, "parent                : (null)\n");
 
     if(0x00 == self->state.load_kmodel)
     {
@@ -177,7 +177,7 @@ STATIC void k210_kpu_interpreter_print(const mp_print_t *print, mp_obj_t self_in
     mp_printf(print, "model_output(CHW)     : %dx%dx%d\n", self->shape.output.chn, self->shape.output.h, self->shape.output.w);
     }
 
-    mp_printf(print, "model_output_count    : %d\n", self->model.ctx.output_count);
+    mp_printf(print, "model_output_count    : %d\n", maix_kpu_helper_get_output_count(&self->model.ctx));
 }
 
 STATIC mp_obj_t k210_kpu_interpreter_load_kmodel(mp_obj_t self_in, mp_obj_t input)
@@ -381,6 +381,33 @@ STATIC mp_obj_t k210_kpu_interpreter_get_outputs(mp_obj_t self_in)
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(k210_kpu_interpreter_get_outputs_obj, k210_kpu_interpreter_get_outputs);
 
+// set_outputs([c,h,w])
+// set_outputs((c,h,w))
+STATIC mp_obj_t k210_kpu_interpreter_set_outputs(mp_obj_t self_in, mp_obj_t output)
+{
+    mp_obj_k210_kpu_interpreter_t *self = MP_OBJ_TO_PTR(self_in);
+    PY_ASSERT_TYPE(self_in, &k210_kpu_interpreter_type);
+
+    size_t nitems = 0;
+    mp_obj_t *items = MP_OBJ_NULL;
+
+    mp_obj_get_array(output, &nitems, (mp_obj_t **)&items);
+
+    if(0x03 != nitems)
+    {
+        mp_raise_ValueError("outpus length should be 3");
+    }
+
+    self->shape.output.chn = mp_obj_get_int(*items++);
+    self->shape.output.h = mp_obj_get_int(*items++);
+    self->shape.output.w = mp_obj_get_int(*items++);
+
+    self->shape.output.vaild = 1;
+
+    return mp_const_true;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(k210_kpu_interpreter_set_outputs_obj, k210_kpu_interpreter_set_outputs);
+
 STATIC mp_obj_t k210_kpu_interpreter_deinit(mp_obj_t self_in)
 {
     mp_obj_k210_kpu_interpreter_t *self = MP_OBJ_TO_PTR(self_in);
@@ -400,6 +427,7 @@ STATIC const mp_rom_map_elem_t k210_kpu_interpreter_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_load),            MP_ROM_PTR(&k210_kpu_interpreter_load_kmodel_obj) },
     { MP_ROM_QSTR(MP_QSTR_run),             MP_ROM_PTR(&k210_kpu_interpreter_run_kmodel_obj) },
     { MP_ROM_QSTR(MP_QSTR_get_outputs),     MP_ROM_PTR(&k210_kpu_interpreter_get_outputs_obj) },
+    { MP_ROM_QSTR(MP_QSTR_set_outputs),     MP_ROM_PTR(&k210_kpu_interpreter_set_outputs_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit),          MP_ROM_PTR(&k210_kpu_interpreter_deinit_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(k210_kpu_interpreter_dict, k210_kpu_interpreter_locals_dict_table);
@@ -609,11 +637,11 @@ STATIC void k210_kpu_lpr_print(const mp_print_t *print, mp_obj_t self_in, mp_pri
     mp_obj_k210_kpu_lpr_t *self = MP_OBJ_TO_PTR(self_in);
     PY_ASSERT_TYPE(self_in, &k210_kpu_lpr_type);
 
-    mp_printf(&mp_plat_print, "LPR\n");
-    mp_printf(&mp_plat_print, "slef             : 0x%lx\n", self);
-    mp_printf(&mp_plat_print, "parent           : 0x%lx\n", self->parent);
-    mp_printf(&mp_plat_print, "weight_size      : %d\n", self->weight.size);
-    mp_printf(&mp_plat_print, "weight_buffer    : 0x%lx\n", self->weight.buffer);
+    mp_printf(print, "LPR\n");
+    mp_printf(print, "self             : 0x%lx\n", self);
+    mp_printf(print, "parent           : 0x%lx\n", self->parent);
+    mp_printf(print, "weight_size      : %d\n", self->weight.size);
+    mp_printf(print, "weight_buffer    : 0x%lx\n", self->weight.buffer);
 }
 
 // lpr.init("/sd/lpr_wight.bin")
@@ -825,19 +853,19 @@ STATIC void k210_kpu_yolo2_print(const mp_print_t *print, mp_obj_t self_in, mp_p
     mp_obj_k210_kpu_yolo2_t *self = MP_OBJ_TO_PTR(self_in);
     PY_ASSERT_TYPE(self_in, &k210_kpu_yolo2_type);
 
-    mp_printf(&mp_plat_print, "Yolo2\n");
-    mp_printf(&mp_plat_print, "slef             : 0x%lx\n", self);
-    mp_printf(&mp_plat_print, "parent           : 0x%lx\n", self->parent);
+    mp_printf(print, "Yolo2\n");
+    mp_printf(print, "self             : 0x%lx\n", self);
+    mp_printf(print, "parent           : 0x%lx\n", self->parent);
 
     if(0x00 == self->args.vaild)
     {
         return;
     }
 
-    mp_printf(&mp_plat_print, "nms              : %f\n", self->args.nms_value);
-    mp_printf(&mp_plat_print, "threshold        : %f\n", self->args.threshold);
-    mp_printf(&mp_plat_print, "anchor_number    : %d\n", self->args.anchor_number);
-    mp_printf(&mp_plat_print, "anchors          : ");
+    mp_printf(print, "nms              : %f\n", self->args.nms_value);
+    mp_printf(print, "threshold        : %f\n", self->args.threshold);
+    mp_printf(print, "anchor_number    : %d\n", self->args.anchor_number);
+    mp_printf(print, "anchors          : ");
 
     if(self->args.anchor_number)
     {
@@ -853,7 +881,7 @@ STATIC void k210_kpu_yolo2_print(const mp_print_t *print, mp_obj_t self_in, mp_p
         m_del_obj(mp_obj_list_t, anchors);
     }
 
-    mp_printf(&mp_plat_print, "\n");
+    mp_printf(print, "\n");
 }
 
 STATIC mp_obj_t k210_kpu_yolo2_init(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)

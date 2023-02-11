@@ -25,6 +25,7 @@ typedef struct _kpu_used_mem_info {
 
 int maix_kpu_helper_probe_model_size(uint8_t *model_buffer);
 int maix_kpu_helper_get_input_shape(kpu_model_context_t *ctx, int *chn, int *h, int *w);
+int maix_kpu_helper_get_output_count(kpu_model_context_t *ctx);
 int maix_kpu_helper_get_output_shape(kpu_model_context_t *ctx, int *chn, int *h, int *w);
 
 int maix_kpu_helper_load_file_from_rawflash(uint32_t addr, uint8_t *data_buf, uint32_t length);

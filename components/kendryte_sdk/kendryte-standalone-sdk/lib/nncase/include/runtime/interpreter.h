@@ -35,8 +35,9 @@ namespace runtime
         using clock_t = std::chrono::system_clock;
 
         bool try_load_model(const uint8_t *buffer);
-        uint32_t model_size(const uint8_t *buffer);
 
+        int get_output_shape(int *chn, int *h, int *w);
+        uint32_t model_size(const uint8_t *buffer);
         int probe_model_size(const uint8_t *buffer);
 
         size_t inputs_size() const noexcept { return model_header_->inputs; }

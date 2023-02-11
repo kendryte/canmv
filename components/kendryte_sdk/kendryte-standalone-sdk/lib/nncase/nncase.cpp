@@ -69,6 +69,16 @@ public:
         return 0;
     }
 
+    int get_output_count(void)
+    {
+        return interpreter_.outputs_size();
+    }
+
+    int get_output_shape( int *chn, int *h, int *w)
+    {
+        return interpreter_.get_output_shape(chn, h, w);
+    }
+
     int probe_model_size(const uint8_t *buffer)
     {
         return interpreter_.probe_model_size(buffer);
@@ -192,10 +202,23 @@ int nncase_run_kmodel(kpu_model_context_t *ctx, const uint8_t *src, dmac_channel
     return nnctx->run_kmodel(src, dma_ch, done_callback, userdata);
 }
 
+
 int nncase_get_input_shape(kpu_model_context_t *ctx, size_t index, int *chn, int *h, int *w)
 {
     auto nnctx = reinterpret_cast<nncase_context *>(ctx->nncase_ctx);
     return nnctx->get_input_shape_at(index, chn, h, w);
+}
+
+int nncase_get_output_count(kpu_model_context_t *ctx)
+{
+    auto nnctx = reinterpret_cast<nncase_context *>(ctx->nncase_ctx);
+    return nnctx->get_output_count();
+}
+
+int nncase_get_output_shape(kpu_model_context_t *ctx, int *chn, int *h, int *w)
+{
+    auto nnctx = reinterpret_cast<nncase_context *>(ctx->nncase_ctx);
+    return nnctx->get_output_shape(chn, h, w);
 }
 
 int nncase_probe_model_buffer_size(const uint8_t *buffer)
