@@ -162,7 +162,7 @@ static int set_hmirror(sensor_t *sensor, int enable)
 
 static int set_vflip(sensor_t *sensor, int enable)
 {
-    uint8_t reg,reg3621;
+    uint8_t reg;//reg3621;
     int ret = cambus_readb(sensor->slv_addr, 0x3818, &reg);
     if (enable){
         ret |= cambus_writeb(sensor->slv_addr, 0x3818, reg|0x20);

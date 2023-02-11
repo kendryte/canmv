@@ -327,7 +327,7 @@ ack_start:
 #ifdef NEW_SAVE_FILE_IMPL
         case USBDBG_QUERY_FILE_STAT:
         {
-            uint32_t *buf = ide_dbg_cmd_buf;
+            uint32_t *buf = (uint32_t *)ide_dbg_cmd_buf;
             buf[0] = ide_dbg_sv_file.errcode;
             cmd = USBDBG_NONE;
             break;
@@ -335,7 +335,7 @@ ack_start:
 
         case USBDBG_VERIFYFILE:
         {
-            uint32_t *buf = ide_dbg_cmd_buf;
+            uint32_t *buf = (uint32_t *)ide_dbg_cmd_buf;
 
             // calc file sha256
             uint8_t sha256[32];

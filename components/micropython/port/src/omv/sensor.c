@@ -453,7 +453,7 @@ int sensro_gc_detect(sensor_t *sensor, bool pwnd)
     DCMI_RESET_HIGH();
     mp_hal_delay_ms(10);
 
-    int init_ret = 0;
+    // int init_ret = 0;
     /* Reset the sensor */
     DCMI_RESET_HIGH();
     mp_hal_delay_ms(10);

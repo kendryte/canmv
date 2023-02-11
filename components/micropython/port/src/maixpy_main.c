@@ -364,6 +364,7 @@ void load_config_from_spiffs(config_data_t *config)
     }
   }
   SPIFFS_close(&spiffs_user_mount_handle.fs, fd);
+  (void)flash_error;
 }
 
 #if MICROPY_ENABLE_COMPILER

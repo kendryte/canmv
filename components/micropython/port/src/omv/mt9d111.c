@@ -420,7 +420,7 @@ static int mt9d11_write(i2c_device_number_t i2c_dev_tmp, uint8_t reg, uint16_t v
 static uint16_t mt9d11_read(i2c_device_number_t i2c_dev_tmp, uint8_t reg)
 {
     uint8_t buf[2] = { 0 };
-    maix_i2c_send_data(i2c_dev_tmp, MT9D111_CONFIG_I2C_ID, reg, 1, 20);
+    maix_i2c_send_data(i2c_dev_tmp, MT9D111_CONFIG_I2C_ID, &reg, 1, 20);
     int ret = maix_i2c_recv_data(i2c_dev_tmp, MT9D111_CONFIG_I2C_ID, NULL, 0, buf, 2, 30);
     msleep(20);
     if (ret == 0)

@@ -176,7 +176,7 @@ STATIC int wiznet5k_socket_listen(mod_network_socket_obj_t *socket,
   if (ret < 0) {
     wiznet5k_socket_close(socket);
     *_errno = -ret;
-    return MP_STREAM_ERROR;
+    return -1; //MP_STREAM_ERROR
   }
   return 0;
 }
@@ -210,7 +210,7 @@ STATIC int wiznet5k_socket_accept(mod_network_socket_obj_t *socket,
     if (sr == SOCK_CLOSED || sr == SOCK_CLOSE_WAIT) {
       wiznet5k_socket_close(socket);
       *_errno = MP_ENOTCONN;  // ??
-      return MP_STREAM_ERROR;
+      return -1; //MP_STREAM_ERROR
     }
     mp_hal_delay_ms(1);
   }
@@ -220,7 +220,7 @@ STATIC int wiznet5k_socket_connect(mod_network_socket_obj_t *socket, byte *ip,
                                    mp_uint_t port, int *_errno) {
   // use "bind" function to open the socket in client mode
   if (wiznet5k_socket_bind(socket, ip, 0, _errno) != 0) {
-    return MP_STREAM_ERROR;
+    return -1; //MP_STREAM_ERROR
   }
 
   // now connect
@@ -234,7 +234,7 @@ STATIC int wiznet5k_socket_connect(mod_network_socket_obj_t *socket, byte *ip,
   if (ret < 0) {
     // wiznet5k_socket_close(socket);
     *_errno = -ret;
-    return MP_STREAM_ERROR;
+    return -1; //MP_STREAM_ERROR
   }
 
   // success
@@ -365,7 +365,7 @@ STATIC int wiznet5k_socket_ioctl(mod_network_socket_obj_t *socket,
     return ret;
   } else {
     *_errno = MP_EINVAL;
-    return MP_STREAM_ERROR;
+    return -1;//MP_STREAM_ERROR;
   }
 }
 
@@ -447,7 +447,7 @@ static void dhcp_ip_conflict(void) {
   return;
 }
 
-STATIC void wiznet5k_make_new_helper(size_t n_args, size_t n_kw,
+STATIC mp_obj_t wiznet5k_make_new_helper(size_t n_args, size_t n_kw,
                                      const mp_obj_t *args) {
   // check arguments
   mp_arg_check_num(n_args, n_kw, 0, 3, true);
@@ -466,7 +466,7 @@ STATIC void wiznet5k_make_new_helper(size_t n_args, size_t n_kw,
     return mp_const_false;
   }
 
-  if (wiznet5k_obj.cs < 0 || wiznet5k_obj.cs > 31) {
+  if (/*wiznet5k_obj.cs < 0 || */wiznet5k_obj.cs > 31) {
     mp_raise_ValueError("CS value error");
     return mp_const_false;
   }
@@ -478,6 +478,8 @@ STATIC void wiznet5k_make_new_helper(size_t n_args, size_t n_kw,
   wiznet5k_obj.socket_used = 0;
   wiznet5k_obj.cs = args_parsed[ARG_cs].u_int;
   wiznet5k_obj.dhcp_ip_assign_fl = 0;
+
+  return mp_const_true;
 }
 
 /******************************************************************************/
@@ -521,12 +523,12 @@ STATIC mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, size_t n_args,
 
 // dhcp client start
 STATIC mp_obj_t wiznet5k_dhclient(mp_obj_t self_in) {
-  wiznet5k_obj_t *self = (wiznet5k_obj_t *)self_in;
+  // wiznet5k_obj_t *self = (wiznet5k_obj_t *)self_in;
   uint8_t dhcp_stat = DHCP_run();
   if ((dhcp_stat == DHCP_FAILED) || (dhcp_stat == DHCP_STOPPED)) {
     // dhcp
     reg_dhcp_cbfunc(dhcp_ip_assign, dhcp_ip_update, dhcp_ip_conflict);
-    DHCP_init(wiznet5k_obj.socket_used, &dhcp_msg);
+    DHCP_init(wiznet5k_obj.socket_used, (uint8_t *)&dhcp_msg);
     printf("init dhcp\r\n");
   }
 

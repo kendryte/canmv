@@ -11,7 +11,19 @@
 #include "framebuffer.h"
 
 mutex_t lock_tmp;
-static framebuffer_t _fb_framebuffer0={0,0,0,0,0,0,0,0,0,NULL,NULL,NULL,NULL};
+static framebuffer_t _fb_framebuffer0 = {
+    0, 0,
+    0, 0,
+    0, 0,
+    0, 0,
+    0,
+#if CONFIG_MAIXPY_OMV_DOUBLE_BUFF
+    false,
+    {NULL, NULL}, {NULL, NULL},
+#else
+    NULL, NULL
+#endif
+};
 // static framebuffer_t _fb_framebuffer1={0,0,0,0,0,0,0,NULL,g_ai_buf_out};
 framebuffer_t *fb_framebuffer = &_fb_framebuffer0;
 

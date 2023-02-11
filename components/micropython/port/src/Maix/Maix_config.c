@@ -133,7 +133,7 @@ mp_obj_t maix_config_get_value(mp_obj_t key, mp_obj_t def_value)
     }
     return def_value;
 }
-MP_DEFINE_CONST_FUN_OBJ_2(maix_config_get_value_obj, maix_config_get_value);
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(maix_config_get_value_obj, maix_config_get_value);
 
 mp_obj_t maix_config_init()
 {
@@ -159,9 +159,9 @@ mp_obj_t maix_config_init()
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(maix_config_init_obj, maix_config_init);
 
 static const mp_map_elem_t locals_dict_table[] = {
-    {MP_ROM_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_config)},
-    {MP_ROM_QSTR(MP_QSTR___init__), MP_ROM_PTR(&maix_config_init_obj)},
-    {MP_ROM_QSTR(MP_QSTR_get_value), MP_ROM_PTR(&maix_config_get_value_obj)},
+    { MP_ROM_QSTR(MP_QSTR___name__),    MP_OBJ_NEW_QSTR(MP_QSTR_config) },
+    { MP_ROM_QSTR(MP_QSTR___init__),    (mp_obj_t)&maix_config_init_obj },
+    { MP_ROM_QSTR(MP_QSTR_get_value),   (mp_obj_t)&maix_config_get_value_obj },
 };
 
 STATIC MP_DEFINE_CONST_DICT(locals_dict, locals_dict_table);

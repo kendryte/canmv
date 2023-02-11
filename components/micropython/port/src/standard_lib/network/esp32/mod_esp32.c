@@ -56,7 +56,7 @@ STATIC mp_obj_t esp32_nic_disconnect(mp_obj_t self_in) {
 
 STATIC mp_obj_t esp32_nic_ping(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
 	enum { ARG_host, ARG_host_type};
-	esp32_nic_obj_t* self = NULL;
+	// esp32_nic_obj_t* self = NULL;
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_host, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_host_type, MP_ARG_INT, {.u_int = -1} },
@@ -67,11 +67,11 @@ STATIC mp_obj_t esp32_nic_ping(size_t n_args, const mp_obj_t *pos_args, mp_map_t
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-	//get nic
-	if((mp_obj_type_t*)&mod_network_nic_type_esp32 == mp_obj_get_type(pos_args[0]))
-	{
-		self = pos_args[0];
-	}
+	// //get nic
+	// if((mp_obj_type_t*)&mod_network_nic_type_esp32 == mp_obj_get_type(pos_args[0]))
+	// {
+	// 	self = pos_args[0];
+	// }
     // get host
     size_t host_len =0;
     const char* host = NULL;
@@ -104,7 +104,7 @@ STATIC mp_obj_t esp32_nic_ping(size_t n_args, const mp_obj_t *pos_args, mp_map_t
 STATIC mp_obj_t esp32_nic_connect( size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args )
 {
 	enum { ARG_ssid, ARG_key};
-	esp32_nic_obj_t* self = NULL;
+	// esp32_nic_obj_t* self = NULL;
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_ssid, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_key, MP_ARG_OBJ, {.u_obj = mp_const_none} },
@@ -115,10 +115,10 @@ STATIC mp_obj_t esp32_nic_connect( size_t n_args, const mp_obj_t *pos_args, mp_m
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
 	//get nic
-	if((mp_obj_type_t*)&mod_network_nic_type_esp32 == mp_obj_get_type(pos_args[0]))
-	{
-		self = pos_args[0];
-	}
+	// if((mp_obj_type_t*)&mod_network_nic_type_esp32 == mp_obj_get_type(pos_args[0]))
+	// {
+	// 	self = pos_args[0];
+	// }
     // get ssid
     size_t ssid_len =0;
     const char *ssid = NULL;

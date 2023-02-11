@@ -104,16 +104,17 @@ mp_obj_t modules_ws2812_make_new(const mp_obj_type_t *type, size_t n_args, size_
 
 STATIC void modules_ws2812_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     modules_ws2812_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    ws2812_info *info = (ws2812_info*)self->dat;
+    // ws2812_info *info = (ws2812_info*)self->dat;
     mp_printf(print, "[CANMV]ws2812:(%p) \r\nled pin=%d num: %d buf:%p\r\ni2s: I2S_DEVICE_%d I2S_CHANNEL_%d\t DMAC_CHANNEL%d", 
                     self, self->len_pin,self->dat->ws_num,self->dat->ws_buf,self->i2s_num,self->i2s_chn,self->i2s_dma_chn);
 }
 
-STATIC void modules_ws2812_del(mp_obj_t self_in) {
+STATIC mp_obj_t modules_ws2812_del(mp_obj_t self_in) {
     modules_ws2812_obj_t *self = MP_OBJ_TO_PTR(self_in);
     ws2812_release_buf(self->dat);
+    return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_1(modules_ws2812_del_obj, modules_ws2812_del);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(modules_ws2812_del_obj, modules_ws2812_del);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

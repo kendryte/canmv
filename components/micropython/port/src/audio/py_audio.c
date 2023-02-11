@@ -328,19 +328,21 @@ STATIC mp_obj_t Maix_audio_record(mp_obj_t self_in, mp_obj_t record_in) {
     wav_encode->data.chunk_size +=  input->points * sizeof(uint16_t);
     free(buf);
     if(err_code!=0)
-        return err_code;
-        
+    {
+        return mp_obj_new_int(err_code);
+    }
+
     return mp_const_none;
 
-    switch(audio->format)
-    {
-        case AUDIO_WAV_FMT:
-            wav_record(audio, DMAC_CHANNEL3);
-            break;
-        default:
-            break;
-    }
-    return mp_const_none;
+    // switch(audio->format)
+    // {
+    //     case AUDIO_WAV_FMT:
+    //         wav_record(audio, DMAC_CHANNEL3);
+    //         break;
+    //     default:
+    //         break;
+    // }
+    // return mp_const_none;
 }
 
 MP_DEFINE_CONST_FUN_OBJ_2(Maix_audio_record_obj,Maix_audio_record);

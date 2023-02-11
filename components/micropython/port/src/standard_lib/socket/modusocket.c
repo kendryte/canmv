@@ -341,7 +341,7 @@ STATIC void socket_select_nic(mod_network_socket_obj_t *self, const byte *ip) {
         // call the NIC to open the socket
         int _errno;
         MP_THREAD_GIL_EXIT();
-        mp_int_t ret = self->nic_type->socket(self, &_errno);
+        int ret = self->nic_type->socket(self, &_errno);
         MP_THREAD_GIL_ENTER();
         if (ret != 0) {
             mp_raise_OSError(_errno);

@@ -417,7 +417,7 @@ void imlib_draw_image(image_t *img, image_t *other, int x_off, int y_off, float 
                     uint8_t r = COLOR_RGB565_TO_R8(pixel);
                     uint8_t g = COLOR_RGB565_TO_G8(pixel);
                     uint8_t b = COLOR_RGB565_TO_B8(pixel);
-                    uint16_t c=COLOR_R8_G8_B8_TO_RGB565(r>255?255:r,g>255?255:g, b>255?255:b);
+                    uint16_t c=COLOR_R8_G8_B8_TO_RGB565(r,g, b);
                     imlib_set_pixel(img, x_off + x, y_off + y, c);
                 } else {
                     int pixel2=imlib_get_pixel(img, x_off + x, y_off + y);

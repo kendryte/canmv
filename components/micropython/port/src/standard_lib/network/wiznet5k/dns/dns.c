@@ -482,7 +482,7 @@ int8_t DNS_run(uint8_t *dns_ip, uint8_t *name, uint8_t *ip_from_dns) {
   uint8_t ip[4];
   uint16_t len, port;
   int8_t ret_check_timeout;
-  int errno = 0;
+  // int errno = 0;
 
   retry_count = 0;
   dns_1s_tick = 0;

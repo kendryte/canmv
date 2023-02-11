@@ -413,8 +413,8 @@ void imlib_draw_font(image_t *img, int x_off, int y_off, int c, float scale, uin
 
 void imlib_draw_utf8_string(image_t *img, int x_off, int y_off, mp_obj_t str, int c, float scale, int x_spacing, int y_spacing, bool mono_space) {
   const uint8_t font_len = (font_config.width / 8) * font_config.high;
-  const uint8_t *string = mp_obj_str_get_str(str);
-  int len = mp_obj_len(str);
+  const char *string = mp_obj_str_get_str(str);
+  int len = mp_obj_get_int(mp_obj_len(str));
 
   // mp_buffer_info_t bufinfo;
   // mp_get_buffer_raise(str, &bufinfo, MP_BUFFER_READ);
@@ -422,7 +422,7 @@ void imlib_draw_utf8_string(image_t *img, int x_off, int y_off, mp_obj_t str, in
   for(int i = 0, pos = 0, bytes = 0; i < len; i += bytes, pos += 1) {
 
     uint64_t offset = 0;
-    bytes = font_utf8_to_unicode(string + i, &offset);
+    bytes = font_utf8_to_unicode(((const uint8_t *)string) + i, &offset);
     // printk("utfbytes %d offset %llu\r\n", bytes, offset);
     if (bytes <= 0 || offset <= 0) { // unicode len
       break;
@@ -441,7 +441,7 @@ void imlib_draw_utf8_string(image_t *img, int x_off, int y_off, mp_obj_t str, in
         case ArrayIn:
             // printk("%d %p %p %p", font_len, buffer, font_config.this, &font_config.this[offset * font_len]);
             // memcpy(buffer, &font_config.this[offset * font_len], font_len);
-            sys_spiffs_read(font_config.this + offset * font_len, font_len, buffer);
+            sys_spiffs_read((uint32_t)(font_config.this + offset * font_len), font_len, buffer);
             break;
         default:
             break;

@@ -21,6 +21,10 @@
 
 extern sensor_t sensor;
 
+#if CONFIG_MAIXPY_OMV_DOUBLE_BUFF
+extern volatile uint8_t g_sensor_buff_index_out;
+#endif
+
 static mp_obj_t py_binocular_sensor_reset(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args)
 {
     mp_map_elem_t *kw_arg = mp_map_lookup(kw_args, MP_OBJ_NEW_QSTR(MP_QSTR_freq), MP_MAP_LOOKUP);
@@ -198,8 +202,14 @@ static mp_obj_t py_sensor_get_fb()
         .w = MAIN_FB()->w,
         .h = MAIN_FB()->h,
         .bpp = MAIN_FB()->bpp,
+#if CONFIG_MAIXPY_OMV_DOUBLE_BUFF
+        .pixels = MAIN_FB()->pixels[g_sensor_buff_index_out],
+        .pix_ai = MAIN_FB()->pix_ai[g_sensor_buff_index_out]
+#else
         .pixels = MAIN_FB()->pixels,
-        .pix_ai = MAIN_FB()->pix_ai};
+        .pix_ai = MAIN_FB()->pix_ai
+#endif
+    };
 
     return py_image_from_struct(&image);
 }

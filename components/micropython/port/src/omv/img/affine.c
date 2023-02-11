@@ -41,8 +41,8 @@ void imlib_affine_getTansform(uint16_t *src, uint16_t *dst, uint16_t cnt, float*
     dst_mean[0] /= cnt;
     dst_mean[1] /= cnt;
 
-    float src_demean[MAX_POINT_CNT][2] = {0.0f};
-    float dst_demean[MAX_POINT_CNT][2] = {0.0f};
+    float src_demean[MAX_POINT_CNT][2];// = {0.0f};
+    float dst_demean[MAX_POINT_CNT][2];// = {0.0f};
 
     for(i = 0; i < cnt; i++)
     {
@@ -52,7 +52,8 @@ void imlib_affine_getTansform(uint16_t *src, uint16_t *dst, uint16_t cnt, float*
         dst_demean[i][1] = src[2 * i + 1] - dst_mean[1];
     }
 
-    float A[2][2] = {0.0f};
+    float A[2][2] = {{0.0f,0.0f}, {0.0f,0.0f}};
+
     for(i = 0; i < 2; i++)
     {
         for(k = 0; k < 2; k++)

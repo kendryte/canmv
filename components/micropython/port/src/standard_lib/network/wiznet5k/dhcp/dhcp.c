@@ -579,7 +579,7 @@ int8_t parseDHCPMSG(void) {
   uint8_t *e;
   uint8_t type = 0;
   uint8_t opt_len;
-  int errno = 0;
+  // int errno = 0;
 
   if ((len = getSn_RX_RSR(DHCP_SOCKET)) > 0) {
     len = WIZCHIP_EXPORT(recvfrom)(DHCP_SOCKET, (uint8_t *)pDHCPMSG, len,
