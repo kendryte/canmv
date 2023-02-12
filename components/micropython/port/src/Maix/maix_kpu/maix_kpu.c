@@ -58,6 +58,7 @@ typedef struct _mp_obj_k210_kpu {
         char path[128];
         size_t size;
         uint8_t *buffer;
+        uint8_t sha256[32];
     } model;
 
     union
@@ -74,8 +75,6 @@ typedef struct _mp_obj_k210_kpu {
         k210_kpu_shape_t input;
         k210_kpu_shape_t output;
     } shape;
-
-    uint8_t sha256[32];
 } __attribute__((aligned(8))) mp_obj_k210_kpu_t;
 
 typedef struct _mp_obj_k210_kpu_lpr {
@@ -87,6 +86,7 @@ typedef struct _mp_obj_k210_kpu_lpr {
     {
         uint8_t *buffer;
         size_t size;
+        uint8_t sha256[32];
     } weight;
 } __attribute__((aligned(8))) mp_obj_k210_kpu_lpr_t;
 
@@ -157,15 +157,12 @@ STATIC void k210_kpu_print(const mp_print_t *print, mp_obj_t self_in, mp_print_k
     mp_printf(print, "model_size            : %ld\n", self->model.size);
     mp_printf(print, "model_buffer          : 0x%08X\n", self->model.buffer);
 
-    mp_printf(print, "model_sha256          : %02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X\n", \
-                                            self->sha256[0], self->sha256[1], self->sha256[2], self->sha256[3], \
-                                            self->sha256[4], self->sha256[5], self->sha256[6], self->sha256[7], \
-                                            self->sha256[8], self->sha256[9], self->sha256[10], self->sha256[11], \
-                                            self->sha256[12], self->sha256[13], self->sha256[14], self->sha256[15], \
-                                            self->sha256[16], self->sha256[17], self->sha256[18], self->sha256[19], \
-                                            self->sha256[20], self->sha256[21], self->sha256[22], self->sha256[23], \
-                                            self->sha256[24], self->sha256[25], self->sha256[26], self->sha256[27], \
-                                            self->sha256[28], self->sha256[29], self->sha256[30], self->sha256[31]);
+    mp_printf(print, "model_sha256          : ");
+    for(int i = 0; i < 32; i++)
+    {
+        mp_printf(print, "%02X", self->model.sha256[i]);
+    }
+    mp_printf(print, "\n");
 
     if (0x01 != self->shape.input.vaild)
     {
@@ -286,7 +283,7 @@ STATIC mp_obj_t k210_kpu_load_kmodel(mp_obj_t self_in, mp_obj_t input)
         mp_raise_msg(&mp_type_MemoryError, "Too many mem to list");
     }
 
-    sha256_hard_calculate(self->model.buffer, self->model.size, self->sha256);
+    sha256_hard_calculate(self->model.buffer, self->model.size, self->model.sha256);
 
     self->shape.input.vaild = 1 + maix_kpu_helper_get_input_shape(&self->model.ctx, \
                                     &self->shape.input.chn, \
@@ -674,6 +671,12 @@ STATIC void k210_kpu_lpr_print(const mp_print_t *print, mp_obj_t self_in, mp_pri
     mp_printf(print, "parent           : 0x%lx\n", self->parent);
     mp_printf(print, "weight_size      : %d\n", self->weight.size);
     mp_printf(print, "weight_buffer    : 0x%lx\n", self->weight.buffer);
+    mp_printf(print, "weight_sha256    : ");
+    for(int i = 0; i < 32; i++)
+    {
+        mp_printf(print, "%02X", self->weight.sha256[i]);
+    }
+    mp_printf(print, "\n");
 }
 
 // lpr.init("/sd/lpr_wight.bin")
@@ -763,6 +766,8 @@ STATIC mp_obj_t k210_kpu_lpr_load(size_t n_args, const mp_obj_t *pos_args, mp_ma
         self->weight.buffer = NULL;
         mp_raise_msg(&mp_type_MemoryError, "Too many mem to list");
     }
+
+    sha256_hard_calculate(self->weight.buffer, self->weight.size, self->weight.sha256);
 
     return mp_const_none;
 }
