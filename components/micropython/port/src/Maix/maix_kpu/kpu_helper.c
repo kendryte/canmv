@@ -136,13 +136,7 @@ int maix_kpu_helper_get_output_shape(kpu_model_context_t *ctx, int *chn, int *h,
             const kpu_model_conv_layer_argument_t *conv_layer = (const kpu_model_conv_layer_argument_t *)body;
             kpu_layer_argument_t layer_arg = *(volatile kpu_layer_argument_t *)(ctx->model_buffer + conv_layer->layer_offset);
 
-            int c = 1 + layer_arg.image_channel_num.data.o_ch_num;
-            if(0x00 != (c % 5))
-            {
-                return -1;
-            }
-
-            if(chn) *chn = c;
+            if(chn) *chn = 1 + layer_arg.image_channel_num.data.o_ch_num;
             if(h) *h = 1 + layer_arg.image_size.data.o_col_high;
             if(w) *w = 1 + layer_arg.image_size.data.o_row_wid;
 

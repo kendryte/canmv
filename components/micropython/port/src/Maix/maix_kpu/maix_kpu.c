@@ -395,46 +395,46 @@ STATIC mp_obj_t k210_kpu_get_outputs(mp_obj_t self_in)
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(k210_kpu_get_outputs_obj, k210_kpu_get_outputs);
 
-STATIC mp_obj_t k210_kpu_get_output_shape(mp_obj_t self_in)
-{
-    PY_ASSERT_TYPE(self_in, &k210_kpu_type);
-    mp_obj_k210_kpu_t *self = MP_OBJ_TO_PTR(self_in);
+// STATIC mp_obj_t k210_kpu_get_output_shape(mp_obj_t self_in)
+// {
+//     PY_ASSERT_TYPE(self_in, &k210_kpu_type);
+//     mp_obj_k210_kpu_t *self = MP_OBJ_TO_PTR(self_in);
 
-    mp_obj_t lo = mp_obj_new_list(3, NULL);
-    mp_obj_list_store(lo, mp_obj_new_int(0), mp_obj_new_int(self->shape.output.chn));
-    mp_obj_list_store(lo, mp_obj_new_int(1), mp_obj_new_int(self->shape.output.h));
-    mp_obj_list_store(lo, mp_obj_new_int(2), mp_obj_new_int(self->shape.output.w));
+//     mp_obj_t lo = mp_obj_new_list(3, NULL);
+//     mp_obj_list_store(lo, mp_obj_new_int(0), mp_obj_new_int(self->shape.output.chn));
+//     mp_obj_list_store(lo, mp_obj_new_int(1), mp_obj_new_int(self->shape.output.h));
+//     mp_obj_list_store(lo, mp_obj_new_int(2), mp_obj_new_int(self->shape.output.w));
 
-    return MP_OBJ_FROM_PTR(lo);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(k210_kpu_get_output_shape_obj, k210_kpu_get_output_shape);
+//     return MP_OBJ_FROM_PTR(lo);
+// }
+// STATIC MP_DEFINE_CONST_FUN_OBJ_1(k210_kpu_get_output_shape_obj, k210_kpu_get_output_shape);
 
-// set_outputs([c,h,w])
-// set_outputs((c,h,w))
-STATIC mp_obj_t k210_kpu_set_output_shape(mp_obj_t self_in, mp_obj_t output)
-{
-    PY_ASSERT_TYPE(self_in, &k210_kpu_type);
-    mp_obj_k210_kpu_t *self = MP_OBJ_TO_PTR(self_in);
+// // set_outputs([c,h,w])
+// // set_outputs((c,h,w))
+// STATIC mp_obj_t k210_kpu_set_output_shape(mp_obj_t self_in, mp_obj_t output)
+// {
+//     PY_ASSERT_TYPE(self_in, &k210_kpu_type);
+//     mp_obj_k210_kpu_t *self = MP_OBJ_TO_PTR(self_in);
 
-    size_t nitems = 0;
-    mp_obj_t *items = MP_OBJ_NULL;
+//     size_t nitems = 0;
+//     mp_obj_t *items = MP_OBJ_NULL;
 
-    mp_obj_get_array(output, &nitems, (mp_obj_t **)&items);
+//     mp_obj_get_array(output, &nitems, (mp_obj_t **)&items);
 
-    if (0x03 != nitems)
-    {
-        mp_raise_ValueError("outpu shape length not 3");
-    }
+//     if (0x03 != nitems)
+//     {
+//         mp_raise_ValueError("outpu shape length not 3");
+//     }
 
-    self->shape.output.chn = mp_obj_get_int(*items++);
-    self->shape.output.h = mp_obj_get_int(*items++);
-    self->shape.output.w = mp_obj_get_int(*items++);
+//     self->shape.output.chn = mp_obj_get_int(*items++);
+//     self->shape.output.h = mp_obj_get_int(*items++);
+//     self->shape.output.w = mp_obj_get_int(*items++);
 
-    self->shape.output.vaild = 1;
+//     self->shape.output.vaild = 1;
 
-    return mp_const_true;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(k210_kpu_set_output_shape_obj, k210_kpu_set_output_shape);
+//     return mp_const_true;
+// }
+// STATIC MP_DEFINE_CONST_FUN_OBJ_2(k210_kpu_set_output_shape_obj, k210_kpu_set_output_shape);
 
 STATIC mp_obj_t k210_kpu_deinit(mp_obj_t self_in)
 {
@@ -567,8 +567,8 @@ STATIC const mp_rom_map_elem_t k210_kpu_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_load),                    MP_ROM_PTR(&k210_kpu_load_kmodel_obj) },
     { MP_ROM_QSTR(MP_QSTR_run),                     MP_ROM_PTR(&k210_kpu_run_kmodel_obj) },
     { MP_ROM_QSTR(MP_QSTR_get_outputs),             MP_ROM_PTR(&k210_kpu_get_outputs_obj) },
-    { MP_ROM_QSTR(MP_QSTR_get_output_shape),        MP_ROM_PTR(&k210_kpu_get_output_shape_obj) },
-    { MP_ROM_QSTR(MP_QSTR_set_output_shape),        MP_ROM_PTR(&k210_kpu_set_output_shape_obj) },
+    // { MP_ROM_QSTR(MP_QSTR_get_output_shape),        MP_ROM_PTR(&k210_kpu_get_output_shape_obj) },
+    // { MP_ROM_QSTR(MP_QSTR_set_output_shape),        MP_ROM_PTR(&k210_kpu_set_output_shape_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit),                  MP_ROM_PTR(&k210_kpu_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_attr),                    MP_ROM_PTR(&k210_kpu_attr_obj) },
 
