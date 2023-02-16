@@ -29,7 +29,7 @@ jobs:
 
       - name: Build Projects
         run: |
-          projects=("canmv_k1" "canmv_dock" "canmv_k210")
+          projects=("canmv_k1" "canmv_dock" "canmv_k210" "canmv_makerobo")
           for proj in ${projects[@]};do
             cd projects/${proj}
             echo "-------------------"
