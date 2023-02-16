@@ -39,7 +39,7 @@ uint32_t maix_kpu_alg_l2normalize(float *x, float *dx, int len)
     return 0;
 }
 
-void maix_kpu_helper_softmax(float *x, float *dx, uint32_t len)
+void maix_kpu_alg_softmax(float *x, float *dx, uint32_t len)
 {
     float max_value = x[0];
     for(uint32_t i = 0; i < len; i++)
