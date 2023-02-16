@@ -43,7 +43,7 @@
 
 STATIC const mp_obj_type_t k210_kpu_type;
 STATIC const mp_obj_type_t k210_kpu_act_type;
-STATIC const mp_obj_type_t k210_kpu_face_type;
+STATIC const mp_obj_type_t k210_kpu_feat_type;
 STATIC const mp_obj_type_t k210_kpu_lpr_type;
 STATIC const mp_obj_type_t k210_kpu_yolo2_type;
 
@@ -578,7 +578,7 @@ STATIC const mp_rom_map_elem_t k210_kpu_locals_dict_table[] = {
 
     // const types
     { MP_ROM_QSTR(MP_QSTR_Act),                     MP_ROM_PTR(&k210_kpu_act_type) },
-    { MP_ROM_QSTR(MP_QSTR_Face),                    MP_ROM_PTR(&k210_kpu_face_type) },
+    { MP_ROM_QSTR(MP_QSTR_Feat),                    MP_ROM_PTR(&k210_kpu_feat_type) },
 };
 STATIC MP_DEFINE_CONST_DICT(k210_kpu_dict, k210_kpu_locals_dict_table);
 
@@ -650,35 +650,40 @@ STATIC const mp_obj_type_t k210_kpu_act_type = {
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //Face Post-Processing Function ///////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-STATIC mp_obj_t k210_kpu_face_calc_feature(mp_obj_t arg_in)
+STATIC mp_obj_t k210_kpu_face_calc_feature(mp_obj_t kpu_obj)
 {
-    size_t nitems = 0;
-    mp_obj_t lo, *items = MP_OBJ_NULL;
-    float *feat_in = NULL, *feat_out = NULL;
+    PY_ASSERT_TYPE(kpu_obj, &k210_kpu_type);
+    mp_obj_k210_kpu_t *kpu = MP_OBJ_TO_PTR(kpu_obj);
 
-    mp_obj_get_array(arg_in, &nitems, (mp_obj_t **)&items);
+    if ((0x00 == kpu->state.load_kmodel) || (0x00 == kpu->state.run_kmodel))
+    {
+        mp_raise_msg(&mp_type_OSError, "Please load/run kmodel before");
+    }
 
-    if (MAX_FEATURE_LEN < nitems)
+    float *output = NULL;
+    size_t output_size = 0;
+    if (0x00 != kpu_get_output(&kpu->model.ctx, 0, (uint8_t **)&output, &output_size))
+    {
+        mp_raise_msg(&mp_type_OSError, "Failed to get kpu outputs");
+    }
+    output_size /= sizeof(float);
+
+    if(MAX_FEATURE_LEN < output_size)
     {
         mp_raise_ValueError("feature length bigger than 256");
     }
 
-    feat_in = m_new(float, nitems);
-    feat_out = m_new(float, nitems);
-    for (int i = 0; i < nitems; i++)
-    {
-        feat_in[i] = mp_obj_get_float(*items++);
-    }
-    maix_kpu_alg_l2normalize(feat_in, feat_out, nitems);
+    float *feat_out = (float *)malloc(sizeof(float) * output_size);
 
-    lo = mp_obj_new_list(nitems, NULL);
-    for (int i = 0; i < nitems; i++)
+    maix_kpu_alg_l2normalize(output, feat_out, output_size);
+
+    mp_obj_t lo = mp_obj_new_list(output_size, NULL);
+    for (int i = 0; i < output_size; i++)
     {
         mp_obj_list_store(lo, mp_obj_new_int(i), mp_obj_new_float(feat_out[i]));
     }
 
-    m_del(float, feat_in, nitems);
-    m_del(float, feat_out, nitems);
+    free(feat_out);
 
     return MP_OBJ_FROM_PTR(lo);
 }
@@ -724,9 +729,9 @@ STATIC const mp_rom_map_elem_t k210_kpu_face_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(k210_kpu_face_locals_dict, k210_kpu_face_locals_dict_table);
 
-STATIC const mp_obj_type_t k210_kpu_face_type = {
+STATIC const mp_obj_type_t k210_kpu_feat_type = {
     { &mp_type_type },
-    .name = MP_QSTR_face,
+    .name = MP_QSTR_Feat,
     .locals_dict = (void*)&k210_kpu_face_locals_dict,
 };
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
