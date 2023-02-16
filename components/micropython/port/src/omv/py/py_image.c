@@ -1274,7 +1274,11 @@ static mp_obj_t py_image_copy_int(uint n_args, const mp_obj_t *args, mp_map_t *k
         MAIN_FB()->w = image.w;
         MAIN_FB()->h = image.h;
         MAIN_FB()->bpp = image.bpp;
-        image.data = MAIN_FB()->pixels;
+#if CONFIG_MAIXPY_OMV_DOUBLE_BUFF
+            image.data = MAIN_FB()->pixels[g_sensor_buff_index_out];
+#else
+            image.data = MAIN_FB()->pixels;
+#endif
     } else if (arg_other) {
         PY_ASSERT_TRUE_MSG((image_size(&image) <= image_size(arg_other)), "The new image won't fit in the target frame buffer!");
         image.data = arg_other->data;
@@ -1346,8 +1350,11 @@ static mp_obj_t py_image_copy_int(uint n_args, const mp_obj_t *args, mp_map_t *k
     if (in_place) {
         fb_alloc_free_till_mark();
     }
-
+#if CONFIG_MAIXPY_OMV_DOUBLE_BUFF
+    if (MAIN_FB()->pixels[g_sensor_buff_index_out] == image.data) {
+#else
     if (MAIN_FB()->pixels == image.data) {
+#endif
         MAIN_FB()->w = image.w;
         MAIN_FB()->h = image.h;
         MAIN_FB()->bpp = image.bpp;
@@ -1356,7 +1363,11 @@ static mp_obj_t py_image_copy_int(uint n_args, const mp_obj_t *args, mp_map_t *k
     if (copy_to_fb) {
         image_t *arg_img = py_helper_arg_to_image_mutable(args[0]);
 
+#if CONFIG_MAIXPY_OMV_DOUBLE_BUFF
+        if (MAIN_FB()->pixels[g_sensor_buff_index_out] == arg_img->data) {
+#else
         if (MAIN_FB()->pixels == arg_img->data) {
+#endif
             arg_img->w = image.w;
             arg_img->h = image.h;
             arg_img->bpp = image.bpp;
@@ -1372,13 +1383,13 @@ static mp_obj_t py_image_copy_int(uint n_args, const mp_obj_t *args, mp_map_t *k
     return py_image_from_struct(&image);
 }
 
-static mp_obj_t py_image_copy(uint n_args, const mp_obj_t *args, mp_map_t *kw_args)
+static mp_obj_t py_image_copy(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args)
 {
     return py_image_copy_int(n_args, args, kw_args, false);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(py_image_copy_obj, 1, py_image_copy);
 
-static mp_obj_t py_image_crop(uint n_args, const mp_obj_t *args, mp_map_t *kw_args)
+static mp_obj_t py_image_crop(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args)
 {
     return py_image_copy_int(n_args, args, kw_args, true);
 }
@@ -1515,7 +1526,7 @@ STATIC mp_obj_t py_image_draw_font(size_t n_args, const mp_obj_t *args, mp_map_t
     int arg_y_off = mp_obj_get_int(arg_vec[1]);
     int arg_w_font = mp_obj_get_int(arg_vec[2]);
     int arg_h_font = mp_obj_get_int(arg_vec[3]);
-    const uint8_t *arg_font = mp_obj_str_get_str(arg_vec[4]);
+    const char *arg_font = mp_obj_str_get_str(arg_vec[4]);
 
     mp_int_t font_len = mp_obj_get_int(mp_obj_len(arg_vec[4]));
 
@@ -1529,7 +1540,7 @@ STATIC mp_obj_t py_image_draw_font(size_t n_args, const mp_obj_t *args, mp_map_t
         py_helper_keyword_float(n_args, args, offset + 1, kw_args, MP_OBJ_NEW_QSTR(MP_QSTR_scale), 1.0);
     PY_ASSERT_TRUE_MSG(0 < arg_scale, "Error: 0 < scale!");
     imlib_draw_font(arg_img, arg_x_off, arg_y_off,
-                      arg_c, arg_scale, arg_h_font, arg_w_font, arg_font);
+                      arg_c, arg_scale, arg_h_font, arg_w_font, (const uint8_t *)arg_font);
     return args[0];
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(py_image_draw_font_obj, 2, py_image_draw_font);
@@ -5848,7 +5859,11 @@ static mp_obj_t py_image_ai_to_pix(mp_obj_t img_obj)
 		uint8_t* r = out;
 		uint8_t* g = out+w*h;
 		uint8_t* b = out+w*h*2;
-		uint16_t* in = img->pixels;
+#if CONFIG_MAIXPY_OMV_DOUBLE_BUFF
+		uint16_t* in = (uint16_t*)img->pixels[g_sensor_buff_index_out];
+#else
+		uint16_t* in = (uint16_t*)img->pixels;
+#endif
 		uint32_t index;
 		for(index=0; index < w*h; index++)
 		{
@@ -6052,7 +6067,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(py_image_cut_obj, 4, 5, py_image_cut)
 
 static void _get_hv_pixel(image_t* img, uint16_t* h0, uint16_t* h1, \
 						uint16_t* h2, uint16_t* v0, uint16_t* v1, uint16_t* v2){
-	uint8_t* data = img->pixels;
+	// uint8_t* data = img->pixels;
 	uint16_t w = img->w; 
 	uint16_t h = img->h;
 	
@@ -7101,7 +7116,7 @@ mp_obj_t py_image_GetAffineTransform(mp_obj_t src_list, mp_obj_t dst_list)
             dst_pos[i][1] = mp_obj_get_int(tuple[1]);
 			//printf("point %d: (%d,%d)->(%d,%d)\r\n", i, src_pos[i][0],src_pos[i][1],dst_pos[i][0],dst_pos[i][1]);
 		}
-		imlib_affine_getTansform(src_pos, dst_pos, src_l_len, T);
+		imlib_affine_getTansform((uint16_t *)src_pos, (uint16_t *)dst_pos, src_l_len, (float*)T);
 		/*printf("%.3f,%.3f,%.3f\r\n",T[0][0],T[0][1],T[0][2]);
 		printf("%.3f,%.3f,%.3f\r\n",T[1][0],T[1][1],T[1][2]);
 		printf("%.3f,%.3f,%.3f\r\n",T[2][0],T[2][1],T[2][2]);*/

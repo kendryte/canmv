@@ -2095,7 +2095,7 @@ int8_t yuv_table(uint32_t idx)
 //idx must %3 ==0
 void pix_fill_yuv(uint32_t idx, int8_t* y, int8_t* u, int8_t* v)
 {
-	int8_t* ptr=&yuv_table_small[idx%TABLE_SIZE];
+	const int8_t* ptr=&yuv_table_small[idx%TABLE_SIZE];
 	*y = *(ptr+0)+rest_yuv_table[(0<<3)+(idx/TABLE_SIZE)];
 	*u = *(ptr+1)+rest_yuv_table[(1<<3)+(idx/TABLE_SIZE)];
 	*v = *(ptr+2)+rest_yuv_table[(2<<3)+(idx/TABLE_SIZE)];
@@ -2166,7 +2166,7 @@ void pix_fill_8y(uint16_t* pixels, uint32_t ofs, int8_t* y)
 
 void pix_fill_8uv2(uint16_t* pixels, uint32_t ofs, int8_t* u, int8_t* v)
 {
-	int8_t* ptr;
+	const int8_t* ptr;
 	uint32_t idx;
 	
 	idx=pixels[ofs+0]*3;
@@ -2206,7 +2206,7 @@ void pix_fill_8uv2(uint16_t* pixels, uint32_t ofs, int8_t* u, int8_t* v)
 
 void pix_fill_8yuv(uint16_t* pixels, uint32_t ofs, int8_t* y, int8_t* u, int8_t* v)
 {
-	int8_t* ptr;
+	const int8_t* ptr;
 	uint32_t idx;
 	uint64_t data[2];
 	data[0] = *((uint64_t*)(pixels+ofs));

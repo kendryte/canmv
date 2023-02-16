@@ -364,6 +364,7 @@ void load_config_from_spiffs(config_data_t *config)
     }
   }
   SPIFFS_close(&spiffs_user_mount_handle.fs, fd);
+  (void)flash_error;
 }
 
 #if MICROPY_ENABLE_COMPILER
@@ -517,10 +518,10 @@ void mount_sdcard(void){
 #if MICROPY_PY_THREAD
 static void deinit_kpu_timer_cb(TimerHandle_t xExpiredTimer)
 {
-    extern int kpu_model_buffer_free_all_ptr(void);
+    extern int maix_kpu_helper_free_mem_list(void);
 
-    int n = kpu_model_buffer_free_all_ptr();
-    mp_printf(&mp_plat_print, "free %d kpu model buffer\n>>>\r\n", n);
+    int n = maix_kpu_helper_free_mem_list();
+    mp_printf(&mp_plat_print, "free %d kpu buffers\n>>>\r\n", n);
 }
 
 void free_km_buf_timer_init(void)

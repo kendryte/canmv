@@ -22,7 +22,7 @@
 static int reset(sensor_t *sensor)
 {
     int i = 0;
-    const uint16_t(*regs)[2];
+    // const uint16_t(*regs)[2];
     // Reset all registers
     cambus_writeb(sensor->slv_addr, 0x3103, 0x11);
     cambus_writeb(sensor->slv_addr, 0x3008, 0x82);

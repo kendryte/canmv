@@ -284,6 +284,7 @@ extern "C" {
 #define kendryte_replbits_dword(dest, msk, src) \
     (kendryte_write_dword(dest, (kendryte_read_dword(dest) & ~(msk)) | ((src) & (msk))))
 
+#ifndef configASSERT
 #define configASSERT(x)                                 \
     if ((x) == 0)                                       \
     {                                                   \
@@ -291,6 +292,7 @@ extern "C" {
         for (;;)                                        \
             ;                                           \
     }
+#endif
 
 /**
  * @brief       Set value by mask

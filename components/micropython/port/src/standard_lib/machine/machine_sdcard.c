@@ -28,8 +28,13 @@ void sdcard_power_off(void) {
     cardinfo.active = 0;
 }
 
-extern void mount_sdcard(void);
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_sdcard_remount_obj, mount_sdcard);
+STATIC mp_obj_t py_mount_sdcard(void)
+{
+    extern void mount_sdcard(void);
+    mount_sdcard();
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_sdcard_remount_obj, py_mount_sdcard);
 
 STATIC mp_obj_t machine_sdcard_write_sector(mp_obj_t self, mp_obj_t block_num, mp_obj_t buf) {
     mp_buffer_info_t bufinfo;

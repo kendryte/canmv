@@ -6,7 +6,7 @@
 // 音频算法部分，单例模式，主要解决音频的背景录入与识别处理。
 v_ftr_tag ftr_curr; // 当前识别结果
 
-static uint32_t atap_tag_mid_val = 0;       //语音段中值 相当于有符号的0值 用于短时过零率计算
+// static uint32_t atap_tag_mid_val = 0;       //语音段中值 相当于有符号的0值 用于短时过零率计算
 static uint16_t atap_tag_n_thl = 0; //噪声阈值，用于短时过零率计算
 static uint16_t atap_tag_z_thl = 0;     //短时过零率阈值，超过此阈值，视为进入过渡段。
 static uint32_t atap_tag_s_thl = 10000;     //短时累加和阈值，超过此阈值，视为进入过渡段。

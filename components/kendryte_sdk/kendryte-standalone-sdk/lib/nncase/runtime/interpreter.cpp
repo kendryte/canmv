@@ -50,10 +50,70 @@ bool interpreter_base::try_load_model(const uint8_t *buffer)
     return initialize();
 }
 
+int interpreter_base::get_output_shape(int *chn, int *h, int *w)
+{
+    auto _node_size = nodes_size();
+
+    cnt_node_body_ = node_body_start_;
+
+    auto output_layer = node_headers_[_node_size - 1];
+    auto conv2_layer = node_headers_[_node_size - 2];
+
+    if((rop_dequantize != output_layer.opcode) || (rop_k210_kpu_conv2d != conv2_layer.opcode))
+    {
+        return -1;
+    }
+
+    for(auto i = 0; i < (_node_size - 2); i++)
+    {
+        auto header = node_headers_[i];
+        cnt_node_body_ += header.body_size;
+    }
+
+    xtl::span<const uint8_t> body(cnt_node_body_, conv2_layer.body_size);
+    runtime_shape_t shape = get_conv2d_layer_output_shape(conv2_layer.opcode, body);
+
+    if(0x01 == shape[0])
+    {
+        *chn = shape[1];  *h = shape[2];  *w = shape[3];
+        return 0;
+    }
+
+    return -1;
+}
+
 uint32_t interpreter_base::model_size(const uint8_t *buffer)
 {
     uint32_t size = (uint32_t)(node_body_start_ - buffer);
     for (int i = 0; i < nodes_size(); i++)
+    {
+        struct node_header cnt_layer_header = node_headers_[i];
+        ;
+        size += cnt_layer_header.body_size;
+    }
+    return size;
+}
+
+int interpreter_base::probe_model_size(const uint8_t *buffer)
+{
+    auto offset = buffer;
+
+    const model_header *_mdl_buffer = reinterpret_cast<const model_header *>(buffer);
+
+    // Validate model
+    if (_mdl_buffer->identifier != MODEL_IDENTIFIER || _mdl_buffer->version != MODEL_VERSION || (_mdl_buffer->target != MODEL_TARGET_CPU && _mdl_buffer->target != MODEL_TARGET_K210))
+        return -1;
+
+    offset += sizeof(model_header);
+    offset += sizeof(memory_range) * _mdl_buffer->inputs;
+    offset += sizeof(runtime_shape_t) * _mdl_buffer->inputs;
+    offset += sizeof(memory_range) * _mdl_buffer->outputs;
+    offset += _mdl_buffer->constants;
+    node_headers_ = { reinterpret_cast<const node_header *>(offset), _mdl_buffer->nodes };
+    offset += sizeof(node_header) * _mdl_buffer->nodes;
+
+    uint32_t size = (uint32_t)(offset - buffer);
+    for (int i = 0; i < _mdl_buffer->nodes; i++)
     {
         struct node_header cnt_layer_header = node_headers_[i];
         ;

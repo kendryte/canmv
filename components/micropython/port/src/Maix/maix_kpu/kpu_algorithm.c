@@ -19,10 +19,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+
 #include "kpu_algorithm.h"
 
 // L2 归一化
-uint32_t l2normalize(float *x, float *dx, int len)
+uint32_t maix_kpu_alg_l2normalize(float *x, float *dx, int len)
 {
     int f;
     float sum = 0;
@@ -38,7 +39,7 @@ uint32_t l2normalize(float *x, float *dx, int len)
     return 0;
 }
 
-void maix_kpu_helper_softmax(float *x, float *dx, uint32_t len)
+void maix_kpu_alg_softmax(float *x, float *dx, uint32_t len)
 {
     float max_value = x[0];
     for(uint32_t i = 0; i < len; i++)
@@ -102,7 +103,6 @@ uint32_t calulate_score(float *feature, float *saved_feature, uint32_t saved_len
 }
 */
 
-#ifdef LP_RECOG_EN
 // licenseplate_recognization
 static void run_fully(const float *features, const uint32_t len, const float *weight, const float *bias, const uint32_t n_logit, float *result)
 {
@@ -136,20 +136,20 @@ void lp_recog_process(const float *features, uint32_t size, const float *weight_
 {
     static float fully_result[34]={0};
     uint32_t chunk = size / 7;
-    float *weight1 = weight_data;
-    float *bias1 = weight1 + WEIGHT1_LEN;
-    float *weight2 = bias1 + BIAS1_LEN;
-    float *bias2 = weight2 + WEIGHT2_LEN;
-    float *weight3 = bias2+ BIAS2_LEN;
-    float *bias3 = weight3 + WEIGHT3_LEN;
-    float *weight4 = bias3+ BIAS3_LEN;
-    float *bias4 = weight4 + WEIGHT4_LEN;
-    float *weight5 = bias4+ BIAS4_LEN;
-    float *bias5 = weight5 + WEIGHT5_LEN;
-    float *weight6 = bias5+ BIAS5_LEN;
-    float *bias6 = weight6 + WEIGHT6_LEN;
-    float *weight7 = bias6+ BIAS6_LEN;
-    float *bias7 = weight7 + WEIGHT7_LEN;
+    const float *weight1 = weight_data;
+    const float *bias1 = weight1 + WEIGHT1_LEN;
+    const float *weight2 = bias1 + BIAS1_LEN;
+    const float *bias2 = weight2 + WEIGHT2_LEN;
+    const float *weight3 = bias2+ BIAS2_LEN;
+    const float *bias3 = weight3 + WEIGHT3_LEN;
+    const float *weight4 = bias3+ BIAS3_LEN;
+    const float *bias4 = weight4 + WEIGHT4_LEN;
+    const float *weight5 = bias4+ BIAS4_LEN;
+    const float *bias5 = weight5 + WEIGHT5_LEN;
+    const float *weight6 = bias5+ BIAS5_LEN;
+    const float *bias6 = weight6 + WEIGHT6_LEN;
+    const float *weight7 = bias6+ BIAS6_LEN;
+    const float *bias7 = weight7 + WEIGHT7_LEN;
 
     run_fully(features, chunk, weight1, bias1, 31, fully_result);
     //mp_obj_list_t *ret_list = m_new(mp_obj_list_t, 1);
@@ -212,5 +212,4 @@ void lp_recog_process(const float *features, uint32_t size, const float *weight_
 	
 	//sprintf(result, "%s%c%c%c%c%c%c", d1, d2, d3, d4, d5, d6, d7);
 }
-#endif
 

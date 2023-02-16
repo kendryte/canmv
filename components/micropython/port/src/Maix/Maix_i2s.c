@@ -256,7 +256,7 @@ STATIC mp_obj_t Maix_i2s_record(size_t n_args, const mp_obj_t *pos_args, mp_map_
             mp_raise_ValueError("[CANMV]I2S:Too many points");
         }
         audio_obj->audio.points = args[ARG_points].u_int;
-        char* audio_buf = m_new(uint32_t, audio_obj->audio.points);
+        uint32_t* audio_buf = m_new(uint32_t, audio_obj->audio.points);
         if (audio_buf == NULL) {
             mp_raise_ValueError("[CANMV]I2S:create audio new buf error");
         }
@@ -272,7 +272,7 @@ STATIC mp_obj_t Maix_i2s_record(size_t n_args, const mp_obj_t *pos_args, mp_map_
         if(smp_points > self->points_num)
             mp_raise_ValueError("[CANMV]I2S:sampling size is out of bounds");
         audio_obj->audio.points = smp_points;
-        char* audio_buf = m_new(uint32_t, audio_obj->audio.points);
+        uint32_t* audio_buf = m_new(uint32_t, audio_obj->audio.points);
         if (audio_buf == NULL)
         {
             mp_raise_ValueError("[CANMV]I2S:create audio new buf error");

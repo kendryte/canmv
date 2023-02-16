@@ -60,7 +60,7 @@ STATIC void patch_wdt_stop(wdt_device_number_t id) {
 }
 
 // #include "printf.h"
-STATIC void machine_wdt_isr(void *self_in) {
+STATIC int machine_wdt_isr(void *self_in) {
     machine_wdt_obj_t *self = self_in;
     if (self->callback != mp_const_none) {
         // printk("wdt id is %d\n", self->id);
@@ -71,6 +71,7 @@ STATIC void machine_wdt_isr(void *self_in) {
         }
         mp_hal_wake_main_task_from_isr();
     }
+    return 0;
 }
 
 STATIC mp_obj_t machine_wdt_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {

@@ -35,18 +35,32 @@ typedef struct
 } sortable_box_t;
 
 
-int yolo_region_layer_init(yolo2_region_layer_t *rl, int width, int height, int channels, int origin_width, int origin_height)
+int yolo_region_layer_init(yolo2_region_layer_t *rl, k210_kpu_shape_t *input, k210_kpu_shape_t *output)
 {
     int flag = 0;
 
-    rl->coords = 4;
-    //rl->image_width = 320;
-    //rl->image_height = 240;
+    if((0x00 == input->vaild) || (0x00 == output->vaild))
+    {
+        return -5;
+    }
 
-    rl->net_width = origin_width;
-    rl->net_height = origin_height;
-    rl->layer_width = width;
-    rl->layer_height = height;
+    rl->coords = 4;
+    rl->image_width = input->w;
+    rl->image_height = input->h;
+
+    rl->net_width = input->w;
+    rl->net_height = input->h;
+
+    rl->layer_width = output->w;
+    rl->layer_height = output->h;
+
+    int classes = (output->chn / rl->anchor_number) - 5;
+    if(0 > classes) {
+        return -6;
+    }
+
+    rl->classes = classes;
+
     rl->boxes_number = (rl->layer_width * rl->layer_height * rl->anchor_number); 
     rl->output_number = (rl->boxes_number * (rl->classes + rl->coords + 1));
 
@@ -262,10 +276,10 @@ static void get_region_boxes(yolo2_region_layer_t *rl, float *predictions, float
     correct_region_boxes(rl, boxes);
 }
 
-static int nms_comparator(void *pa, void *pb)
+static int nms_comparator(const void *pa, const void *pb)
 {
-    sortable_box_t a = *(sortable_box_t *)pa;
-    sortable_box_t b = *(sortable_box_t *)pb;
+    const sortable_box_t a = *(sortable_box_t *)pa;
+    const sortable_box_t b = *(sortable_box_t *)pb;
     float diff = a.probs[a.index][b.class] - b.probs[b.index][b.class];
 
     if (diff < 0)
@@ -275,10 +289,10 @@ static int nms_comparator(void *pa, void *pb)
     return 0;
 }
 
-static int nms_comparator_0(void *pa, void *pb)
+static int nms_comparator_0(const void *pa, const void *pb)
 {
-    sortable_box_t a = *(sortable_box_t *)pa;
-    sortable_box_t b = *(sortable_box_t *)pb;
+    const sortable_box_t a = *(sortable_box_t *)pa;
+    const sortable_box_t b = *(sortable_box_t *)pb;
     //float diff = a.probs[a.index][b.class] - b.probs[b.index][b.class];
     float diff = a.probs[a.index][0] - b.probs[b.index][0];
 
@@ -385,7 +399,7 @@ static void region_layer_output(yolo2_region_layer_t *rl, obj_info_t *obj_info)
     uint32_t obj_number = 0;
     uint32_t image_width = rl->image_width;
     uint32_t image_height = rl->image_height;
-    uint32_t boxes_number = rl->boxes_number;
+    // uint32_t boxes_number = rl->boxes_number;
     float threshold = rl->threshold;
     box_t *boxes = (box_t *)rl->boxes;
     

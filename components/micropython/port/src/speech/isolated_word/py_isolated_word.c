@@ -136,7 +136,7 @@ STATIC void speech_isolated_word_print(const mp_print_t *print, mp_obj_t self_in
 
 STATIC mp_obj_t speech_isolated_word_set_threshold(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
 {
-    isolated_word_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    // isolated_word_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
 
     //parse parameter
     enum{ARG_n_thl, 
@@ -191,7 +191,7 @@ STATIC mp_obj_t speech_isolated_word_get(mp_obj_t self_in, mp_obj_t pos_in) {
     if (pos < self->size && self->mfcc_dats[pos].save_sign == mfcc_dats_mask) {
         mp_obj_t tuple[2] = {
             mp_obj_new_int(self->mfcc_dats[pos].frm_num),
-            mp_obj_new_bytes(self->mfcc_dats[pos].mfcc_dat, sizeof(self->mfcc_dats[pos].mfcc_dat)),
+            mp_obj_new_bytes((const byte*)self->mfcc_dats[pos].mfcc_dat, sizeof(self->mfcc_dats[pos].mfcc_dat)),
         };
         return mp_obj_new_tuple(2, tuple);
     }
@@ -235,7 +235,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(speech_isolated_word_stop_obj, speech_isolated_word_st
 
 STATIC mp_obj_t speech_isolated_word_dtw(mp_obj_t self_in, mp_obj_t tuple_in)
 {
-    isolated_word_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    // isolated_word_obj_t *self = MP_OBJ_TO_PTR(self_in);
     uint32_t result = 0;
     if (iw_get_state() == Done)
     {
