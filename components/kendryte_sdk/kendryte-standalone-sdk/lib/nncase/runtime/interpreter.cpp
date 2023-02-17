@@ -94,7 +94,7 @@ uint32_t interpreter_base::model_size(const uint8_t *buffer)
     return size;
 }
 
-int interpreter_base::probe_model_size(const uint8_t *buffer)
+int32_t interpreter_base::probe_model_size(const uint8_t *buffer, uint32_t buffer_size)
 {
     auto offset = buffer;
 
@@ -113,6 +113,12 @@ int interpreter_base::probe_model_size(const uint8_t *buffer)
     offset += sizeof(node_header) * _mdl_buffer->nodes;
 
     uint32_t size = (uint32_t)(offset - buffer);
+
+    if(size > buffer_size)
+    {
+        return -1;
+    }
+
     for (int i = 0; i < _mdl_buffer->nodes; i++)
     {
         struct node_header cnt_layer_header = node_headers_[i];

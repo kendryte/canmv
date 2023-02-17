@@ -79,9 +79,9 @@ public:
         return interpreter_.get_output_shape(chn, h, w);
     }
 
-    int probe_model_size(const uint8_t *buffer)
+    int32_t probe_model_size(const uint8_t *buffer, uint32_t buffer_size)
     {
-        return interpreter_.probe_model_size(buffer);
+        return interpreter_.probe_model_size(buffer, buffer_size);
     }
 
     int get_output(uint32_t index, uint8_t **data, size_t *size)
@@ -221,12 +221,11 @@ int nncase_get_output_shape(kpu_model_context_t *ctx, int *chn, int *h, int *w)
     return nnctx->get_output_shape(chn, h, w);
 }
 
-int nncase_probe_model_buffer_size(const uint8_t *buffer)
+int32_t nncase_probe_model_buffer_size(const uint8_t *buffer, uint32_t buffer_size)
 {
     auto nnctx = new (std::nothrow) nncase_context();
-    int size = -1;
 
-    size = nnctx->probe_model_size(buffer);
+    int32_t size = nnctx->probe_model_size(buffer, buffer_size);
 
     delete nnctx;
 

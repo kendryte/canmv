@@ -95,9 +95,9 @@ struct _mp_obj_k210_kpu {
 
     struct {
         kpu_model_context_t ctx;
-        char path[128];
-        size_t size;
+        int32_t size;
         uint8_t *buffer;
+        char path[224];
         uint8_t sha256[32];
     } model;
 
@@ -233,6 +233,11 @@ STATIC mp_obj_t k210_kpu_load_kmodel(mp_obj_t self_in, mp_obj_t input)
         mp_raise_ValueError("Load_kmodel need one parameter, path(string) or offset(int)");
     }
 
+    if ((0 >= self->model.size) || ((5 * 1024 * 1024) <= self->model.size))
+    {
+        mp_raise_ValueError("Model size error!");
+    }
+
     if (self->model.buffer)
     {
         maix_kpu_heler_del_mem_from_list(self->model.buffer);
@@ -255,7 +260,7 @@ STATIC mp_obj_t k210_kpu_load_kmodel(mp_obj_t self_in, mp_obj_t input)
             mp_raise_msg(&mp_type_OSError, "Failed to read file from filesystem");
         }
 
-        if (self->model.size != maix_kpu_helper_probe_model_size(self->model.buffer))
+        if (self->model.size != maix_kpu_helper_probe_model_size(self->model.buffer, self->model.size))
         {
             self->model.size = 0;
             free(self->model.buffer);

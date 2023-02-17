@@ -38,7 +38,7 @@ namespace runtime
 
         int get_output_shape(int *chn, int *h, int *w);
         uint32_t model_size(const uint8_t *buffer);
-        int probe_model_size(const uint8_t *buffer);
+        int32_t probe_model_size(const uint8_t *buffer, uint32_t buffer_size);
 
         size_t inputs_size() const noexcept { return model_header_->inputs; }
         size_t outputs_size() const noexcept { return model_header_->outputs; }
