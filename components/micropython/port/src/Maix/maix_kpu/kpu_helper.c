@@ -23,7 +23,7 @@
 #include "vfs_wrapper.h"
 #include "vfs_spiffs.h"
 
-int maix_kpu_helper_probe_model_size(uint8_t *model_buffer)
+int maix_kpu_helper_probe_model_size(uint8_t *model_buffer, uint32_t buffer_size)
 {
     uint32_t body_size = 0;
 
@@ -40,6 +40,12 @@ int maix_kpu_helper_probe_model_size(uint8_t *model_buffer)
         ctx.body_start = (const uint8_t *)((uintptr_t)ctx.layer_headers + sizeof(kpu_model_layer_header_t) * header->layers_length);
 
         body_size = (uint32_t)(ctx.body_start - (const uint8_t *)header);
+
+        if(body_size > buffer_size)
+        {
+            return -1;
+        }
+
         for(int i=0; i< ctx.layers_length; i++)
         {
             const kpu_model_layer_header_t *cnt_layer_header = ctx.layer_headers + i;
@@ -50,7 +56,7 @@ int maix_kpu_helper_probe_model_size(uint8_t *model_buffer)
     }
     else if(header->version == 'KMDL')
     {
-        body_size = nncase_probe_model_buffer_size(model_buffer);
+        body_size = nncase_probe_model_buffer_size(model_buffer, buffer_size);
 
         return body_size;
     }
@@ -154,20 +160,25 @@ int maix_kpu_helper_load_file_from_rawflash(uint32_t addr, uint8_t *data_buf, ui
     return 0;
 }
 
-mp_uint_t maix_kpu_helper_get_mode_size_from_rawflash(uint32_t addr)
+int32_t maix_kpu_helper_get_mode_size_from_rawflash(uint32_t addr)
 {
-    uint8_t *ptr = (uint8_t *)malloc(8192);
+#define PROBE_MODEL_TEMP_BUFF_SIZE      (64 * 1024)
+
+    uint8_t *ptr = (uint8_t *)malloc(PROBE_MODEL_TEMP_BUFF_SIZE);
     if(!ptr)
     {
         return -1;
     }
 
-    sys_spiffs_read(addr, 8192, ptr);
+    sys_spiffs_read(addr, PROBE_MODEL_TEMP_BUFF_SIZE, ptr);
 
-    int model_size = maix_kpu_helper_probe_model_size(ptr);
+    int model_size = maix_kpu_helper_probe_model_size(ptr, PROBE_MODEL_TEMP_BUFF_SIZE);
 
     free(ptr);
+
     return model_size;
+
+#undef PROBE_MODEL_TEMP_BUFF_SIZE
 }
 
 int maix_kpu_helper_load_file_from_filesystem(const char *path, void *buffer, size_t model_size)
@@ -184,10 +195,10 @@ int maix_kpu_helper_load_file_from_filesystem(const char *path, void *buffer, si
     return ret;
 }
 
-mp_uint_t maix_kpu_helper_get_file_size_from_filesystem(const char *path)
+int32_t maix_kpu_helper_get_file_size_from_filesystem(const char *path)
 {
     mp_obj_t fp;
-    mp_uint_t size = 0;
+    int32_t size = 0;
 
     int err = file_read_open(&fp, path);
 
@@ -198,7 +209,7 @@ mp_uint_t maix_kpu_helper_get_file_size_from_filesystem(const char *path)
     size = file_size(fp);
     file_close(fp);
 
-    return size;
+    return (int32_t)size;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

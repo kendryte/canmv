@@ -29,7 +29,7 @@ int nncase_run_kmodel(kpu_model_context_t *ctx, const uint8_t *src, dmac_channel
 int nncase_get_input_shape(kpu_model_context_t *ctx, size_t index, int *chn, int *h, int *w);
 int nncase_get_output_count(kpu_model_context_t *ctx);
 int nncase_get_output_shape(kpu_model_context_t *ctx, int *chn, int *h, int *w);
-int nncase_probe_model_buffer_size(const uint8_t *buffer);
+int32_t nncase_probe_model_buffer_size(const uint8_t *buffer, uint32_t buffer_size);
 
 #ifdef __cplusplus
 }
