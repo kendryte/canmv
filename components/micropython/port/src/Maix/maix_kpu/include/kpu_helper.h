@@ -11,16 +11,9 @@
 extern "C" {
 #endif
 
-enum kpu_used_mem_type {
-    MEM_TYPE_PTR = 0,
-    MEM_TYPE_MP_KPU_OBJ,
-
-    MEM_TYPE_MAX = 255,
-};
-
 typedef struct _kpu_used_mem_info {
     void *ptr;
-    enum kpu_used_mem_type type;
+    size_t size;
 } kpu_used_mem_info_t;
 
 int maix_kpu_helper_probe_model_size(uint8_t *model_buffer, uint32_t buffer_size);
@@ -36,7 +29,7 @@ int32_t maix_kpu_helper_get_file_size_from_filesystem(const char *path);
 
 int maix_kpu_helper_add_mem_to_list(kpu_used_mem_info_t *mem);
 int maix_kpu_heler_del_mem_from_list(void *ptr);
-int maix_kpu_helper_free_mem_list(void);
+int maix_kpu_helper_free_mem_list(size_t *size);
 
 #ifdef  __cplusplus
 }

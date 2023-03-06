@@ -518,10 +518,12 @@ void mount_sdcard(void){
 #if MICROPY_PY_THREAD
 static void deinit_kpu_timer_cb(TimerHandle_t xExpiredTimer)
 {
-    extern int maix_kpu_helper_free_mem_list(void);
+  extern int maix_kpu_helper_free_mem_list(size_t *size);
 
-    int n = maix_kpu_helper_free_mem_list();
-    mp_printf(&mp_plat_print, "free %d kpu buffers\n>>>\r\n", n);
+  size_t size = 0;
+  int n = maix_kpu_helper_free_mem_list(&size);
+
+  mp_printf(&mp_plat_print, "free %d kpu buffers, size %ld\n>>>\r\n", n, size);
 }
 
 void free_km_buf_timer_init(void)
