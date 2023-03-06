@@ -3,7 +3,7 @@ name: CanMV Build and Release and Test
 on:
   push:
     tags: [ "v*" ]
-    branches: [ "main", "test/*" ]
+    branches: [ "main", "feat/*" ]
   pull_request:
     branches: [ "main" ]
 
