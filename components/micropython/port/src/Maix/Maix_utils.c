@@ -8,6 +8,8 @@
 #include "sipeed_mem.h"
 #include "w25qxx.h"
 
+#include "kpu_helper.h"
+
 STATIC mp_obj_t py_gc_heap_size(size_t n_args, const mp_obj_t *args) {
     config_data_t config;
     load_config_from_spiffs(&config);
@@ -68,6 +70,19 @@ STATIC mp_obj_t py_flash_read(mp_obj_t addr, mp_obj_t len_in) {
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(py_flash_read_obj, py_flash_read);
 
+STATIC mp_obj_t utils_free_kpu_buffers(void)
+{
+    size_t size = 0;
+    int n = maix_kpu_helper_free_mem_list(&size);
+
+    mp_obj_t o = mp_obj_new_dict(0);
+    mp_obj_dict_store(o, MP_OBJ_NEW_QSTR(MP_QSTR_count), mp_obj_new_int(n));
+    mp_obj_dict_store(o, MP_OBJ_NEW_QSTR(MP_QSTR_size), mp_obj_new_int(size));
+
+    return MP_OBJ_FROM_PTR(o);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(utils_free_kpu_buffers_obj, utils_free_kpu_buffers);
+
 static const mp_map_elem_t locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__),        MP_OBJ_NEW_QSTR(MP_QSTR_utils) },
     { MP_ROM_QSTR(MP_QSTR_gc_heap_size),    (mp_obj_t)(&py_gc_heap_size_obj) },
@@ -76,6 +91,8 @@ static const mp_map_elem_t locals_dict_table[] = {
     // { MP_ROM_QSTR(MP_QSTR_free),    (mp_obj_t)(&py_free_obj) },
     { MP_ROM_QSTR(MP_QSTR_flash_read),    (mp_obj_t)(&py_flash_read_obj) },
     // { MP_ROM_QSTR(MP_QSTR_flash_write),    (mp_obj_t)(&py_flash_write_obj) },
+
+    { MP_ROM_QSTR(MP_QSTR_free_kpu_buffers),    (mp_obj_t)(&utils_free_kpu_buffers_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(locals_dict, locals_dict_table);
 

@@ -139,7 +139,7 @@ mp_obj_t k210_kpu_make_new(void)
     memset(self, 0, sizeof(mp_obj_k210_kpu_t));
     self->base.type = &k210_kpu_type;
 
-    kpu_used_mem_info_t mem = {(void *)self, MEM_TYPE_PTR};
+    kpu_used_mem_info_t mem = {(void *)self, sizeof(mp_obj_k210_kpu_t)};
     if (0 > maix_kpu_helper_add_mem_to_list(&mem))
     {
         free(self);
@@ -240,7 +240,11 @@ STATIC mp_obj_t k210_kpu_load_kmodel(mp_obj_t self_in, mp_obj_t input)
 
     if (self->model.buffer)
     {
-        maix_kpu_heler_del_mem_from_list(self->model.buffer);
+        if(0x00 != maix_kpu_heler_del_mem_from_list(self->model.buffer))
+        {
+            free(self->model.buffer);
+        }
+        self->model.buffer = NULL;
     }
 
     self->model.buffer = malloc(self->model.size);
@@ -292,7 +296,7 @@ STATIC mp_obj_t k210_kpu_load_kmodel(mp_obj_t self_in, mp_obj_t input)
         mp_raise_msg(&mp_type_OSError, "Failed to load model");
     }
 
-    kpu_used_mem_info_t mem = {self->model.buffer, MEM_TYPE_PTR};
+    kpu_used_mem_info_t mem = {self->model.buffer, self->model.size};
     if (0 > maix_kpu_helper_add_mem_to_list(&mem))
     {
         self->model.size = 0;
@@ -372,10 +376,10 @@ STATIC mp_obj_t k210_kpu_run_kmodel(mp_obj_t self_in, mp_obj_t input)
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(k210_kpu_run_kmodel_obj, k210_kpu_run_kmodel);
 
-STATIC mp_obj_t k210_kpu_get_outputs(mp_obj_t self_in)
+STATIC mp_obj_t k210_kpu_get_outputs(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
 {
-    PY_ASSERT_TYPE(self_in, &k210_kpu_type);
-    mp_obj_k210_kpu_t *self = MP_OBJ_TO_PTR(self_in);
+    PY_ASSERT_TYPE(pos_args[0], &k210_kpu_type);
+    mp_obj_k210_kpu_t *self = MP_OBJ_TO_PTR(pos_args[0]);
 
     if ((0x00 == self->state.load_kmodel) || (0x00 == self->state.run_kmodel))
     {
@@ -384,7 +388,16 @@ STATIC mp_obj_t k210_kpu_get_outputs(mp_obj_t self_in)
 
     float *output = NULL;
     size_t output_size = 0;
-    if (0x00 != kpu_get_output(&self->model.ctx, 0, (uint8_t **)&output, &output_size))
+    mp_uint_t index = 0;
+
+    if((0x02 == n_args) && (mp_obj_is_int(pos_args[1])))
+    {
+        index = mp_obj_get_int(pos_args[1]);
+    }
+
+    uint32_t _index = (uint32_t)index;
+
+    if (0x00 != kpu_get_output(&self->model.ctx, _index, (uint8_t **)&output, &output_size))
     {
         mp_raise_msg(&mp_type_OSError, "Failed to get kpu outputs");
     }
@@ -398,7 +411,7 @@ STATIC mp_obj_t k210_kpu_get_outputs(mp_obj_t self_in)
 
     return MP_OBJ_FROM_PTR(lo);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(k210_kpu_get_outputs_obj, k210_kpu_get_outputs);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(k210_kpu_get_outputs_obj, 1, k210_kpu_get_outputs);
 
 // STATIC mp_obj_t k210_kpu_get_output_shape(mp_obj_t self_in)
 // {
@@ -448,7 +461,11 @@ STATIC mp_obj_t k210_kpu_deinit(mp_obj_t self_in)
 
     if (self->model.buffer)
     {
-        maix_kpu_heler_del_mem_from_list(self->model.buffer);
+        if(0x00 != maix_kpu_heler_del_mem_from_list(self->model.buffer))
+        {
+            free(self->model.buffer);
+        }
+        self->model.buffer = NULL;
     }
 
     if (self->child.lpr)
@@ -483,7 +500,7 @@ STATIC mp_obj_t k210_kpu_lpr_make_new(mp_obj_t self_in)
     }
     memset(o, 0, sizeof(mp_obj_k210_kpu_lpr_t));
 
-    kpu_used_mem_info_t mem = {(void *)o, MEM_TYPE_PTR};
+    kpu_used_mem_info_t mem = {(void *)o, sizeof(mp_obj_k210_kpu_lpr_t)};
     if (0 > maix_kpu_helper_add_mem_to_list(&mem))
     {
         free(o);
@@ -510,7 +527,7 @@ STATIC mp_obj_t k210_kpu_yolo2_make_new(mp_obj_t self_in)
     }
     memset(o, 0, sizeof(mp_obj_k210_kpu_yolo2_t));
 
-    kpu_used_mem_info_t mem = {(void *)o, MEM_TYPE_PTR};
+    kpu_used_mem_info_t mem = {(void *)o, sizeof(mp_obj_k210_kpu_yolo2_t)};
     if (0 > maix_kpu_helper_add_mem_to_list(&mem))
     {
         free(o);
@@ -805,7 +822,10 @@ STATIC mp_obj_t k210_kpu_lpr_load(size_t n_args, const mp_obj_t *pos_args, mp_ma
 
     if (self->weight.buffer)
     {
-        maix_kpu_heler_del_mem_from_list(self->weight.buffer);
+        if(0x00 != maix_kpu_heler_del_mem_from_list(self->weight.buffer))
+        {
+            free(self->weight.buffer);
+        }
         self->weight.buffer = NULL;
     }
 
@@ -842,7 +862,7 @@ STATIC mp_obj_t k210_kpu_lpr_load(size_t n_args, const mp_obj_t *pos_args, mp_ma
         mp_raise_OSError(-MP_EINVAL);
     }
 
-    kpu_used_mem_info_t mem = {self->weight.buffer, MEM_TYPE_PTR};
+    kpu_used_mem_info_t mem = {self->weight.buffer, self->weight.size};
     if (0 > maix_kpu_helper_add_mem_to_list(&mem))
     {
         self->weight.size = 0;
@@ -900,7 +920,11 @@ STATIC mp_obj_t k210_kpu_lpr_deinit(mp_obj_t self_in)
 
     if (self->weight.buffer)
     {
-        maix_kpu_heler_del_mem_from_list(self->weight.buffer);
+        if(0x00 != maix_kpu_heler_del_mem_from_list(self->weight.buffer))
+        {
+            free(self->weight.buffer);
+        }
+        self->weight.buffer = NULL;
     }
 
     memset(&self->weight, 0, sizeof(self->weight));
@@ -1026,6 +1050,15 @@ STATIC mp_obj_t k210_kpu_yolo2_init(size_t n_args, const mp_obj_t *pos_args, mp_
             mp_raise_ValueError("The number of anchors should be a multiple of 2");
         }
 
+        if (self->args.anchor)
+        {
+            if(0x00 != maix_kpu_heler_del_mem_from_list(self->args.anchor))
+            {
+                free(self->args.anchor);
+            }
+            self->args.anchor = NULL;
+        }
+
         self->args.anchor_number = nitems / 2;
         self->args.anchor = (float *)malloc(sizeof(float) * nitems);
         for (int i = 0; i < nitems; i++)
@@ -1033,10 +1066,11 @@ STATIC mp_obj_t k210_kpu_yolo2_init(size_t n_args, const mp_obj_t *pos_args, mp_
             self->args.anchor[i] = mp_obj_get_float(*items++);
         }
 
-        kpu_used_mem_info_t mem = {(void *)self->args.anchor, MEM_TYPE_PTR};
+        kpu_used_mem_info_t mem = {(void *)self->args.anchor, sizeof(float) * nitems};
         if (0 > maix_kpu_helper_add_mem_to_list(&mem))
         {
             free(self->args.anchor);
+            self->args.anchor = NULL;
             mp_raise_msg(&mp_type_MemoryError, "too many mem to list");
         }
     }
@@ -1117,7 +1151,11 @@ STATIC mp_obj_t k210_kpu_yolo2_deinit(mp_obj_t self_in)
 
     if (self->args.anchor)
     {
-        maix_kpu_heler_del_mem_from_list(self->args.anchor);
+        if(0x00 != maix_kpu_heler_del_mem_from_list(self->args.anchor))
+        {
+            free(self->args.anchor);
+        }
+        self->args.anchor = NULL;
     }
 
     memset(&self->args, 0, sizeof(self->args));

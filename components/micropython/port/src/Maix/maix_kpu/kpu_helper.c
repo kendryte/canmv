@@ -253,7 +253,7 @@ int maix_kpu_helper_add_mem_to_list(kpu_used_mem_info_t *mem)
     for(int i = 0; i < _mem_table_sz; i++) {
         if(NULL == _mem_table[i].ptr) {
             _mem_table[i].ptr = mem->ptr;
-            _mem_table[i].type = mem->type;
+            _mem_table[i].size = mem->size;
 
             spinlock_unlock(&_mem_lock);
 
@@ -269,15 +269,15 @@ int maix_kpu_helper_add_mem_to_list(kpu_used_mem_info_t *mem)
 // not use lock.
 static inline void maix_kpu_helper_free_mem(kpu_used_mem_info_t *mem)
 {
-    if(MEM_TYPE_PTR == mem->type) {
-        free(mem->ptr);
-        mem->ptr = NULL;
-    }
+    mem->size = 0;
+
+    free(mem->ptr);
+    mem->ptr = NULL;
 }
 
 int maix_kpu_heler_del_mem_from_list(void *ptr)
 {
-    kpu_used_mem_info_t mem = {ptr, MEM_TYPE_PTR};
+    kpu_used_mem_info_t mem = {ptr, 0};
 
     int idx = maix_kpu_helper_find_mem_in_list(&mem);
 
@@ -294,13 +294,17 @@ int maix_kpu_heler_del_mem_from_list(void *ptr)
     return 0;
 }
 
-int maix_kpu_helper_free_mem_list(void)
+int maix_kpu_helper_free_mem_list(size_t *size)
 {
     int cnt = 0;
+    *size = 0;
+
     spinlock_lock(&_mem_lock);
 
     for(int i = 0; i < _mem_table_sz; i++) {
         if(_mem_table[i].ptr) {
+            *size += _mem_table[i].size;
+
             cnt++;
             maix_kpu_helper_free_mem(&_mem_table[i]);
         }
