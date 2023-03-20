@@ -121,3 +121,28 @@ int nncase_v1_run_kmodel(kpu_model_context_t *ctx, const uint8_t *src, dmac_chan
     }
     return -1;
 }
+
+/*****************************************************************************/
+int32_t nncase_v1_probe_model_buffer_size(const uint8_t *buffer, uint32_t buffer_size)
+{
+
+    return -1;
+}
+
+int nncase_v1_get_output_count(kpu_model_context_t *ctx)
+{
+
+    return -1;
+}
+
+int nncase_v1_get_input_shape(kpu_model_context_t *ctx, int index, int *chn, int *h, int *w)
+{
+
+    return -1;
+}
+
+int nncase_v1_get_output_shape(kpu_model_context_t *ctx, int *chn, int *h, int *w)
+{
+
+    return -1;
+}
