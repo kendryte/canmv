@@ -101,6 +101,33 @@ public:
         return -1;
     }
 
+    /*************************************************************************/
+    int32_t probe_model_size(const uint8_t *buffer, uint32_t buffer_size)
+    {
+        return interpreter_.probe_model_size(buffer, buffer_size);
+    }
+
+    int get_output_count(void)
+    {
+        return interpreter_.outputs_size();
+    }
+
+    int get_input_shape_at(int index, int *chn, int *h, int *w)
+    {
+        if(index >= interpreter_.inputs_size())
+            return -1;
+
+        auto shape = interpreter_.input_shape_at(index);
+        *chn = shape[1]; *h = shape[2]; *w = shape[3];
+
+        return 0;
+    }
+
+    int get_output_shape( int *chn, int *h, int *w)
+    {
+        return interpreter_.get_output_shape(chn, h, w);
+    }
+
 private:
     void on_done()
     {
@@ -181,4 +208,34 @@ int nncase_v0_run_kmodel(kpu_model_context_t *ctx, const uint8_t *src, dmac_chan
 {
     auto nnctx = reinterpret_cast<nncase_context *>(ctx->nncase_ctx);
     return nnctx->run_kmodel(src, dma_ch, done_callback, userdata);
+}
+
+/*****************************************************************************/
+int32_t nncase_v0_probe_model_buffer_size(const uint8_t *buffer, uint32_t buffer_size)
+{
+    auto nnctx = new (std::nothrow) nncase_context();
+
+    int32_t size = nnctx->probe_model_size(buffer, buffer_size);
+
+    delete nnctx;
+
+    return size;
+}
+
+int nncase_v0_get_output_count(kpu_model_context_t *ctx)
+{
+    auto nnctx = reinterpret_cast<nncase_context *>(ctx->nncase_ctx);
+    return nnctx->get_output_count();
+}
+
+int nncase_v0_get_input_shape(kpu_model_context_t *ctx, int index, int *chn, int *h, int *w)
+{
+    auto nnctx = reinterpret_cast<nncase_context *>(ctx->nncase_ctx);
+    return nnctx->get_input_shape_at(index, chn, h, w);
+}
+
+int nncase_v0_get_output_shape(kpu_model_context_t *ctx, int *chn, int *h, int *w)
+{
+    auto nnctx = reinterpret_cast<nncase_context *>(ctx->nncase_ctx);
+    return nnctx->get_output_shape(chn, h, w);
 }

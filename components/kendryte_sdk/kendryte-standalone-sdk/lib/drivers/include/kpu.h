@@ -24,6 +24,7 @@ extern "C" {
 #endif
 
 #define kpu_matmul_begin kpu_conv2d_output
+#define IOMEM 0x40000000
 
 typedef int (*plic_irq_callback_t)(void *ctx);
 
@@ -691,6 +692,7 @@ typedef struct
         struct
         {
             void* nncase_ctx;
+            uint32_t nncase_version;
         };
     };
 } kpu_model_context_t;

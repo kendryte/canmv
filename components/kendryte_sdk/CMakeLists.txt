@@ -9,6 +9,8 @@ if(CONFIG_COMPONENT_KENDRYTE_SDK_ENABLE)
                             "kendryte-standalone-sdk/lib/bsp/include"
                             "kendryte-standalone-sdk/lib/drivers/include"
                             "kendryte-standalone-sdk/lib/utils/include"
+                            "kendryte-standalone-sdk/lib/nncase/v0/include"
+                            "kendryte-standalone-sdk/lib/nncase/v0"
                             "kendryte-standalone-sdk/lib/nncase/include"
                             "kendryte-standalone-sdk/third_party/xtl/include"
         )
@@ -16,6 +18,12 @@ if(CONFIG_COMPONENT_KENDRYTE_SDK_ENABLE)
         list(APPEND ADD_INCLUDE "kendryte-standalone-sdk/lib/freertos/include"
         )
     endif()
+
+    if(CONFIG_CANMV_ENABLE_KMODEL_V5)
+        list(APPEND ADD_INCLUDE "kendryte-standalone-sdk/lib/nncase/v1/include"
+        )
+    endif()
+
     # list(APPEND ADD_PRIVATE_INCLUDE "include_private")
     ###############################################
 
@@ -24,13 +32,15 @@ if(CONFIG_COMPONENT_KENDRYTE_SDK_ENABLE)
     append_srcs_dir(ADD_SRCS "kendryte-standalone-sdk/lib/drivers")
     append_srcs_dir(ADD_SRCS "src")
     #ADD_SUBDIRECTORY("kendryte-standalone-sdk/lib/nncase")
-    append_srcs_dir(ADD_SRCS "kendryte-standalone-sdk/lib/nncase/runtime/neutral")
-    append_srcs_dir(ADD_SRCS "kendryte-standalone-sdk/lib/nncase/runtime/k210")
-    append_srcs_dir(ADD_SRCS "kendryte-standalone-sdk/lib/nncase/runtime/cpu")
-    append_srcs_dir(ADD_SRCS "kendryte-standalone-sdk/lib/nncase/runtime")
+    append_srcs_dir(ADD_SRCS "kendryte-standalone-sdk/lib/nncase/v0/runtime/cpu")
+    append_srcs_dir(ADD_SRCS "kendryte-standalone-sdk/lib/nncase/v0/runtime/k210")
+    append_srcs_dir(ADD_SRCS "kendryte-standalone-sdk/lib/nncase/v0/runtime/neutral")
+    append_srcs_dir(ADD_SRCS "kendryte-standalone-sdk/lib/nncase/v0/runtime")
+    append_srcs_dir(ADD_SRCS "kendryte-standalone-sdk/lib/nncase/v0")
+
     append_srcs_dir(ADD_SRCS "kendryte-standalone-sdk/lib/nncase")
     append_srcs_dir(ADD_SRCS "kendryte-standalone-sdk/third_party/xtl")
-	
+
     if(CONFIG_FREERTOS_ENABLE)
         append_srcs_dir(ADD_SRCS "kendryte-standalone-sdk/lib/freertos")
         append_srcs_dir(ADD_SRCS "kendryte-standalone-sdk/lib/freertos/portable")

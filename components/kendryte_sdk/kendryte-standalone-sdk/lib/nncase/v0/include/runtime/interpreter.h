@@ -56,6 +56,9 @@ namespace runtime
 
         void run(run_callback_t callback, error_callback_t on_error, node_profile_callback_t node_profile, void *userdata);
 
+        int32_t probe_model_size(const uint8_t *buffer, uint32_t buffer_size);
+        int get_output_shape(int *chn, int *h, int *w);
+
     protected:
         virtual bool initialize();
         virtual xtl::span<uint8_t> memory_at(const memory_range &range) const noexcept;

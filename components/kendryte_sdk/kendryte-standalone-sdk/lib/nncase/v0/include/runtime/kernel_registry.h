@@ -30,5 +30,6 @@ namespace runtime
     };
 
     kernel_call_result call_kernel(runtime_opcode opcode, xtl::span<const uint8_t> body, interpreter_t &interpreter, interpreter_step_t step);
+    runtime_shape_t get_conv2d_layer_output_shape(runtime_opcode opcode, xtl::span<const uint8_t> body);
 }
 }

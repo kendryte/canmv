@@ -19,6 +19,11 @@ menu "Micropython configurations"
 			bool "Enable CanMV IDE protocol support"
 			default y
 
+		config CANMV_ENABLE_KMODEL_V5
+			depends on COMPONENT_KENDRYTE_SDK_ENABLE
+			bool "Enable support for kmodel v5 runtime"
+			default n
+
 		config MAIXPY_THREAD_ENABLE
 			bool "Enable _thread module"
 			default y
