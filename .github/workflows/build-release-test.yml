@@ -48,7 +48,7 @@ jobs:
             echo "build project ${proj}-lite-kmodelv5"
             echo "-------------------"
             python project.py distclean
-            python project.py build --config_file "config_lite kmodel_v5.mk"
+            python project.py build --config_file "config_lite_kmodel_v5.mk"
             mv build/canmv.bin ${{ github.workspace }}/projects/build/${proj}_lite_kmodel_v5.bin
             cd -
           done
