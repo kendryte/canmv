@@ -13,10 +13,13 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
+#include "global_config.h"
 
 #include "kpu_helper.h"
 
+#if CONFIG_CANMV_ENABLE_NNCASE
 #include "nncase.h"
+#endif // CONFIG_CANMV_ENABLE_NNCASE
 
 #include "atomic.h"
 
@@ -54,12 +57,14 @@ int maix_kpu_helper_probe_model_size(uint8_t *model_buffer, uint32_t buffer_size
 
         return body_size;
     }
+#if CONFIG_CANMV_ENABLE_NNCASE
     else if(header->version == 'KMDL')
     {
         body_size = nncase_probe_model_buffer_size(model_buffer, buffer_size);
 
         return body_size;
     }
+#endif // CONFIG_CANMV_ENABLE_NNCASE
 
     return -1;
 }
@@ -70,11 +75,13 @@ int maix_kpu_helper_get_input_shape(kpu_model_context_t *ctx, int *chn, int *h, 
     if(h) *h = 0;
     if(w) *w = 0;
 
+#if CONFIG_CANMV_ENABLE_NNCASE
     if(ctx->is_nncase)
     {
         return nncase_get_input_shape(ctx, 0, chn, h, w);
     }
     else
+#endif // CONFIG_CANMV_ENABLE_NNCASE
     {
         const kpu_model_layer_header_t *first_layer_header = ctx->layer_headers;
 
@@ -101,11 +108,12 @@ int maix_kpu_helper_get_input_shape(kpu_model_context_t *ctx, int *chn, int *h, 
 
 int maix_kpu_helper_get_output_count(kpu_model_context_t *ctx)
 {
+#if CONFIG_CANMV_ENABLE_NNCASE
     if(ctx->is_nncase)
     {
         return nncase_get_output_count(ctx);
     }
-
+#endif // CONFIG_CANMV_ENABLE_NNCASE
     return ctx->output_count;
 }
 
@@ -115,11 +123,13 @@ int maix_kpu_helper_get_output_shape(kpu_model_context_t *ctx, int *chn, int *h,
     if(h) *h = 0;
     if(w) *w = 0;
 
+#if CONFIG_CANMV_ENABLE_NNCASE
     if(ctx->is_nncase)
     {
         return nncase_get_output_shape(ctx, chn, h, w);
     }
     else
+#endif // CONFIG_CANMV_ENABLE_NNCASE
     {
         const kpu_model_layer_header_t *_layer = NULL;
         const kpu_model_layer_header_t *output_layer = ctx->layer_headers + ctx->layers_length - 1;

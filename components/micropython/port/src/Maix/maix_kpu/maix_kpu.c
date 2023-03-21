@@ -154,6 +154,8 @@ STATIC void k210_kpu_print(const mp_print_t *print, mp_obj_t self_in, mp_print_k
     PY_ASSERT_TYPE(self_in, &k210_kpu_type);
     mp_obj_k210_kpu_t *self = MP_OBJ_TO_PTR(self_in);
 
+    static const char *model_type_str[] = {"KMODELV3", "KMODELV4", "KMODELV5"};
+
     mp_printf(print, "KPU (K210)\n");
     mp_printf(print, "self                  : 0x%lx\n", self);
     mp_printf(print, "parent                : (null)\n");
@@ -166,7 +168,21 @@ STATIC void k210_kpu_print(const mp_print_t *print, mp_obj_t self_in, mp_print_k
         return;
     }
 
-    mp_printf(print, "model_type            : %s\n", self->model.ctx.is_nncase ? "NNCASE" : "KMODELV3");
+    char *model_type = model_type_str[0];
+
+    if(self->model.ctx.nncase_ctx)
+    {
+        if(0x00 == self->model.ctx.nncase_version)
+        {
+            model_type = model_type_str[1];
+        }
+        else
+        {
+            model_type = model_type_str[2];
+        }
+    }
+
+    mp_printf(print, "model_type            : %s\n", model_type);
     mp_printf(print, "model_path            : %s\n", self->model.path);
     mp_printf(print, "model_size            : %ld\n", self->model.size);
     mp_printf(print, "model_buffer          : 0x%08X\n", self->model.buffer);
@@ -198,34 +214,57 @@ STATIC void k210_kpu_print(const mp_print_t *print, mp_obj_t self_in, mp_print_k
     mp_printf(print, "model_output_count    : %d\n", maix_kpu_helper_get_output_count(&self->model.ctx));
 }
 
-STATIC mp_obj_t k210_kpu_load_kmodel(mp_obj_t self_in, mp_obj_t input)
+STATIC mp_obj_t k210_kpu_load_kmodel(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
 {
-    PY_ASSERT_TYPE(self_in, &k210_kpu_type);
-    mp_obj_k210_kpu_t *self = MP_OBJ_TO_PTR(self_in);
+    PY_ASSERT_TYPE(pos_args[0], &k210_kpu_type);
+    mp_obj_k210_kpu_t *self = MP_OBJ_TO_PTR(pos_args[0]);
 
     int load_from = 0; // 0: filesystem; 1: rawflash
     const char *path = NULL;
     mp_int_t offset = 0;
 
-    if (&mp_type_str == mp_obj_get_type(input)) // load model from filesystem
+	enum {ARG_size = 0};
+	static const mp_arg_t allowed_args[] = {
+		{ MP_QSTR_size, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 0} },
+	};
+	mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 2, pos_args + 2, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    if (&mp_type_str == mp_obj_get_type(pos_args[1])) // load model from filesystem
     {
         load_from = 0;
 
-        path = mp_obj_str_get_str(input);
+        path = mp_obj_str_get_str(pos_args[1]);
 
-        self->model.size = maix_kpu_helper_get_file_size_from_filesystem(path);
+        if(0x00 != args[ARG_size].u_int)
+        {
+            self->model.size = args[ARG_size].u_int;
+        }
+        else
+        {
+            self->model.size = maix_kpu_helper_get_file_size_from_filesystem(path);
+        }
+
         strncpy(self->model.path, path, sizeof(self->model.path));
     }
-    else if (&mp_type_int == mp_obj_get_type(input))
+    else if (&mp_type_int == mp_obj_get_type(pos_args[1]))
     {
         load_from = 1;
 
-        if (0 >= (offset = mp_obj_get_int(input)))
+        if (0 >= (offset = mp_obj_get_int(pos_args[1])))
         {
             mp_raise_ValueError("Model offset error!");
         }
 
-        self->model.size = maix_kpu_helper_get_mode_size_from_rawflash(offset);
+        if(0x00 != args[ARG_size].u_int)
+        {
+            self->model.size = args[ARG_size].u_int;
+        }
+        else
+        {
+            self->model.size = maix_kpu_helper_get_mode_size_from_rawflash(offset);
+        }
+
         snprintf(self->model.path, sizeof(self->model.path), "flash:0x%08lX", offset);
     }
     else
@@ -264,12 +303,21 @@ STATIC mp_obj_t k210_kpu_load_kmodel(mp_obj_t self_in, mp_obj_t input)
             mp_raise_msg(&mp_type_OSError, "Failed to read file from filesystem");
         }
 
-        if (self->model.size != maix_kpu_helper_probe_model_size(self->model.buffer, self->model.size))
+        int32_t _size = maix_kpu_helper_probe_model_size(self->model.buffer, self->model.size);
+
+        if(((-1) == _size) && (0x00 == args[ARG_size].u_int))
         {
-            self->model.size = 0;
-            free(self->model.buffer);
-            self->model.buffer = NULL;
-            mp_raise_msg(&mp_type_OSError, "Model in filesystem maybe damaged");
+            mp_printf(&mp_plat_print, "Probe model size failed, will skip size check.\n");
+        }
+        else
+        {
+            if (self->model.size != _size)
+            {
+                self->model.size = 0;
+                free(self->model.buffer);
+                self->model.buffer = NULL;
+                mp_raise_msg(&mp_type_OSError, "Model in filesystem maybe damaged");
+            }
         }
     }
     else if (0x01 == load_from)
@@ -323,7 +371,7 @@ STATIC mp_obj_t k210_kpu_load_kmodel(mp_obj_t self_in, mp_obj_t input)
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(k210_kpu_load_kmodel_obj, k210_kpu_load_kmodel);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(k210_kpu_load_kmodel_obj, 2, k210_kpu_load_kmodel);
 
 STATIC mp_obj_t k210_kpu_run_kmodel(mp_obj_t self_in, mp_obj_t input)
 {

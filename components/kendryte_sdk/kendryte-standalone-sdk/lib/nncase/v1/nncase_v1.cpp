@@ -66,6 +66,34 @@ public:
         return ok();
     }
 
+    /*************************************************************************/
+    int32_t probe_model_size(const uint8_t *buffer, uint32_t buffer_size)
+    {
+        return -1;
+    }
+
+    int get_output_count(void)
+    {
+        return interp_.outputs_size();
+    }
+
+    int get_input_shape_at(int index, int *chn, int *h, int *w)
+    {
+        if(index >= interp_.inputs_size())
+            return -1;
+
+        auto &shape = interp_.input_shape(index);
+
+        *chn = shape[1]; *h = shape[2]; *w = shape[3];
+
+        return 0;
+    }
+
+    int get_output_shape(int *chn, int *h, int *w)
+    {
+        return -1;
+    }
+
 private:
     interpreter interp_;
 };
@@ -125,24 +153,30 @@ int nncase_v1_run_kmodel(kpu_model_context_t *ctx, const uint8_t *src, dmac_chan
 /*****************************************************************************/
 int32_t nncase_v1_probe_model_buffer_size(const uint8_t *buffer, uint32_t buffer_size)
 {
+    auto nnctx = new (std::nothrow) nncase_context();
+    int32_t size = nnctx->probe_model_size(buffer, buffer_size);
+    delete nnctx;
 
-    return -1;
+    return size;
 }
 
 int nncase_v1_get_output_count(kpu_model_context_t *ctx)
 {
+    auto nnctx = reinterpret_cast<nncase_context *>(ctx->nncase_ctx);
 
-    return -1;
+    return nnctx->get_output_count();
 }
 
 int nncase_v1_get_input_shape(kpu_model_context_t *ctx, int index, int *chn, int *h, int *w)
 {
+    auto nnctx = reinterpret_cast<nncase_context *>(ctx->nncase_ctx);
 
-    return -1;
+    return nnctx->get_input_shape_at(index, chn, h, w);
 }
 
 int nncase_v1_get_output_shape(kpu_model_context_t *ctx, int *chn, int *h, int *w)
 {
+    auto nnctx = reinterpret_cast<nncase_context *>(ctx->nncase_ctx);
 
-    return -1;
+    return nnctx->get_output_shape(chn, h, w);
 }

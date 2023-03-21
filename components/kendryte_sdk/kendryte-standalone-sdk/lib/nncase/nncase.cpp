@@ -14,7 +14,10 @@
  */
 #include "global_config.h"
 
+#if CONFIG_CANMV_ENABLE_KMODEL_V4
 #include "v0/nncase_v0.h"
+#endif // CONFIG_CANMV_ENABLE_KMODEL_V4
+
 #if CONFIG_CANMV_ENABLE_KMODEL_V5
 #include "v1/nncase_v1.h"
 #endif // CONFIG_CANMV_ENABLE_KMODEL_V5
@@ -35,9 +38,11 @@ extern "C"
     int nncase_load_kmodel(kpu_model_context_t *ctx, const uint8_t *buffer)
     {
         auto header = reinterpret_cast<const model_header *>(buffer);
+#if CONFIG_CANMV_ENABLE_KMODEL_V4
         if (header->version == 4)
             return nncase_v0_load_kmodel(ctx, buffer);
         else
+#endif // CONFIG_CANMV_ENABLE_KMODEL_V4
 #if CONFIG_CANMV_ENABLE_KMODEL_V5
             return nncase_v1_load_kmodel(ctx, buffer);
 #else
@@ -47,9 +52,11 @@ extern "C"
 
     int nncase_get_output(kpu_model_context_t *ctx, uint32_t index, uint8_t **data, size_t *size)
     {
+#if CONFIG_CANMV_ENABLE_KMODEL_V4
         if (ctx->nncase_version == 0)
             return nncase_v0_get_output(ctx, index, data, size);
         else
+#endif // CONFIG_CANMV_ENABLE_KMODEL_V4
 #if CONFIG_CANMV_ENABLE_KMODEL_V5
             return nncase_v1_get_output(ctx, index, data, size);
 #else
@@ -59,21 +66,25 @@ extern "C"
 
     void nncase_model_free(kpu_model_context_t *ctx)
     {
+#if CONFIG_CANMV_ENABLE_KMODEL_V4
         if (ctx->nncase_version == 0)
             return nncase_v0_model_free(ctx);
-#if CONFIG_CANMV_ENABLE_KMODEL_V5
         else
+#endif // CONFIG_CANMV_ENABLE_KMODEL_V4
+#if CONFIG_CANMV_ENABLE_KMODEL_V5
             return nncase_v1_model_free(ctx);
 #else
-
+            return;
 #endif // CONFIG_CANMV_ENABLE_KMODEL_V5
     }
 
     int nncase_run_kmodel(kpu_model_context_t *ctx, const uint8_t *src, dmac_channel_number_t dma_ch, kpu_done_callback_t done_callback, void *userdata)
     {
+#if CONFIG_CANMV_ENABLE_KMODEL_V4
         if (ctx->nncase_version == 0)
             return nncase_v0_run_kmodel(ctx, src, dma_ch, done_callback, userdata);
         else
+#endif // CONFIG_CANMV_ENABLE_KMODEL_V4
 #if CONFIG_CANMV_ENABLE_KMODEL_V5
             return nncase_v1_run_kmodel(ctx, src, dma_ch, done_callback, userdata);
 #else
@@ -86,9 +97,11 @@ extern "C"
     {
         auto header = reinterpret_cast<const model_header *>(buffer);
 
+#if CONFIG_CANMV_ENABLE_KMODEL_V4
         if (header->version == 4)
             return nncase_v0_probe_model_buffer_size(buffer, buffer_size);
         else
+#endif // CONFIG_CANMV_ENABLE_KMODEL_V4
 #if CONFIG_CANMV_ENABLE_KMODEL_V5
             return nncase_v1_probe_model_buffer_size(buffer, buffer_size);
 #else
@@ -98,21 +111,25 @@ extern "C"
 
     int nncase_get_output_count(kpu_model_context_t *ctx)
     {
+#if CONFIG_CANMV_ENABLE_KMODEL_V4
         if (ctx->nncase_version == 0)
             return nncase_v0_get_output_count(ctx);
         else
+#endif // CONFIG_CANMV_ENABLE_KMODEL_V4
 #if CONFIG_CANMV_ENABLE_KMODEL_V5
             return nncase_v1_get_output_count(ctx);
 #else
-            return -1;
+            return 0;
 #endif // CONFIG_CANMV_ENABLE_KMODEL_V5
     }
 
     int nncase_get_input_shape(kpu_model_context_t *ctx, int index, int *chn, int *h, int *w)
     {
+#if CONFIG_CANMV_ENABLE_KMODEL_V4
         if (ctx->nncase_version == 0)
             return nncase_v0_get_input_shape(ctx, index, chn, h, w);
         else
+#endif // CONFIG_CANMV_ENABLE_KMODEL_V4
 #if CONFIG_CANMV_ENABLE_KMODEL_V5
             return nncase_v1_get_input_shape(ctx, index, chn, h, w);
 #else
@@ -122,9 +139,11 @@ extern "C"
 
     int nncase_get_output_shape(kpu_model_context_t *ctx, int *chn, int *h, int *w)
     {
+#if CONFIG_CANMV_ENABLE_KMODEL_V4
         if (ctx->nncase_version == 0)
             return nncase_v0_get_output_shape(ctx, chn, h, w);
         else
+#endif // CONFIG_CANMV_ENABLE_KMODEL_V4
 #if CONFIG_CANMV_ENABLE_KMODEL_V5
             return nncase_v1_get_output_shape(ctx, chn, h, w);
 #else
