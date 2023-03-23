@@ -407,6 +407,8 @@ STATIC mp_obj_t k210_kpu_run_kmodel(mp_obj_t self_in, mp_obj_t input)
     if (0x00 != kpu_run_kmodel(&self->model.ctx, image_buffer, dma_ch, ai_done, NULL))
     {
         wait_kpu_done = 0;
+        dmac_free_irq(dma_ch);
+
         mp_raise_msg(&mp_type_OSError, "Model Buffer maybe dirty!");
     }
 

@@ -38,6 +38,16 @@ typedef enum _datatype : uint8_t
 #undef DEFINE_DATATYPE
 } datatype_t;
 
+inline datatype_t parse_datatype_str(const std::string &name)
+{
+#define DEFINE_DATATYPE(id, t, n, value) \
+    if (name == #id)                     \
+        return datatype_t::dt_##id;
+#include "datatypes.def"
+#undef DEFINE_DATATYPE
+    throw std::runtime_error("Unsupported data type:" + std::string(name));
+}
+
 namespace detail
 {
     template <datatype_t Type>
@@ -101,6 +111,7 @@ struct padding
 {
     int32_t before;
     int32_t after;
+    int32_t interior = 0;
 
     int32_t sum() const noexcept { return before + after; }
 
@@ -151,6 +162,24 @@ inline std::string reduce_op_to_string(reduce_op_t op)
         return "reduce_sum";
     }
     return "unknown";
+}
+
+typedef enum _reduce_arg_op
+{
+    reduce_arg_min,
+    reduce_arg_max,
+} reduce_arg_op_t;
+
+inline std::string reduce_arg_op_to_string(reduce_arg_op_t op)
+{
+    switch (op)
+    {
+    case reduce_arg_min:
+        return "reduce_arg_min";
+    case reduce_arg_max:
+        return "reduce_arg_max";
+    }
+    return "unknown reduce arg op";
 }
 
 typedef enum _binary_op
@@ -213,6 +242,8 @@ inline std::string binary_op_to_string(binary_op_t op)
 typedef enum _unary_op
 {
     unary_abs,
+    unary_acos,
+    unary_asin,
     unary_ceil,
     unary_cos,
     unary_exp,
@@ -221,6 +252,7 @@ typedef enum _unary_op
     unary_neg,
     unary_round,
     unary_rsqrt,
+    unary_sign,
     unary_sin,
     unary_sqrt,
     unary_square,
@@ -235,6 +267,10 @@ inline std::string unary_op_to_string(unary_op_t op)
     {
     case unary_abs:
         return "unary_abs";
+    case unary_acos:
+        return "unary_acos";
+    case unary_asin:
+        return "unary_asin";
     case unary_ceil:
         return "unary_ceil";
     case unary_cos:
@@ -251,6 +287,8 @@ inline std::string unary_op_to_string(unary_op_t op)
         return "unary_round";
     case unary_rsqrt:
         return "unary_rsqrt";
+    case unary_sign:
+        return "unary_sign";
     case unary_sin:
         return "unary_sin";
     case unary_sqrt:

@@ -20,6 +20,9 @@
 #include <sysctl.h>
 #include <utils.h>
 
+#include "nncase/runtime/model.h"
+#include "nncase/runtime/span_reader.h"
+
 using namespace nncase;
 using namespace nncase::runtime;
 

@@ -71,6 +71,7 @@ if(CONFIG_COMPONENT_KENDRYTE_SDK_ENABLE)
         append_srcs_dir(ADD_SRCS "kendryte-standalone-sdk/third_party/mpark-variant")
         append_srcs_dir(ADD_SRCS "kendryte-standalone-sdk/third_party/gsl-lite")
     
+        list(APPEND ADD_STATIC_LIB "kendryte-standalone-sdk/lib/nncase/v1/lib/libnncase.functional.a")
         list(APPEND ADD_STATIC_LIB "kendryte-standalone-sdk/lib/nncase/v1/lib/libnncase.runtime.a")
         list(APPEND ADD_STATIC_LIB "kendryte-standalone-sdk/lib/nncase/v1/lib/libnncase.rt_modules.k210.a")
     endif()
