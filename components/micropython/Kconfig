@@ -19,6 +19,20 @@ menu "Micropython configurations"
 			bool "Enable CanMV IDE protocol support"
 			default y
 
+		menuconfig CANMV_ENABLE_NNCASE
+			bool "Enable NNCASE runtime"
+			default y
+
+		config CANMV_ENABLE_KMODEL_V4
+			depends on CANMV_ENABLE_NNCASE
+			bool "Enable NNCASE for kmodel v4 (about 330KB)"
+			default y
+
+		config CANMV_ENABLE_KMODEL_V5
+			depends on CANMV_ENABLE_NNCASE
+			bool "Enable NNCASE for kmodel v5 (about 900KB)"
+			default n
+
 		config MAIXPY_THREAD_ENABLE
 			bool "Enable _thread module"
 			default y
@@ -28,7 +42,7 @@ menu "Micropython configurations"
 		config MAIXPY_NES_ENABLE
 			bool "Enable NES emulator"
 			default y
-		
+
 		config MAIXPY_VIDEO_ENABLE
 			bool "Enable video module"
 			default y

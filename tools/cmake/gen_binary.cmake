@@ -1,6 +1,5 @@
-
-set(CMAKE_C_LINK_EXECUTABLE "<CMAKE_C_COMPILER> <CMAKE_C_LINK_FLAGS> <OBJECTS> -o <TARGET>.elf <LINK_LIBRARIES>")
-set(CMAKE_CXX_LINK_EXECUTABLE "<CMAKE_CXX_COMPILER> <CMAKE_CXX_LINK_FLAGS> <OBJECTS> -o <TARGET>.elf <LINK_LIBRARIES>")
+set(CMAKE_C_LINK_EXECUTABLE "<CMAKE_C_COMPILER> <CMAKE_C_LINK_FLAGS> <OBJECTS> -o <TARGET>.elf -Wl,--start-group <LINK_LIBRARIES> -Wl,--end-group")
+set(CMAKE_CXX_LINK_EXECUTABLE "<CMAKE_CXX_COMPILER> <CMAKE_CXX_LINK_FLAGS> <OBJECTS> -o <TARGET>.elf -Wl,--start-group <LINK_LIBRARIES> -Wl,--end-group")
 
 
 # Config toolchain
@@ -34,7 +33,3 @@ if(CONFIG_LIB_NNCASE_SOURCE_CODE_ENABLE)
                 COMMENT "======== copy libnncase.a ======="
         )
 endif()
-
-
-
-

@@ -1,3 +1,5 @@
+#include "global_config.h"
+
 #include <assert.h>
 #include <float.h>
 #include "kpu.h"
@@ -10,7 +12,10 @@
 #include "dmac.h"
 #include <string.h>
 #include "bsp.h"
+
+#if CONFIG_CANMV_ENABLE_NNCASE
 #include "nncase.h"
+#endif // CONFIG_CANMV_ENABLE_NNCASE
 
 #define LAYER_BURST_SIZE 12
 
@@ -1442,10 +1447,14 @@ int kpu_load_kmodel(kpu_model_context_t *ctx, const uint8_t *buffer)
             const kpu_model_layer_header_t *cnt_layer_header = ctx->layer_headers + i;
             body_size += cnt_layer_header->body_size;
         }
-    } else if(header->version == 'KMDL')
+    }
+#if CONFIG_CANMV_ENABLE_NNCASE
+    else if(header->version == 'KMDL')
     {
         return nncase_load_kmodel(ctx, buffer);
-    } else
+    }
+#endif // CONFIG_CANMV_ENABLE_NNCASE
+    else
     {
         return -1;
     }
@@ -1455,8 +1464,10 @@ int kpu_load_kmodel(kpu_model_context_t *ctx, const uint8_t *buffer)
 
 int kpu_get_output(kpu_model_context_t *ctx, uint32_t index, uint8_t **data, size_t *size)
 {
+#if CONFIG_CANMV_ENABLE_NNCASE
     if(ctx->is_nncase)
         return nncase_get_output(ctx, index, data, size);
+#endif // CONFIG_CANMV_ENABLE_NNCASE
 
     if(index >= ctx->output_count)
         return -1;
@@ -1469,8 +1480,10 @@ int kpu_get_output(kpu_model_context_t *ctx, uint32_t index, uint8_t **data, siz
 
 void kpu_model_free(kpu_model_context_t *ctx)
 {
+#if CONFIG_CANMV_ENABLE_NNCASE
     if(ctx->is_nncase)
         return nncase_model_free(ctx);
+#endif // CONFIG_CANMV_ENABLE_NNCASE
 
     free(ctx->main_buffer);
     ctx->main_buffer = NULL;
@@ -1680,8 +1693,10 @@ static void ai_step_not_isr(void *userdata)
 
 int kpu_run_kmodel(kpu_model_context_t *ctx, const uint8_t *src, dmac_channel_number_t dma_ch, kpu_done_callback_t done_callback, void *userdata)
 {
+#if CONFIG_CANMV_ENABLE_NNCASE
     if(ctx->is_nncase)
         return nncase_run_kmodel(ctx, src, dma_ch, done_callback, userdata);
+#endif // CONFIG_CANMV_ENABLE_NNCASE
 
     ctx->dma_ch = dma_ch;
     ctx->done_callback = done_callback;

@@ -73,6 +73,10 @@ sudo tar -Jxvf kendryte-toolchain-ubuntu-amd64-8.2.0-20190409.tar.xz -C /opt
 ls /opt/kendryte-toolchain/bin
 ```
 
+## About NNCASE
+
+Default we integrated [nncase v1.1.0](https://github.com/kendryte/nncase/releases/tag/v1.1.0), if you want use another version, you can replace the lib and header in [components/kendryte_sdk/kendryte-standalone-sdk/lib/nncase/v1](components/kendryte_sdk/kendryte-standalone-sdk/lib/nncase/v1)
+
 ## Configure project
 
 * Switch path to `hello_world` project directory
