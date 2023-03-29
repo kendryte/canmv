@@ -71,6 +71,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN  }}
 
   test:
+    if: endsWith(github.ref, 'main')
     runs-on: self-hosted
     needs: build
     defaults:
