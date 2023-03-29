@@ -47,7 +47,7 @@ CanMV 的目的是让 AIOT 编程更简单， 基于 [Micropython](http://www.mi
 |  1  | /                                                                                      | CanMV SDK 根目录。                                              |
 |  2  | /projects/xxx                                                                          | CanMV 开发板配置目录，您可以从这里开始定制编译您自己的固件，详细操作请参考 [CanMV build](build.md) |
 |  3  | [ 使用 Docker 编译](tools/docker)                                                      | 提供 Docker 镜像用于固件编译，可以降低搭建编译环境的工作量。                          |
-|  4  | [CanMV Docs](https://developer.canaan-creative.com/index.html?channel=developer#/word) | CanMV 文档，包括 API 说明、工具使用、常见问题以及其它。                           | 
+|  4  | [CanMV Docs](https://developer.canaan-creative.com/index.html?channel=developer#/document/canmv) | CanMV 文档，包括 API 说明、工具使用、常见问题以及其它。                           | 
 |  5  | [CanMV IDE](https://github.com/kendryte/canmv_ide)                                     | CanMV IDE 用于编辑和调试，它支持 Windows, Linux and Mac OS等不同操作系统。     |
 |  6  | [CanMV Examples](https://github.com/kendryte/canmv_examples)                           | 提供不同模块的使用示例，供学习参考。                                          |
 |  7  | [CanMV Releases](https://github.com/kendryte/canmv/releases)                           | 提供 CanMV 固件下载。                                              |

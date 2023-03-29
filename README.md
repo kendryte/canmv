@@ -33,15 +33,15 @@ CanMV is designed to make AIOT programming easier, based on the [Micropython](ht
 </div>
 
 ## CanMV resources guide
-| No  | Link address                                                                           | Description                                                                                                                          |
-|:---:|----------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
-|  1  | /                                                                                      | CanMV SDK root folder                                                                                                                |
-|  2  | /projects/xxx                                                                          | CanMV Boards configuation. You can build your own firmware starting here, refer to [CanMV build](build.md) for detailed instructions |
-|  3  | [Build with Docker](tools/docker)                                                      | We provide you the docker image of CanMV building system. Just try it!                                          |
-|  4  | [CanMV Docs](https://developer.canaan-creative.com/index.html?channel=developer#/word) | CanMV Documention, including API description, FAQ and others                                                                         | 
-|  5  | [CanMV IDE](https://github.com/kendryte/canmv_ide)                                     | CanMV IDE for programming and debugging, support Windows, Linux and Mac OS.                                                          |
-|  6  | [CanMV Examples](https://github.com/kendryte/canmv_examples)                           | Examples to guild you how to use each component of CanMV                                                                             |
-|  7  | [CanMV Releases](https://github.com/kendryte/canmv/releases)                           | CanMV firmware releases. You can download the latest version here.                                                                   |
+| No  | Link address                                                                                     | Description                                                                                                                          |
+|:---:|--------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
+|  1  | /                                                                                                | CanMV SDK root folder                                                                                                                |
+|  2  | /projects/xxx                                                                                    | CanMV Boards configuation. You can build your own firmware starting here, refer to [CanMV build](build.md) for detailed instructions |
+|  3  | [Build with Docker](tools/docker)                                                                | We provide you the docker image of CanMV building system. Just try it!                                                               |
+|  4  | [CanMV Docs](https://developer.canaan-creative.com/index.html?channel=developer#/document/canmv) | CanMV Documention, including API description, FAQ and others                                                                         | 
+|  5  | [CanMV IDE](https://github.com/kendryte/canmv_ide)                                               | CanMV IDE for programming and debugging, support Windows, Linux and Mac OS.                                                          |
+|  6  | [CanMV Examples](https://github.com/kendryte/canmv_examples)                                     | Examples to guild you how to use each component of CanMV                                                                             |
+|  7  | [CanMV Releases](https://github.com/kendryte/canmv/releases)                                     | CanMV firmware releases. You can download the latest version here.                                                                   |
 
 
 ## Sample code
