@@ -13,6 +13,8 @@
 #include "gc0328.h"
 #include "gc2145.h"
 #include "mt9d111.h"
+#include "pgd030k.h"
+
 #include "py/mpprint.h"
 #include "sysctl.h"
 #include "fpioa.h"
@@ -261,6 +263,22 @@ int cambus_scan_mt9d111(void)
         return 0;
     }
     return id;
+}
+
+int cambus_scan_pgd030k(void)
+{
+    uint8_t id_h = 0, id_l = 0;
+    uint16_t id = 0;
+
+    sccb_reg_width = 8;
+
+    sccb_i2c_write_byte(i2c_device, PGD030K_I2C_ADDR, 0x03, sccb_reg_width, 0x00, 10);  // Bank A
+    sccb_i2c_read_byte(i2c_device, PGD030K_I2C_ADDR, 0x00, sccb_reg_width, &id_h, 10);  // Device ID High
+    sccb_i2c_read_byte(i2c_device, PGD030K_I2C_ADDR, 0x01, sccb_reg_width, &id_l, 10);  // Device ID Low
+
+    id = (id_h << 8) | id_l;
+
+    return (PGD030K_ID_CODE == id) ? PGD030K_ID_CODE : 0x00;
 }
 
 int cambus_readb(uint8_t slv_addr, uint16_t reg_addr, uint8_t *reg_data)
