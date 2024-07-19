@@ -26,7 +26,7 @@ include(${SDK_PATH}/tools/cmake/compile.cmake)
 
 
 # Project Name
-project(canmv_k210_zero)
+project(canmv)
 
 
 
