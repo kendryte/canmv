@@ -14,6 +14,7 @@ int cambus_scan();
 int cambus_scan_gc0328(void);
 int cambus_scan_gc2145(void);
 int cambus_scan_mt9d111(void);
+int cambus_scan_pgd030k(void);
 int cambus_readb(uint8_t slv_addr, uint16_t reg_addr,  uint8_t *reg_data);
 void cambus_set_writeb_delay(uint32_t delay);
 int cambus_writeb(uint8_t slv_addr, uint16_t reg_addr, uint8_t reg_data);
