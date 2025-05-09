@@ -26,6 +26,11 @@ if(CONFIG_COMPONENT_DRIVERS_ENABLE)
 	aux_source_directory("amg88xx/src"  AMG88XX_SRCS)
 	list(APPEND ADD_SRCS ${AMG88XX_SRCS})
     endif()
+    if(CONFIG_ES8311_ENABLE)
+        list(APPEND ADD_INCLUDE "es8311/include")
+        aux_source_directory("es8311/src"  ES8311_SRCS)
+        list(APPEND ADD_SRCS ${ES8311_SRCS})
+    endif()
 
     list(APPEND ADD_SRCS ${FLASH_SRCS}
                         ${JOYSTICK_SRCS}

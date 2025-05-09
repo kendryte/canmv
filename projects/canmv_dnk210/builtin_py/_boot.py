@@ -148,43 +148,53 @@ config = {
 },
 "board_info": {
     # Core
-    "BOOT_KEY":     16,
+    "BOOT_KEY":         16,
     # LCD
-    "LCD_BL":       35,
+    "LCD_BL":           35,
     # Button
-    "KEY0":         18,
-    "KEY1":         19,
-    "KEY2":         16,
+    "KEY0":             18,
+    "KEY1":             19,
+    "KEY2":             16,
     # LED
-    "LEDR":         24,
-    "LEDB":         25,
+    "LEDR":             24,
+    "LEDB":             25,
     # IMU
-    "IMU_SCL":      22,
-    "IMU_SDA":      23,
-    "IMU_INT":      20,
+    "IMU_SCL":          22,
+    "IMU_SDA":          23,
+    "IMU_INT":          20,
     # Buzzer
-    "BEEP":         17,
+    "BEEP":             17,
     # Speaker
-    "SPK_WS":       33,
-    "SPK_SCLK":     32,
-    "SPK_SDOUT":    31,
-    "SPK_CTRL":     21,
+    "SPK_WS":           33,
+    "SPK_SCLK":         32,
+    "SPK_SDOUT":        31,
+    "SPK_CTRL":         21,
+    # ES8311
+    "ES8311_SCL":       22,
+    "ES8311_SDA":       23,
+    "ES8311_MCLK":      21,
+    "ES8311_LRCK":      33,
+    "ES8311_BCK":       32,
+    "ES8311_DSDIN":     31,
+    "ES8311_ASDOUT":    30,
+    # Power Amplifier
+    "PA_CTL":           12,
     # Microphone
-    "MIC_WS":       33,
-    "MIC_SCLK":     32,
-    "MIC_SDIN":     30,
+    "MIC_WS":           33,
+    "MIC_SCLK":         32,
+    "MIC_SDIN":         30,
     # Extended UART
-    "EX_UART1_TX":  7,
-    "EX_UART1_RX":  9,
-    "EX_UART2_TX":  6,
-    "EX_UART2_RX":  8,
+    "EX_UART1_TX":      7,
+    "EX_UART1_RX":      9,
+    "EX_UART2_TX":      6,
+    "EX_UART2_RX":      8,
     # Extended I/O
-    "EX_IO0":       14,
-    "EX_IO1":       15,
-    "EX_IO2":       12,
-    "EX_IO3":       13,
-    "EX_IO4":       10,
-    "EX_IO5":       11,
+    "EX_IO0":           14,
+    "EX_IO1":           15,
+    "EX_IO2":           12,
+    "EX_IO3":           13,
+    "EX_IO4":           10,
+    "EX_IO5":           11,
 }
 }
 

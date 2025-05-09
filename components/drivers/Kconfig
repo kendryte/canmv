@@ -29,5 +29,10 @@ menu "Drivers configuration"
 			bool "Enable AMG88XX thermal sensor"
 			default n
 	endmenu
+	menu "ES8311"
+		config ES8311_ENABLE
+			bool "Enable ES8311 audio codec"
+			default n
+	endmenu
 endmenu
 
