@@ -115,6 +115,11 @@ menu "Micropython configurations"
 			select MICROPY_LWIP_ENABLE
 			select FREERTOS_ENABLE
 
+		config MAIXPY_ES8311_ENABLE
+			bool "Enable ES8311"
+			default n
+			select ES8311_ENABLE
+
 	endmenu
 
 	menu "Builtin py modules configurations"
